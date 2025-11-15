@@ -131,12 +131,19 @@ def test_update_service_success(cloud_run_controller):
     mock_operation.result.return_value = mock_updated_service
     cloud_run_controller.client.update_service.return_value = mock_operation
 
-    service = cloud_run_controller.update_service(
-        "test-service",
-        image="gcr.io/test/new-image:latest"
-    )
+    # Patch the protobuf classes to avoid validation issues
+    with patch('gcp_utils.controllers.cloud_run.run_v2.UpdateServiceRequest') as mock_request, \
+         patch('gcp_utils.controllers.cloud_run.run_v2.ResourceRequirements'), \
+         patch('gcp_utils.controllers.cloud_run.run_v2.EnvVar'), \
+         patch('gcp_utils.controllers.cloud_run.run_v2.RevisionScaling'):
 
-    assert service.image == "gcr.io/test/new-image:latest"
+        service = cloud_run_controller.update_service(
+            "test-service",
+            image="gcr.io/test/new-image:latest"
+        )
+
+        assert service.image == "gcr.io/test/new-image:latest"
+        cloud_run_controller.client.update_service.assert_called_once()
 
 
 def test_delete_service(cloud_run_controller):
@@ -167,8 +174,10 @@ def test_update_traffic_success(cloud_run_controller):
     mock_service = create_mock_service()
     cloud_run_controller.client.get_service.return_value = mock_service
 
+    # Return a fresh mock service to avoid MagicMock pollution in traffic list
+    mock_updated_service = create_mock_service()
     mock_operation = MagicMock()
-    mock_operation.result.return_value = mock_service
+    mock_operation.result.return_value = mock_updated_service
     cloud_run_controller.client.update_service.return_value = mock_operation
 
     traffic_targets = [
@@ -176,10 +185,15 @@ def test_update_traffic_success(cloud_run_controller):
         TrafficTarget(revision_name="rev-002", percent=50),
     ]
 
-    service = cloud_run_controller.update_traffic("test-service", traffic_targets)
+    # Patch the protobuf classes to avoid validation issues
+    with patch('gcp_utils.controllers.cloud_run.run_v2.UpdateServiceRequest'), \
+         patch('gcp_utils.controllers.cloud_run.run_v2.TrafficTarget') as mock_traffic, \
+         patch('gcp_utils.controllers.cloud_run.run_v2.TrafficTargetAllocationType'):
 
-    assert service is not None
-    cloud_run_controller.client.update_service.assert_called_once()
+        service = cloud_run_controller.update_traffic("test-service", traffic_targets)
+
+        assert service is not None
+        cloud_run_controller.client.update_service.assert_called_once()
 
 
 def test_get_service_url(cloud_run_controller):
