@@ -10,6 +10,9 @@ from typing import Any, Optional
 from google.cloud import run_v2
 from google.auth.credentials import Credentials
 from google.api_core import operation
+from google.auth.transport.requests import Request
+from google.auth import default
+import httpx
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import CloudRunError, ResourceNotFoundError, ValidationError
@@ -406,6 +409,119 @@ class CloudRunController:
         """
         service = self.get_service(service_name)
         return service.url
+
+    def invoke_service(
+        self,
+        service_name: str,
+        path: str = "/",
+        method: str = "GET",
+        data: Optional[dict[str, Any]] = None,
+        headers: Optional[dict[str, str]] = None,
+        timeout: int = 60,
+    ) -> dict[str, Any]:
+        """
+        Invoke a Cloud Run service with authentication.
+
+        This method makes an authenticated HTTP request to a Cloud Run service
+        using the service account credentials or application default credentials.
+
+        Args:
+            service_name: Name of the Cloud Run service to invoke
+            path: URL path to request (default: "/")
+            method: HTTP method (GET, POST, PUT, DELETE, etc.)
+            data: Optional JSON data to send in request body
+            headers: Optional additional headers to include
+            timeout: Request timeout in seconds (default: 60)
+
+        Returns:
+            Dictionary containing:
+                - status_code: HTTP status code
+                - headers: Response headers as dict
+                - content: Response body as string
+                - json: Response body as dict (if JSON response)
+
+        Raises:
+            ResourceNotFoundError: If service doesn't exist
+            CloudRunError: If invocation fails
+
+        Example:
+            >>> run_ctrl = CloudRunController()
+            >>>
+            >>> # GET request
+            >>> response = run_ctrl.invoke_service("my-service", "/api/users")
+            >>> print(response["status_code"])
+            >>> print(response["json"])
+            >>>
+            >>> # POST request
+            >>> response = run_ctrl.invoke_service(
+            ...     "my-service",
+            ...     "/api/users",
+            ...     method="POST",
+            ...     data={"name": "John", "email": "john@example.com"}
+            ... )
+        """
+        try:
+            # Get service URL
+            service_url = self.get_service_url(service_name)
+            full_url = f"{service_url.rstrip('/')}/{path.lstrip('/')}"
+
+            # Get credentials and generate auth token
+            credentials, _ = default()
+            if not credentials.valid:
+                credentials.refresh(Request())
+
+            # Prepare headers with authentication
+            auth_headers = {
+                "Authorization": f"Bearer {credentials.token}",
+                "Content-Type": "application/json",
+            }
+            if headers:
+                auth_headers.update(headers)
+
+            # Make the request
+            with httpx.Client(timeout=timeout) as client:
+                if method.upper() == "GET":
+                    response = client.get(full_url, headers=auth_headers)
+                elif method.upper() == "POST":
+                    response = client.post(full_url, headers=auth_headers, json=data)
+                elif method.upper() == "PUT":
+                    response = client.put(full_url, headers=auth_headers, json=data)
+                elif method.upper() == "DELETE":
+                    response = client.delete(full_url, headers=auth_headers)
+                elif method.upper() == "PATCH":
+                    response = client.patch(full_url, headers=auth_headers, json=data)
+                else:
+                    raise ValidationError(f"Unsupported HTTP method: {method}")
+
+            # Build response dictionary
+            result = {
+                "status_code": response.status_code,
+                "headers": dict(response.headers),
+                "content": response.text,
+            }
+
+            # Try to parse JSON response
+            try:
+                result["json"] = response.json()
+            except Exception:
+                result["json"] = None
+
+            return result
+
+        except ResourceNotFoundError:
+            raise
+        except ValidationError:
+            raise
+        except Exception as e:
+            raise CloudRunError(
+                f"Failed to invoke service '{service_name}': {e}",
+                details={
+                    "service": service_name,
+                    "path": path,
+                    "method": method,
+                    "error": str(e),
+                },
+            ) from e
 
     def _get_service_path(self, service_name: str) -> str:
         """Get the full resource path for a service."""
