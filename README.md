@@ -471,7 +471,7 @@ This project uses:
 All environment variables are prefixed with `GCP_`:
 
 | Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
+|---|:---:|:---:|---|
 | `GCP_PROJECT_ID` | Yes | - | GCP project ID |
 | `GCP_CREDENTIALS_PATH` | No | None | Path to service account JSON |
 | `GCP_LOCATION` | No | `us-central1` | Default GCP location |
@@ -480,7 +480,7 @@ All environment variables are prefixed with `GCP_`:
 | `GCP_CLOUD_RUN_REGION` | No | `us-central1` | Cloud Run region |
 | `GCP_WORKFLOWS_LOCATION` | No | `us-central1` | Workflows location |
 | `GCP_CLOUD_TASKS_LOCATION` | No | `us-central1` | Cloud Tasks location |
-| `GCP_PUBSUB_TOPIC_PREFIX` | No | `` | Prefix for Pub/Sub topics |
+| `GCP_PUBSUB_TOPIC_PREFIX` | No | (empty) | Prefix for Pub/Sub topics |
 | `GCP_FIREBASE_HOSTING_DEFAULT_SITE` | No | None | Default Firebase Hosting site ID |
 | `GCP_ENABLE_REQUEST_LOGGING` | No | `False` | Enable detailed logging |
 | `GCP_OPERATION_TIMEOUT` | No | `300` | Timeout for operations (seconds) |
