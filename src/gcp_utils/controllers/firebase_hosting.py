@@ -17,7 +17,7 @@ from google.auth.credentials import Credentials
 from google.auth import default
 import httpx
 
-from ..config import GCPSettings
+from ..config import GCPSettings, get_settings
 from ..exceptions import (
     FirebaseHostingError,
     ResourceNotFoundError,
@@ -34,11 +34,10 @@ class FirebaseHostingController:
     deploying websites, and configuring custom domains.
 
     Example:
-        >>> from gcp_utils.config import GCPSettings
         >>> from gcp_utils.controllers import FirebaseHostingController
         >>>
-        >>> settings = GCPSettings(project_id="my-project")
-        >>> hosting = FirebaseHostingController(settings)
+        >>> # Automatically loads from .env file
+        >>> hosting = FirebaseHostingController()
         >>>
         >>> # Create a site
         >>> site = hosting.create_site(site_id="my-site")
@@ -52,21 +51,21 @@ class FirebaseHostingController:
 
     def __init__(
         self,
-        settings: GCPSettings,
+        settings: Optional[GCPSettings] = None,
         credentials_obj: Optional[Credentials] = None,
     ) -> None:
         """
         Initialize the Firebase Hosting controller.
 
         Args:
-            settings: GCP configuration settings
+            settings: GCP configuration settings. If not provided, loads from environment/.env file.
             credentials_obj: Optional custom credentials object.
                 If not provided, uses settings.credentials_path or default credentials.
 
         Raises:
             FirebaseHostingError: If Firebase initialization fails
         """
-        self._settings = settings
+        self._settings = settings or get_settings()
         self._credentials = credentials_obj
         self._api_base_url = "https://firebasehosting.googleapis.com/v1beta1"
         self._client: Optional[httpx.Client] = None
@@ -78,19 +77,19 @@ class FirebaseHostingController:
             except ValueError:
                 # Firebase not initialized yet
                 cred_path = (
-                    str(settings.credentials_path) if settings.credentials_path else None
+                    str(self._settings.credentials_path) if self._settings.credentials_path else None
                 )
 
                 if cred_path:
                     cred = credentials.Certificate(cred_path)
                     firebase_admin.initialize_app(
                         cred,
-                        {"projectId": settings.project_id},
+                        {"projectId": self._settings.project_id},
                     )
                 else:
                     # Use application default credentials
                     firebase_admin.initialize_app(
-                        options={"projectId": settings.project_id}
+                        options={"projectId": self._settings.project_id}
                     )
 
         except Exception as e:

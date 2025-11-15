@@ -3,19 +3,23 @@ Example usage of FirestoreController.
 
 This example demonstrates common Firestore operations including
 document CRUD, querying, batch operations, and transactions.
+
+Note: Settings are automatically loaded from .env file.
+Ensure you have a .env file with GCP_PROJECT_ID set.
 """
 
-from gcp_utils.config import GCPSettings
 from gcp_utils.controllers import FirestoreController
 from gcp_utils.models.firestore import FirestoreQuery, QueryOperator
 
 
 def main():
-    # Initialize settings
-    settings = GCPSettings(project_id="my-gcp-project")
+    # Initialize controller - automatically loads from .env file
+    firestore = FirestoreController()
 
-    # Create controller
-    firestore = FirestoreController(settings)
+    # Or override with custom settings if needed:
+    # from gcp_utils.config import GCPSettings
+    # settings = GCPSettings(project_id="custom-project")
+    # firestore = FirestoreController(settings)
 
     # Create documents
     print("Creating documents...")

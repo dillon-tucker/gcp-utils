@@ -12,7 +12,7 @@ from google.cloud import pubsub_v1
 from google.auth.credentials import Credentials
 from google.api_core import retry
 
-from ..config import GCPSettings
+from ..config import GCPSettings, get_settings
 from ..exceptions import PubSubError, ResourceNotFoundError, ValidationError
 
 
@@ -24,11 +24,10 @@ class PubSubController:
     and publishing/consuming messages.
 
     Example:
-        >>> from gcp_utils.config import GCPSettings
         >>> from gcp_utils.controllers import PubSubController
         >>>
-        >>> settings = GCPSettings(project_id="my-project")
-        >>> pubsub_ctrl = PubSubController(settings)
+        >>> # Automatically loads from .env file
+        >>> pubsub_ctrl = PubSubController()
         >>>
         >>> # Publish a message
         >>> future = pubsub_ctrl.publish_message(
@@ -39,20 +38,20 @@ class PubSubController:
 
     def __init__(
         self,
-        settings: GCPSettings,
+        settings: Optional[GCPSettings] = None,
         credentials: Optional[Credentials] = None,
     ) -> None:
         """
         Initialize the Pub/Sub controller.
 
         Args:
-            settings: GCP configuration settings
+            settings: GCP configuration settings. If not provided, loads from environment/.env file.
             credentials: Optional custom credentials
 
         Raises:
             PubSubError: If client initialization fails
         """
-        self.settings = settings
+        self.settings = settings or get_settings()
 
         try:
             self.publisher = pubsub_v1.PublisherClient(credentials=credentials)

@@ -15,7 +15,7 @@ from google.cloud import storage
 from google.cloud.storage import Blob, Bucket
 from google.auth.credentials import Credentials
 
-from ..config import GCPSettings
+from ..config import GCPSettings, get_settings
 from ..exceptions import StorageError, ResourceNotFoundError, ValidationError
 from ..models.storage import BlobMetadata, BucketInfo, UploadResult
 
@@ -28,9 +28,13 @@ class CloudStorageController:
     including uploads, downloads, listing, and metadata operations.
 
     Example:
-        >>> from gcp_utils.config import GCPSettings
         >>> from gcp_utils.controllers import CloudStorageController
         >>>
+        >>> # Automatically loads from .env file
+        >>> storage_ctrl = CloudStorageController()
+        >>>
+        >>> # Or provide custom settings
+        >>> from gcp_utils.config import GCPSettings
         >>> settings = GCPSettings(project_id="my-project")
         >>> storage_ctrl = CloudStorageController(settings)
         >>>
@@ -44,23 +48,23 @@ class CloudStorageController:
 
     def __init__(
         self,
-        settings: GCPSettings,
+        settings: Optional[GCPSettings] = None,
         credentials: Optional[Credentials] = None,
     ) -> None:
         """
         Initialize the Cloud Storage controller.
 
         Args:
-            settings: GCP configuration settings
+            settings: GCP configuration settings. If not provided, loads from environment/.env file.
             credentials: Optional custom credentials. If not provided, uses default credentials.
 
         Raises:
             StorageError: If client initialization fails
         """
-        self.settings = settings
+        self.settings = settings or get_settings()
         try:
             self.client = storage.Client(
-                project=settings.project_id,
+                project=self.settings.project_id,
                 credentials=credentials,
             )
         except Exception as e:
@@ -75,6 +79,7 @@ class CloudStorageController:
         location: Optional[str] = None,
         storage_class: str = "STANDARD",
         labels: Optional[dict[str, str]] = None,
+        uniform_bucket_level_access: bool = True,
     ) -> BucketInfo:
         """
         Create a new Cloud Storage bucket.
@@ -84,6 +89,11 @@ class CloudStorageController:
             location: Bucket location (defaults to settings.location)
             storage_class: Storage class (STANDARD, NEARLINE, COLDLINE, ARCHIVE)
             labels: Optional labels for the bucket
+            uniform_bucket_level_access: If True, enables uniform bucket-level access (IAM only).
+                If False, allows fine-grained ACLs per object. Default: True (recommended).
+
+                - True: Use IAM permissions only (recommended, more secure)
+                - False: Allow per-object ACLs (e.g., blob.make_public() works)
 
         Returns:
             BucketInfo object with bucket details
@@ -91,6 +101,13 @@ class CloudStorageController:
         Raises:
             StorageError: If bucket creation fails
             ValidationError: If bucket name is invalid
+
+        Example:
+            >>> # Create bucket with fine-grained ACLs (allows make_public())
+            >>> bucket = storage.create_bucket("my-bucket", uniform_bucket_level_access=False)
+            >>>
+            >>> # Create bucket with uniform access (IAM only, more secure)
+            >>> bucket = storage.create_bucket("my-secure-bucket", uniform_bucket_level_access=True)
         """
         if not bucket_name:
             raise ValidationError("Bucket name cannot be empty")
@@ -101,6 +118,9 @@ class CloudStorageController:
 
             if labels:
                 bucket.labels = labels
+
+            # Set uniform bucket-level access
+            bucket.iam_configuration.uniform_bucket_level_access_enabled = uniform_bucket_level_access
 
             created_bucket = self.client.create_bucket(
                 bucket,
@@ -251,7 +271,7 @@ class CloudStorageController:
             if public:
                 blob.make_public()
 
-            return UploadResult(
+            result = UploadResult(
                 blob_name=destination_blob_name,
                 bucket=bucket_name,
                 size=blob.size,
@@ -259,6 +279,9 @@ class CloudStorageController:
                 md5_hash=blob.md5_hash,
                 generation=blob.generation,
             )
+            # Bind the actual GCS Blob object (must be set after init with PrivateAttr)
+            result._gcs_object = blob
+            return result
 
         except Exception as e:
             raise StorageError(
@@ -311,7 +334,7 @@ class CloudStorageController:
             if public:
                 blob.make_public()
 
-            return UploadResult(
+            result = UploadResult(
                 blob_name=destination_blob_name,
                 bucket=bucket_name,
                 size=blob.size,
@@ -319,6 +342,9 @@ class CloudStorageController:
                 md5_hash=blob.md5_hash,
                 generation=blob.generation,
             )
+            # Bind the actual GCS Blob object (must be set after init with PrivateAttr)
+            result._gcs_object = blob
+            return result
 
         except Exception as e:
             raise StorageError(
@@ -684,8 +710,8 @@ class CloudStorageController:
             )
 
     def _bucket_to_info(self, bucket: Bucket) -> BucketInfo:
-        """Convert a Bucket object to BucketInfo model."""
-        return BucketInfo(
+        """Convert a Bucket object to BucketInfo model with bound GCS object."""
+        bucket_info = BucketInfo(
             name=bucket.name,
             location=bucket.location,
             storage_class=bucket.storage_class,
@@ -693,10 +719,13 @@ class CloudStorageController:
             versioning_enabled=bucket.versioning_enabled or False,
             labels=bucket.labels or {},
         )
+        # Bind the actual GCS Bucket object (must be set after init with PrivateAttr)
+        bucket_info._gcs_object = bucket
+        return bucket_info
 
     def _blob_to_metadata(self, blob: Blob) -> BlobMetadata:
-        """Convert a Blob object to BlobMetadata model."""
-        return BlobMetadata(
+        """Convert a Blob object to BlobMetadata model with bound GCS object."""
+        blob_metadata = BlobMetadata(
             name=blob.name,
             bucket=blob.bucket.name,
             size=blob.size or 0,
@@ -709,3 +738,6 @@ class CloudStorageController:
             public_url=blob.public_url if blob.public_url else None,
             metadata=blob.metadata or {},
         )
+        # Bind the actual GCS Blob object (must be set after init with PrivateAttr)
+        blob_metadata._gcs_object = blob
+        return blob_metadata

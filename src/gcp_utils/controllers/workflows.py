@@ -12,7 +12,7 @@ from google.cloud import workflows_v1
 from google.cloud.workflows import executions_v1
 from google.auth.credentials import Credentials
 
-from ..config import GCPSettings
+from ..config import GCPSettings, get_settings
 from ..exceptions import WorkflowsError, ResourceNotFoundError, ValidationError
 from ..models.workflows import WorkflowInfo, WorkflowExecution, ExecutionState
 
@@ -24,11 +24,10 @@ class WorkflowsController:
     This controller provides methods for managing workflows and executions.
 
     Example:
-        >>> from gcp_utils.config import GCPSettings
         >>> from gcp_utils.controllers import WorkflowsController
         >>>
-        >>> settings = GCPSettings(project_id="my-project")
-        >>> wf_ctrl = WorkflowsController(settings)
+        >>> # Automatically loads from .env file
+        >>> wf_ctrl = WorkflowsController()
         >>>
         >>> # Execute a workflow
         >>> execution = wf_ctrl.execute_workflow(
@@ -39,7 +38,7 @@ class WorkflowsController:
 
     def __init__(
         self,
-        settings: GCPSettings,
+        settings: Optional[GCPSettings] = None,
         credentials: Optional[Credentials] = None,
         location: Optional[str] = None,
     ) -> None:
@@ -47,15 +46,15 @@ class WorkflowsController:
         Initialize the Workflows controller.
 
         Args:
-            settings: GCP configuration settings
+            settings: GCP configuration settings. If not provided, loads from environment/.env file.
             credentials: Optional custom credentials
             location: Workflows location (defaults to settings.workflows_location)
 
         Raises:
             WorkflowsError: If client initialization fails
         """
-        self.settings = settings
-        self.location = location or settings.workflows_location
+        self.settings = settings or get_settings()
+        self.location = location or self.settings.workflows_location
 
         try:
             self.workflows_client = workflows_v1.WorkflowsClient(

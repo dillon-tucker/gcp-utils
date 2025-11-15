@@ -16,7 +16,7 @@ from google.cloud.firestore_v1 import (
 )
 from google.auth.credentials import Credentials
 
-from ..config import GCPSettings
+from ..config import GCPSettings, get_settings
 from ..exceptions import FirestoreError, ResourceNotFoundError, ValidationError
 from ..models.firestore import FirestoreDocument, FirestoreQuery, QueryOperator
 
@@ -29,11 +29,10 @@ class FirestoreController:
     batch operations, and transactions.
 
     Example:
-        >>> from gcp_utils.config import GCPSettings
         >>> from gcp_utils.controllers import FirestoreController
         >>>
-        >>> settings = GCPSettings(project_id="my-project")
-        >>> fs_ctrl = FirestoreController(settings)
+        >>> # Automatically loads from .env file
+        >>> fs_ctrl = FirestoreController()
         >>>
         >>> # Create a document
         >>> doc = fs_ctrl.create_document(
@@ -45,7 +44,7 @@ class FirestoreController:
 
     def __init__(
         self,
-        settings: GCPSettings,
+        settings: Optional[GCPSettings] = None,
         credentials: Optional[Credentials] = None,
         database: Optional[str] = None,
     ) -> None:
@@ -53,19 +52,19 @@ class FirestoreController:
         Initialize the Firestore controller.
 
         Args:
-            settings: GCP configuration settings
+            settings: GCP configuration settings. If not provided, loads from environment/.env file.
             credentials: Optional custom credentials
             database: Database ID (defaults to settings.firestore_database)
 
         Raises:
             FirestoreError: If client initialization fails
         """
-        self.settings = settings
-        self.database = database or settings.firestore_database
+        self.settings = settings or get_settings()
+        self.database = database or self.settings.firestore_database
 
         try:
             self.client: Client = firestore.Client(
-                project=settings.project_id,
+                project=self.settings.project_id,
                 credentials=credentials,
                 database=self.database,
             )

@@ -14,9 +14,36 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from ..exceptions import ConfigurationError
 
 
+def _find_project_root() -> Path:
+    """
+    Find the project root directory by looking for pyproject.toml.
+
+    Searches upward from this file's location until it finds pyproject.toml.
+    Falls back to current working directory if not found.
+
+    Returns:
+        Path to the project root directory
+    """
+    current = Path(__file__).resolve().parent
+
+    # Search upward for pyproject.toml (max 10 levels)
+    for _ in range(10):
+        if (current / "pyproject.toml").exists():
+            return current
+        if current.parent == current:  # Reached filesystem root
+            break
+        current = current.parent
+
+    # Fallback to current working directory
+    return Path.cwd()
+
+
 class GCPSettings(BaseSettings):
     """
     GCP configuration settings with automatic environment variable loading.
+
+    The .env file is automatically loaded from the project root directory
+    (where pyproject.toml is located), regardless of where you run your scripts from.
 
     Attributes:
         project_id: GCP project ID
@@ -34,7 +61,7 @@ class GCPSettings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(_find_project_root() / ".env"),
         env_file_encoding="utf-8",
         env_prefix="GCP_",
         case_sensitive=False,

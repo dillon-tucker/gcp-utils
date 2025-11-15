@@ -11,7 +11,7 @@ from google.cloud import run_v2
 from google.auth.credentials import Credentials
 from google.api_core import operation
 
-from ..config import GCPSettings
+from ..config import GCPSettings, get_settings
 from ..exceptions import CloudRunError, ResourceNotFoundError, ValidationError
 from ..models.cloud_run import CloudRunService, ServiceRevision, TrafficTarget
 
@@ -24,11 +24,10 @@ class CloudRunController:
     Cloud Run services, revisions, and traffic management.
 
     Example:
-        >>> from gcp_utils.config import GCPSettings
         >>> from gcp_utils.controllers import CloudRunController
         >>>
-        >>> settings = GCPSettings(project_id="my-project")
-        >>> run_ctrl = CloudRunController(settings)
+        >>> # Automatically loads from .env file
+        >>> run_ctrl = CloudRunController()
         >>>
         >>> # Get service information
         >>> service = run_ctrl.get_service("my-service")
@@ -36,7 +35,7 @@ class CloudRunController:
 
     def __init__(
         self,
-        settings: GCPSettings,
+        settings: Optional[GCPSettings] = None,
         credentials: Optional[Credentials] = None,
         region: Optional[str] = None,
     ) -> None:
@@ -44,15 +43,15 @@ class CloudRunController:
         Initialize the Cloud Run controller.
 
         Args:
-            settings: GCP configuration settings
+            settings: GCP configuration settings. If not provided, loads from environment/.env file.
             credentials: Optional custom credentials
             region: Cloud Run region (defaults to settings.cloud_run_region)
 
         Raises:
             CloudRunError: If client initialization fails
         """
-        self.settings = settings
-        self.region = region or settings.cloud_run_region
+        self.settings = settings or get_settings()
+        self.region = region or self.settings.cloud_run_region
 
         try:
             self.client = run_v2.ServicesClient(credentials=credentials)

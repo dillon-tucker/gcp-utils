@@ -3,21 +3,22 @@ Example usage of CloudStorageController.
 
 This example demonstrates common Cloud Storage operations including
 bucket management, file uploads/downloads, and blob operations.
+
+Note: Settings are automatically loaded from .env file.
+Ensure you have a .env file with GCP_PROJECT_ID set.
 """
 
-from gcp_utils.config import GCPSettings
 from gcp_utils.controllers import CloudStorageController
 
 
 def main():
-    # Initialize settings (reads from environment variables or .env file)
-    settings = GCPSettings(
-        project_id="my-gcp-project",
-        storage_bucket="my-default-bucket",
-    )
+    # Initialize controller - automatically loads from .env file
+    storage = CloudStorageController()
 
-    # Create controller
-    storage = CloudStorageController(settings)
+    # Or override with custom settings if needed:
+    # from gcp_utils.config import GCPSettings
+    # settings = GCPSettings(project_id="custom-project")
+    # storage = CloudStorageController(settings)
 
     # Create a bucket
     print("Creating bucket...")

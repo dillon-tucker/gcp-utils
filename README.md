@@ -56,16 +56,25 @@ pip install -e ".[dev]"
 
 ### 1. Configuration
 
-Create a `.env` file in your project root:
+**Option A: Use `.env` file** (Recommended)
 
-```env
+Create a `.env` file in your **project root** (where `pyproject.toml` is):
+
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit with your values
+# .env
 GCP_PROJECT_ID=my-gcp-project
 GCP_CREDENTIALS_PATH=/path/to/service-account.json
 GCP_LOCATION=us-central1
 GCP_STORAGE_BUCKET=my-default-bucket
 ```
 
-Or set configuration programmatically:
+The `.env` file is **automatically discovered** from the project root, no matter where you run your scripts from.
+
+**Option B: Set configuration programmatically**
 
 ```python
 from gcp_utils.config import GCPSettings
@@ -82,11 +91,10 @@ settings = GCPSettings(
 #### Cloud Storage
 
 ```python
-from gcp_utils.config import GCPSettings
 from gcp_utils.controllers import CloudStorageController
 
-settings = GCPSettings(project_id="my-project")
-storage = CloudStorageController(settings)
+# Automatically loads from .env file
+storage = CloudStorageController()
 
 # Upload a file
 result = storage.upload_file(

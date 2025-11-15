@@ -115,7 +115,7 @@ def main():
         blob_name=avatar_result.blob_name,
         expiration=timedelta(hours=24),
     )
-    print(f"   Generated signed URL (valid 24h)")
+    print(f"   Generated signed URL (valid 24h)\n{signed_url}")
 
     # 5. Pub/Sub - Publish user registration event
     print("\n5. Pub/Sub: Publishing registration event...")

@@ -13,7 +13,7 @@ from google.cloud import artifactregistry_v1
 from google.api_core import exceptions as google_exceptions
 from google.auth.credentials import Credentials
 
-from ..config import GCPSettings
+from ..config import GCPSettings, get_settings
 from ..exceptions import (
     ArtifactRegistryError,
     ResourceNotFoundError,
@@ -29,11 +29,10 @@ class ArtifactRegistryController:
     and integrating with Docker for image storage.
 
     Example:
-        >>> from gcp_utils.config import GCPSettings
         >>> from gcp_utils.controllers import ArtifactRegistryController
         >>>
-        >>> settings = GCPSettings(project_id="my-project")
-        >>> registry = ArtifactRegistryController(settings)
+        >>> # Automatically loads from .env file
+        >>> registry = ArtifactRegistryController()
         >>>
         >>> # Create a Docker repository
         >>> repo = registry.create_repository(
@@ -45,20 +44,20 @@ class ArtifactRegistryController:
 
     def __init__(
         self,
-        settings: GCPSettings,
+        settings: Optional[GCPSettings] = None,
         credentials: Optional[Credentials] = None,
     ) -> None:
         """
         Initialize the Artifact Registry controller.
 
         Args:
-            settings: GCP configuration settings
+            settings: GCP configuration settings. If not provided, loads from environment/.env file.
             credentials: Optional custom credentials object
 
         Raises:
             ArtifactRegistryError: If initialization fails
         """
-        self._settings = settings
+        self._settings = settings or get_settings()
         self._credentials = credentials
         self._client: Optional[artifactregistry_v1.ArtifactRegistryClient] = None
 

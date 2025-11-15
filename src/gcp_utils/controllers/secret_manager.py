@@ -10,7 +10,7 @@ from typing import Any, Optional
 from google.cloud import secretmanager_v1
 from google.auth.credentials import Credentials
 
-from ..config import GCPSettings
+from ..config import GCPSettings, get_settings
 from ..exceptions import SecretManagerError, ResourceNotFoundError, ValidationError
 
 
@@ -21,11 +21,10 @@ class SecretManagerController:
     This controller provides methods for managing secrets and their versions.
 
     Example:
-        >>> from gcp_utils.config import GCPSettings
         >>> from gcp_utils.controllers import SecretManagerController
         >>>
-        >>> settings = GCPSettings(project_id="my-project")
-        >>> secrets_ctrl = SecretManagerController(settings)
+        >>> # Automatically loads from .env file
+        >>> secrets_ctrl = SecretManagerController()
         >>>
         >>> # Create and add a secret
         >>> secrets_ctrl.create_secret("database-password")
@@ -34,20 +33,20 @@ class SecretManagerController:
 
     def __init__(
         self,
-        settings: GCPSettings,
+        settings: Optional[GCPSettings] = None,
         credentials: Optional[Credentials] = None,
     ) -> None:
         """
         Initialize the Secret Manager controller.
 
         Args:
-            settings: GCP configuration settings
+            settings: GCP configuration settings. If not provided, loads from environment/.env file.
             credentials: Optional custom credentials
 
         Raises:
             SecretManagerError: If client initialization fails
         """
-        self.settings = settings
+        self.settings = settings or get_settings()
 
         try:
             self.client = secretmanager_v1.SecretManagerServiceClient(

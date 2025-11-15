@@ -13,7 +13,7 @@ from google.cloud import tasks_v2
 from google.auth.credentials import Credentials
 from google.protobuf import timestamp_pb2
 
-from ..config import GCPSettings
+from ..config import GCPSettings, get_settings
 from ..exceptions import CloudTasksError, ResourceNotFoundError, ValidationError
 from ..models.tasks import CloudTask, TaskInfo, TaskSchedule
 
@@ -25,11 +25,10 @@ class CloudTasksController:
     This controller provides methods for managing task queues and creating tasks.
 
     Example:
-        >>> from gcp_utils.config import GCPSettings
         >>> from gcp_utils.controllers import CloudTasksController
         >>>
-        >>> settings = GCPSettings(project_id="my-project")
-        >>> tasks_ctrl = CloudTasksController(settings)
+        >>> # Automatically loads from .env file
+        >>> tasks_ctrl = CloudTasksController()
         >>>
         >>> # Create a task
         >>> task = tasks_ctrl.create_http_task(
@@ -42,7 +41,7 @@ class CloudTasksController:
 
     def __init__(
         self,
-        settings: GCPSettings,
+        settings: Optional[GCPSettings] = None,
         credentials: Optional[Credentials] = None,
         location: Optional[str] = None,
     ) -> None:
@@ -50,15 +49,15 @@ class CloudTasksController:
         Initialize the Cloud Tasks controller.
 
         Args:
-            settings: GCP configuration settings
+            settings: GCP configuration settings. If not provided, loads from environment/.env file.
             credentials: Optional custom credentials
             location: Cloud Tasks location (defaults to settings.cloud_tasks_location)
 
         Raises:
             CloudTasksError: If client initialization fails
         """
-        self.settings = settings
-        self.location = location or settings.cloud_tasks_location
+        self.settings = settings or get_settings()
+        self.location = location or self.settings.cloud_tasks_location
 
         try:
             self.client = tasks_v2.CloudTasksClient(credentials=credentials)
