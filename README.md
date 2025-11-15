@@ -399,37 +399,37 @@ except FirestoreError as e:
 
 ```
 gcp-utilities/
-   src/
-      gcp_utilities/
-          __init__.py
-          config/
-             __init__.py
-             settings.py          # Configuration management
-          controllers/
-             __init__.py
-             storage.py           # Cloud Storage
-             firestore.py         # Firestore
-             firebase_auth.py     # Firebase Auth
-             cloud_run.py         # Cloud Run
-             workflows.py         # Workflows
-             cloud_tasks.py       # Cloud Tasks
-             pubsub.py            # Pub/Sub
-             secret_manager.py    # Secret Manager
-          models/
-             __init__.py
-             storage.py
-             firestore.py
-             cloud_run.py
-             workflows.py
-             tasks.py
-          exceptions.py            # Custom exceptions
-   examples/
-      example_storage.py
-      example_firestore.py
-      example_all_services.py
-   tests/                            # Test suite (to be implemented)
-   pyproject.toml                    # Project configuration
-   README.md
+    src/
+        gcp_utilities/
+             __init__.py
+        config/
+           __init__.py
+           settings.py          # Configuration management
+        controllers/
+           __init__.py
+           storage.py           # Cloud Storage
+           firestore.py         # Firestore
+           firebase_auth.py     # Firebase Auth
+           cloud_run.py         # Cloud Run
+           workflows.py         # Workflows
+           cloud_tasks.py       # Cloud Tasks
+           pubsub.py            # Pub/Sub
+           secret_manager.py    # Secret Manager
+        models/
+           __init__.py
+           storage.py
+           firestore.py
+           cloud_run.py
+           workflows.py
+           tasks.py
+        exceptions.py            # Custom exceptions
+    examples/
+        example_storage.py
+        example_firestore.py
+        example_all_services.py
+    tests/                            # Test suite (to be implemented)
+    pyproject.toml                    # Project configuration
+    README.md
 ```
 
 ## Development
