@@ -1,5 +1,47 @@
 # Changelog
 
+## 2025-11-16
+
+### Added
+
+*   **IAM Controller**: Added comprehensive IAM (Identity and Access Management) controller for managing service accounts, keys, and IAM policies
+    *   `src/gcp_utils/controllers/iam.py` - Full-featured IAM controller with 14+ methods
+    *   `src/gcp_utils/models/iam.py` - Type-safe Pydantic models (ServiceAccount, ServiceAccountKey, IAMPolicy, IAMBinding, ServiceAccountInfo)
+    *   `examples/example_iam.py` - Complete example demonstrating all IAM operations
+    *   Service account management: create, get, list, update, delete, get detailed info
+    *   Service account key management: create, list, delete with base64-encoded JSON credentials
+    *   IAM policy management: get and set IAM policies with typed bindings
+    *   Added `google-cloud-iam>=2.15.0` dependency to `pyproject.toml`
+*   **GCS Object Binding**: Enhanced Cloud Storage models to bind native Google Cloud Storage objects
+    *   Added `_gcs_object` private attribute to `BlobMetadata`, `BucketInfo`, and `UploadResult` using Pydantic's `PrivateAttr()`
+    *   Added convenience methods to delegate to native GCS objects: `make_public()`, `delete()`, `download_as_bytes()`, `download_as_text()`, `generate_signed_url()`, `list_blobs()`, `reload()`
+    *   Enables seamless integration between type-safe Pydantic models and full GCS API functionality
+*   **Optional Settings Parameter**: Made `settings` parameter optional in all controllers (10 total)
+    *   Controllers now auto-load settings from `.env` file if not provided via `get_settings()`
+    *   Added `_find_project_root()` function to locate `.env` file relative to `pyproject.toml`
+    *   Eliminates boilerplate code in examples and simplifies controller instantiation
+*   **Bucket Access Control**: Added `uniform_bucket_level_access` parameter to `create_bucket()` method
+    *   Allows choosing between uniform bucket-level access (recommended) and fine-grained ACLs
+    *   Default changed to `True` to align with GCP best practices and organization policies
+
+### Fixed
+
+*   Fixed IAM controller imports to use correct request types from `google.iam.v1.iam_policy_pb2`
+*   Added required `field_mask` parameter to `PatchServiceAccountRequest` for service account updates
+*   Fixed Unicode encoding errors in `example_iam.py` by replacing checkmarks and symbols with ASCII equivalents (`[OK]`, `[FAIL]`, `[WARN]`)
+*   Added `sys.path` manipulation to `example_iam.py` for running without package installation
+
+### Changed
+
+*   Updated CLAUDE.md with comprehensive IAM controller documentation including:
+    *   Controller initialization pattern and key operations
+    *   Service account key handling and security considerations
+    *   IAM policy management patterns with code examples
+    *   Model descriptions and common use cases
+*   Updated CLAUDE.md with instructions for installing dependencies in `../.venv` virtual environment
+*   Updated all example files to demonstrate auto-loading settings from `.env` file
+*   Updated README.md to emphasize `.env` file auto-discovery and simpler controller instantiation
+
 ## 2025-11-15
 
 ### Added

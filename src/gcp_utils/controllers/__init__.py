@@ -10,6 +10,7 @@ from .workflows import WorkflowsController
 from .cloud_tasks import CloudTasksController
 from .pubsub import PubSubController
 from .secret_manager import SecretManagerController
+from .iam import IAMController
 
 __all__ = [
     "CloudStorageController",
@@ -22,4 +23,5 @@ __all__ = [
     "CloudTasksController",
     "PubSubController",
     "SecretManagerController",
+    "IAMController",
 ]

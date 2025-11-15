@@ -101,6 +101,12 @@ class SecretManagerError(GCPUtilitiesError):
     pass
 
 
+class IAMError(GCPUtilitiesError):
+    """Raised when IAM operations fail."""
+
+    pass
+
+
 class CloudLoggingError(GCPUtilitiesError):
     """Raised when Cloud Logging operations fail."""
 

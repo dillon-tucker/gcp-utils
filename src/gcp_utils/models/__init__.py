@@ -27,6 +27,15 @@ from .artifact_registry import (
     BuildResult,
     DeploymentPipeline,
 )
+from .iam import (
+    ServiceAccount,
+    ServiceAccountKey,
+    ServiceAccountKeyAlgorithm,
+    ServiceAccountKeyType,
+    IAMBinding,
+    IAMPolicy,
+    ServiceAccountInfo,
+)
 
 __all__ = [
     # Storage models
@@ -69,4 +78,12 @@ __all__ = [
     "DockerImage",
     "BuildResult",
     "DeploymentPipeline",
+    # IAM models
+    "ServiceAccount",
+    "ServiceAccountKey",
+    "ServiceAccountKeyAlgorithm",
+    "ServiceAccountKeyType",
+    "IAMBinding",
+    "IAMPolicy",
+    "ServiceAccountInfo",
 ]

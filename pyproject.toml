@@ -17,6 +17,7 @@ dependencies = [
     "google-cloud-logging>=3.11.3",
     "google-cloud-secret-manager>=2.21.1",
     "google-cloud-pubsub>=2.23.1",
+    "google-cloud-iam>=2.15.0",
     "firebase-admin>=6.6.0",
     "google-auth>=2.35.0",
     "pydantic>=2.12.4",
