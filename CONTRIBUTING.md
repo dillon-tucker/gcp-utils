@@ -1,6 +1,6 @@
-# Contributing to GCP Utilities
+# Contributing to GCP Utils
 
-Thank you for your interest in contributing to GCP Utilities! This guide will help you get started.
+Thank you for your interest in contributing to GCP Utils! This guide will help you get started.
 
 ## Development Setup
 
@@ -16,8 +16,8 @@ Thank you for your interest in contributing to GCP Utilities! This guide will he
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/yourusername/gcp-utilities.git
-cd gcp-utilities
+git clone https://github.com/yourusername/gcp-utils.git
+cd gcp-utils
 ```
 
 2. **Install dependencies**
@@ -190,8 +190,9 @@ Create tests in the `tests/` directory:
 ```python
 # tests/test_storage.py
 import pytest
-from gcp_utilities.controllers import CloudStorageController
-from gcp_utilities.exceptions import ValidationError
+from gcp_utils.controllers import CloudStorageController
+from gcp_utils.exceptions import ValidationError
+
 
 def test_upload_validates_path():
     """Test that upload validates file path."""
@@ -208,7 +209,7 @@ def test_upload_validates_path():
 pytest tests/
 
 # Run with coverage
-pytest --cov=src/gcp_utilities tests/
+pytest --cov=src/gcp_utils tests/
 
 # Run specific test
 pytest tests/test_storage.py::test_upload_validates_path
@@ -221,7 +222,7 @@ pytest -v tests/
 
 ### 1. Create the Controller File
 
-Create `src/gcp_utilities/controllers/new_service.py`:
+Create `src/gcp_utils/controllers/new_service.py`:
 
 ```python
 """
@@ -268,7 +269,7 @@ class NewServiceController:
 
 ### 2. Add Exception
 
-In `src/gcp_utilities/exceptions.py`:
+In `src/gcp_utils/exceptions.py`:
 
 ```python
 class NewServiceError(GCPUtilitiesError):
@@ -278,7 +279,7 @@ class NewServiceError(GCPUtilitiesError):
 
 ### 3. Add Models (if needed)
 
-Create `src/gcp_utilities/models/new_service.py`:
+Create `src/gcp_utils/models/new_service.py`:
 
 ```python
 """Data models for New Service operations."""
@@ -299,7 +300,7 @@ class NewServiceResource(BaseModel):
 
 ### 4. Update __init__ Files
 
-Update `src/gcp_utilities/controllers/__init__.py`:
+Update `src/gcp_utils/controllers/__init__.py`:
 
 ```python
 from .new_service import NewServiceController
@@ -328,8 +329,9 @@ Create `examples/example_new_service.py`:
 ```python
 """Example usage of NewServiceController."""
 
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.controllers import NewServiceController
+from gcp_utils.config import GCPSettings
+from gcp_utils.controllers import NewServiceController
+
 
 def main():
     settings = GCPSettings(project_id="my-project")
@@ -338,6 +340,7 @@ def main():
     # Example operations
     result = controller.operation()
     print(f"Result: {result}")
+
 
 if __name__ == "__main__":
     main()
@@ -350,9 +353,10 @@ Create `tests/test_new_service.py`:
 ```python
 """Tests for NewServiceController."""
 
+
 def test_import():
     """Test that controller can be imported."""
-    from gcp_utilities.controllers import NewServiceController
+    from gcp_utils.controllers import NewServiceController
     assert NewServiceController is not None
 ```
 
@@ -446,4 +450,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-Thank you for contributing to GCP Utilities!
+Thank you for contributing to GCP Utils!

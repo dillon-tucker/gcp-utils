@@ -24,8 +24,8 @@ class WorkflowsController:
     This controller provides methods for managing workflows and executions.
 
     Example:
-        >>> from gcp_utilities.config import GCPSettings
-        >>> from gcp_utilities.controllers import WorkflowsController
+        >>> from gcp_utils.config import GCPSettings
+        >>> from gcp_utils.controllers import WorkflowsController
         >>>
         >>> settings = GCPSettings(project_id="my-project")
         >>> wf_ctrl = WorkflowsController(settings)

@@ -10,13 +10,13 @@ This example demonstrates the complete CI/CD pipeline for containerized applicat
 This is the typical workflow for deploying containerized applications to GCP.
 """
 
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.controllers import (
+from gcp_utils.config import GCPSettings
+from gcp_utils.controllers import (
     ArtifactRegistryController,
     CloudRunController,
 )
-from gcp_utilities.utils import DockerBuilder
-from gcp_utilities.exceptions import (
+from gcp_utils.utils import DockerBuilder
+from gcp_utils.exceptions import (
     ArtifactRegistryError,
     CloudRunError,
     ResourceNotFoundError,
@@ -235,9 +235,9 @@ def main():
     Example CI script:
 
     import os
-    from gcp_utilities.config import GCPSettings
-    from gcp_utilities.controllers import ArtifactRegistryController, CloudRunController
-    from gcp_utilities.utils import DockerBuilder
+    from gcp_utils.config import GCPSettings
+    from gcp_utils.controllers import ArtifactRegistryController, CloudRunController
+    from gcp_utils.utils import DockerBuilder
 
     # Get version from Git
     git_sha = os.getenv('GITHUB_SHA', 'latest')[:7]

@@ -4,9 +4,9 @@ Tests for SecretManagerController.
 import pytest
 from unittest.mock import MagicMock, patch
 from google.api_core import exceptions as google_exceptions
-from gcp_utilities.controllers.secret_manager import SecretManagerController
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.exceptions import ResourceNotFoundError
+from gcp_utils.controllers.secret_manager import SecretManagerController
+from gcp_utils.config import GCPSettings
+from gcp_utils.exceptions import ResourceNotFoundError
 
 @pytest.fixture
 def settings():

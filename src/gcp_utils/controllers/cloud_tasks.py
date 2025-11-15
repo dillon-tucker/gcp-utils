@@ -25,8 +25,8 @@ class CloudTasksController:
     This controller provides methods for managing task queues and creating tasks.
 
     Example:
-        >>> from gcp_utilities.config import GCPSettings
-        >>> from gcp_utilities.controllers import CloudTasksController
+        >>> from gcp_utils.config import GCPSettings
+        >>> from gcp_utils.controllers import CloudTasksController
         >>>
         >>> settings = GCPSettings(project_id="my-project")
         >>> tasks_ctrl = CloudTasksController(settings)

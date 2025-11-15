@@ -29,8 +29,8 @@ class ArtifactRegistryController:
     and integrating with Docker for image storage.
 
     Example:
-        >>> from gcp_utilities.config import GCPSettings
-        >>> from gcp_utilities.controllers import ArtifactRegistryController
+        >>> from gcp_utils.config import GCPSettings
+        >>> from gcp_utils.controllers import ArtifactRegistryController
         >>>
         >>> settings = GCPSettings(project_id="my-project")
         >>> registry = ArtifactRegistryController(settings)

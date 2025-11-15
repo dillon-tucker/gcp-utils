@@ -31,8 +31,8 @@ class FirebaseAuthController:
     and custom claims management.
 
     Example:
-        >>> from gcp_utilities.config import GCPSettings
-        >>> from gcp_utilities.controllers import FirebaseAuthController
+        >>> from gcp_utils.config import GCPSettings
+        >>> from gcp_utils.controllers import FirebaseAuthController
         >>>
         >>> settings = GCPSettings(project_id="my-project")
         >>> auth_ctrl = FirebaseAuthController(settings)

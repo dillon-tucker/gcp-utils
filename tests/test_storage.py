@@ -3,9 +3,9 @@ Tests for CloudStorageController.
 """
 import pytest
 from unittest.mock import MagicMock, patch
-from gcp_utilities.controllers.storage import CloudStorageController
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.exceptions import ResourceNotFoundError, ValidationError
+from gcp_utils.controllers.storage import CloudStorageController
+from gcp_utils.config import GCPSettings
+from gcp_utils.exceptions import ResourceNotFoundError, ValidationError
 
 @pytest.fixture
 def settings():

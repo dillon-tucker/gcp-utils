@@ -28,8 +28,8 @@ class CloudStorageController:
     including uploads, downloads, listing, and metadata operations.
 
     Example:
-        >>> from gcp_utilities.config import GCPSettings
-        >>> from gcp_utilities.controllers import CloudStorageController
+        >>> from gcp_utils.config import GCPSettings
+        >>> from gcp_utils.controllers import CloudStorageController
         >>>
         >>> settings = GCPSettings(project_id="my-project")
         >>> storage_ctrl = CloudStorageController(settings)

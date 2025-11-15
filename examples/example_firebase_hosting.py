@@ -5,9 +5,9 @@ This example demonstrates Firebase Hosting operations including
 site management, custom domain configuration, and deployments.
 """
 
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.controllers import FirebaseHostingController
-from gcp_utilities.exceptions import (
+from gcp_utils.config import GCPSettings
+from gcp_utils.controllers import FirebaseHostingController
+from gcp_utils.exceptions import (
     FirebaseHostingError,
     ResourceNotFoundError,
 )

@@ -21,7 +21,7 @@ class DockerBuilder:
     and pushing them to Artifact Registry.
 
     Example:
-        >>> from gcp_utilities.utils import DockerBuilder
+        >>> from gcp_utils.utils import DockerBuilder
         >>>
         >>> builder = DockerBuilder()
         >>> image_url = builder.build_and_push(

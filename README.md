@@ -1,4 +1,4 @@
-# GCP Utilities
+# GCP Utils
 
 A comprehensive, production-ready Python package for Google Cloud Platform (GCP) services. Built with modern Python practices, type safety, and developer experience in mind.
 
@@ -33,8 +33,8 @@ A comprehensive, production-ready Python package for Google Cloud Platform (GCP)
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/gcp-utilities.git
-cd gcp-utilities
+git clone https://github.com/yourusername/gcp-utils.git
+cd gcp-utils
 
 # Install with uv
 uv pip install -e .
@@ -68,7 +68,7 @@ GCP_STORAGE_BUCKET=my-default-bucket
 Or set configuration programmatically:
 
 ```python
-from gcp_utilities.config import GCPSettings
+from gcp_utils.config import GCPSettings
 
 settings = GCPSettings(
     project_id="my-gcp-project",
@@ -82,8 +82,8 @@ settings = GCPSettings(
 #### Cloud Storage
 
 ```python
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.controllers import CloudStorageController
+from gcp_utils.config import GCPSettings
+from gcp_utils.controllers import CloudStorageController
 
 settings = GCPSettings(project_id="my-project")
 storage = CloudStorageController(settings)
@@ -112,8 +112,8 @@ blobs = storage.list_blobs(
 #### Firestore
 
 ```python
-from gcp_utilities.controllers import FirestoreController
-from gcp_utilities.models.firestore import FirestoreQuery, QueryOperator
+from gcp_utils.controllers import FirestoreController
+from gcp_utils.models.firestore import FirestoreQuery, QueryOperator
 
 firestore = FirestoreController(settings)
 
@@ -134,6 +134,7 @@ queries = [
 ]
 results = firestore.query_documents("users", queries)
 
+
 # Run a transaction
 def update_balance(transaction, user_id, amount):
     doc_ref = firestore.client.collection('users').document(user_id)
@@ -142,13 +143,14 @@ def update_balance(transaction, user_id, amount):
     transaction.update(doc_ref, {'balance': new_balance})
     return new_balance
 
+
 new_balance = firestore.run_transaction(update_balance, 'user123', 100)
 ```
 
 #### Firebase Authentication
 
 ```python
-from gcp_utilities.controllers import FirebaseAuthController
+from gcp_utils.controllers import FirebaseAuthController
 
 auth = FirebaseAuthController(settings)
 
@@ -169,7 +171,7 @@ auth.set_custom_user_claims(user["uid"], {"admin": True, "tier": "premium"})
 #### Firebase Hosting
 
 ```python
-from gcp_utilities.controllers import FirebaseHostingController
+from gcp_utils.controllers import FirebaseHostingController
 
 hosting = FirebaseHostingController(settings)
 
@@ -198,8 +200,8 @@ print(f"Domain status: {domain['status']}")
 #### Artifact Registry & Docker Builder
 
 ```python
-from gcp_utilities.controllers import ArtifactRegistryController
-from gcp_utilities.utils import DockerBuilder
+from gcp_utils.controllers import ArtifactRegistryController
+from gcp_utils.utils import DockerBuilder
 
 registry = ArtifactRegistryController(settings)
 builder = DockerBuilder()
@@ -232,7 +234,7 @@ print(f"Image ready: {result['image_url']}")
 #### Cloud Run
 
 ```python
-from gcp_utilities.controllers import CloudRunController
+from gcp_utils.controllers import CloudRunController
 
 cloud_run = CloudRunController(settings)
 
@@ -248,7 +250,7 @@ service = cloud_run.create_service(
 )
 
 # Update traffic split
-from gcp_utilities.models.cloud_run import TrafficTarget
+from gcp_utils.models.cloud_run import TrafficTarget
 
 cloud_run.update_traffic(
     service_name="my-api",
@@ -262,7 +264,7 @@ cloud_run.update_traffic(
 #### Workflows
 
 ```python
-from gcp_utilities.controllers import WorkflowsController
+from gcp_utils.controllers import WorkflowsController
 
 workflows = WorkflowsController(settings)
 
@@ -292,7 +294,7 @@ execution = workflows.execute_workflow(
 #### Cloud Tasks
 
 ```python
-from gcp_utilities.controllers import CloudTasksController
+from gcp_utils.controllers import CloudTasksController
 
 tasks = CloudTasksController(settings)
 
@@ -314,7 +316,7 @@ task = tasks.create_http_task(
 #### Pub/Sub
 
 ```python
-from gcp_utilities.controllers import PubSubController
+from gcp_utils.controllers import PubSubController
 
 pubsub = PubSubController(settings)
 
@@ -349,7 +351,7 @@ pubsub.acknowledge_messages("email-processor", ack_ids)
 #### Secret Manager
 
 ```python
-from gcp_utilities.controllers import SecretManagerController
+from gcp_utils.controllers import SecretManagerController
 
 secrets = SecretManagerController(settings)
 
@@ -378,7 +380,7 @@ versions = secrets.list_secret_versions("database-password")
 All controllers use custom exceptions for better error handling:
 
 ```python
-from gcp_utilities.exceptions import (
+from gcp_utils.exceptions import (
     GCPUtilitiesError,
     StorageError,
     FirestoreError,
@@ -398,9 +400,9 @@ except FirestoreError as e:
 ## Project Structure
 
 ```
-gcp-utilities/
+gcp-utils/
     src/
-        gcp_utilities/
+        gcp_utils/
              __init__.py
         config/
            __init__.py
@@ -550,7 +552,7 @@ MIT License - See LICENSE file for details
 
 For issues, questions, or contributions:
 
-- GitHub Issues: [Create an issue](https://github.com/yourusername/gcp-utilities/issues)
+- GitHub Issues: [Create an issue](https://github.com/yourusername/gcp-utils/issues)
 - Documentation: See docstrings in the code
 - Examples: Check the `examples/` directory
 - Detailed Guides: See the `docs/` directory for in-depth documentation

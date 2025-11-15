@@ -1,5 +1,5 @@
 [project]
-name = "gcp-utilities"
+name = "gcp-utils"
 version = "0.1.0"
 description = "Comprehensive Google Cloud Platform utilities module for Python backend applications"
 readme = "README.md"

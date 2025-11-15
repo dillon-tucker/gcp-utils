@@ -5,9 +5,9 @@ This example demonstrates common Firestore operations including
 document CRUD, querying, batch operations, and transactions.
 """
 
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.controllers import FirestoreController
-from gcp_utilities.models.firestore import FirestoreQuery, QueryOperator
+from gcp_utils.config import GCPSettings
+from gcp_utils.controllers import FirestoreController
+from gcp_utils.models.firestore import FirestoreQuery, QueryOperator
 
 
 def main():

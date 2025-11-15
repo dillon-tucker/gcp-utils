@@ -29,8 +29,8 @@ class FirestoreController:
     batch operations, and transactions.
 
     Example:
-        >>> from gcp_utilities.config import GCPSettings
-        >>> from gcp_utilities.controllers import FirestoreController
+        >>> from gcp_utils.config import GCPSettings
+        >>> from gcp_utils.controllers import FirestoreController
         >>>
         >>> settings = GCPSettings(project_id="my-project")
         >>> fs_ctrl = FirestoreController(settings)

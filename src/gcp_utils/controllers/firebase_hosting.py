@@ -34,8 +34,8 @@ class FirebaseHostingController:
     deploying websites, and configuring custom domains.
 
     Example:
-        >>> from gcp_utilities.config import GCPSettings
-        >>> from gcp_utilities.controllers import FirebaseHostingController
+        >>> from gcp_utils.config import GCPSettings
+        >>> from gcp_utils.controllers import FirebaseHostingController
         >>>
         >>> settings = GCPSettings(project_id="my-project")
         >>> hosting = FirebaseHostingController(settings)

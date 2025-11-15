@@ -21,8 +21,8 @@ class SecretManagerController:
     This controller provides methods for managing secrets and their versions.
 
     Example:
-        >>> from gcp_utilities.config import GCPSettings
-        >>> from gcp_utilities.controllers import SecretManagerController
+        >>> from gcp_utils.config import GCPSettings
+        >>> from gcp_utils.controllers import SecretManagerController
         >>>
         >>> settings = GCPSettings(project_id="my-project")
         >>> secrets_ctrl = SecretManagerController(settings)

@@ -78,8 +78,8 @@ print(f"Deployed to: {result['site_url']}")
 ### Option 1: One-Step Deployment (Recommended)
 
 ```python
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.controllers import FirebaseHostingController
+from gcp_utils.config import GCPSettings
+from gcp_utils.controllers import FirebaseHostingController
 
 # Initialize
 settings = GCPSettings(project_id="my-project")
@@ -299,7 +299,7 @@ The `deploy_site()` method returns comprehensive results:
 ## Error Handling
 
 ```python
-from gcp_utilities.exceptions import (
+from gcp_utils.exceptions import (
     FirebaseHostingError,
     ValidationError,
     ResourceNotFoundError
@@ -405,8 +405,9 @@ Creating release...
 # deploy.py
 import sys
 from pathlib import Path
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.controllers import FirebaseHostingController
+from gcp_utils.config import GCPSettings
+from gcp_utils.controllers import FirebaseHostingController
+
 
 def deploy(site_id: str, build_dir: str, message: str):
     settings = GCPSettings(project_id="my-project")
@@ -429,6 +430,7 @@ def deploy(site_id: str, build_dir: str, message: str):
 
     print(f"Deployed to: {result['site_url']}")
     return result
+
 
 if __name__ == "__main__":
     deploy(

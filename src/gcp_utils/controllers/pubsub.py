@@ -24,8 +24,8 @@ class PubSubController:
     and publishing/consuming messages.
 
     Example:
-        >>> from gcp_utilities.config import GCPSettings
-        >>> from gcp_utilities.controllers import PubSubController
+        >>> from gcp_utils.config import GCPSettings
+        >>> from gcp_utils.controllers import PubSubController
         >>>
         >>> settings = GCPSettings(project_id="my-project")
         >>> pubsub_ctrl = PubSubController(settings)

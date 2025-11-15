@@ -5,14 +5,14 @@ Basic import tests to verify package structure.
 
 def test_import_package():
     """Test that the main package can be imported."""
-    import gcp_utilities
+    import gcp_utils
 
-    assert gcp_utilities.__version__ == "0.1.0"
+    assert gcp_utils.__version__ == "0.1.0"
 
 
 def test_import_config():
     """Test that config module can be imported."""
-    from gcp_utilities.config import GCPSettings, get_settings
+    from gcp_utils.config import GCPSettings, get_settings
 
     assert GCPSettings is not None
     assert get_settings is not None
@@ -20,7 +20,7 @@ def test_import_config():
 
 def test_import_controllers():
     """Test that all controllers can be imported."""
-    from gcp_utilities.controllers import (
+    from gcp_utils.controllers import (
         CloudStorageController,
         FirestoreController,
         FirebaseAuthController,
@@ -43,7 +43,7 @@ def test_import_controllers():
 
 def test_import_exceptions():
     """Test that exceptions can be imported."""
-    from gcp_utilities.exceptions import (
+    from gcp_utils.exceptions import (
         GCPUtilitiesError,
         ConfigurationError,
         StorageError,
@@ -74,7 +74,7 @@ def test_import_exceptions():
 
 def test_import_models():
     """Test that models can be imported."""
-    from gcp_utilities.models import (
+    from gcp_utils.models import (
         BlobMetadata,
         BucketInfo,
         UploadResult,

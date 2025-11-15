@@ -24,8 +24,8 @@ class CloudRunController:
     Cloud Run services, revisions, and traffic management.
 
     Example:
-        >>> from gcp_utilities.config import GCPSettings
-        >>> from gcp_utilities.controllers import CloudRunController
+        >>> from gcp_utils.config import GCPSettings
+        >>> from gcp_utils.controllers import CloudRunController
         >>>
         >>> settings = GCPSettings(project_id="my-project")
         >>> run_ctrl = CloudRunController(settings)

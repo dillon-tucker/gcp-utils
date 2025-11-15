@@ -5,8 +5,8 @@ This example demonstrates common Cloud Storage operations including
 bucket management, file uploads/downloads, and blob operations.
 """
 
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.controllers import CloudStorageController
+from gcp_utils.config import GCPSettings
+from gcp_utils.controllers import CloudStorageController
 
 
 def main():

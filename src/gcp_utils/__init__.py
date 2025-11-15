@@ -14,8 +14,8 @@ This package provides high-level controllers for common GCP services including:
 - Secret Manager
 
 Example:
-    >>> from gcp_utilities.config import GCPSettings
-    >>> from gcp_utilities.controllers import CloudStorageController
+    >>> from gcp_utils.config import GCPSettings
+    >>> from gcp_utils.controllers import CloudStorageController
     >>>
     >>> settings = GCPSettings(project_id="my-project")
     >>> storage = CloudStorageController(settings)

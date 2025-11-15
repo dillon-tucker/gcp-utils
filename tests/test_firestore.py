@@ -3,10 +3,10 @@ Tests for FirestoreController.
 """
 import pytest
 from unittest.mock import MagicMock, patch
-from gcp_utilities.controllers.firestore import FirestoreController
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.exceptions import ResourceNotFoundError
-from gcp_utilities.models.firestore import FirestoreQuery, QueryOperator
+from gcp_utils.controllers.firestore import FirestoreController
+from gcp_utils.config import GCPSettings
+from gcp_utils.exceptions import ResourceNotFoundError
+from gcp_utils.models.firestore import FirestoreQuery, QueryOperator
 
 @pytest.fixture
 def settings():

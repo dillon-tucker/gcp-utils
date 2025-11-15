@@ -7,8 +7,8 @@ for a realistic workflow.
 
 from datetime import timedelta
 
-from gcp_utilities.config import GCPSettings
-from gcp_utilities.controllers import (
+from gcp_utils.config import GCPSettings
+from gcp_utils.controllers import (
     CloudStorageController,
     FirestoreController,
     FirebaseAuthController,
