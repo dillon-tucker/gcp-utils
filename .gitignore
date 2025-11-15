@@ -84,3 +84,5 @@ temp/
 
 # UV
 .uv/
+**/CLAUDE.md
+**/GEMINI.md

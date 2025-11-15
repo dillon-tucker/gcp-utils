@@ -1,9 +1,9 @@
 """Data models for Cloud Run operations."""
 
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
 class TrafficTarget(BaseModel):
@@ -29,8 +29,9 @@ class ServiceRevision(BaseModel):
     min_instances: Optional[int] = Field(None, description="Minimum number of instances")
     timeout: Optional[int] = Field(None, description="Request timeout in seconds")
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    @field_serializer("created")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None
 
 
 class CloudRunService(BaseModel):
@@ -48,5 +49,6 @@ class CloudRunService(BaseModel):
     )
     labels: dict[str, str] = Field(default_factory=dict, description="Service labels")
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    @field_serializer("created", "updated")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None

@@ -160,9 +160,10 @@ class GCPSettings(BaseSettings):
 
         try:
             import json
+            from typing import cast
 
             with open(self.credentials_path, "r", encoding="utf-8") as f:
-                return json.load(f)
+                return cast(dict[str, str], json.load(f))
         except json.JSONDecodeError as e:
             raise ConfigurationError(
                 f"Invalid JSON in credentials file: {e}",
@@ -192,7 +193,7 @@ def get_settings() -> GCPSettings:
     """
     global _settings
     if _settings is None:
-        _settings = GCPSettings()
+        _settings = GCPSettings()  # type: ignore[call-arg]
     return _settings
 
 
@@ -207,5 +208,5 @@ def reload_settings() -> GCPSettings:
         >>> settings = reload_settings()
     """
     global _settings
-    _settings = GCPSettings()
+    _settings = GCPSettings()  # type: ignore[call-arg]
     return _settings

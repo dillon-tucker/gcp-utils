@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
 class ExecutionState(str, Enum):
@@ -28,8 +28,9 @@ class WorkflowInfo(BaseModel):
     revision_id: Optional[str] = Field(None, description="Current revision ID")
     labels: dict[str, str] = Field(default_factory=dict, description="Workflow labels")
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    @field_serializer("created", "updated")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None
 
 
 class WorkflowExecution(BaseModel):
@@ -46,5 +47,6 @@ class WorkflowExecution(BaseModel):
     start_time: Optional[datetime] = Field(None, description="Execution start time")
     end_time: Optional[datetime] = Field(None, description="Execution end time")
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    @field_serializer("start_time", "end_time")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None

@@ -13,7 +13,6 @@ from typing import Any, BinaryIO, Optional
 import aiofiles
 from google.cloud import storage
 from google.cloud.storage import Blob, Bucket
-from google.api_core import retry
 from google.auth.credentials import Credentials
 
 from ..config import GCPSettings
@@ -246,10 +245,7 @@ class CloudStorageController:
                 blob.metadata = metadata
 
             # Upload file
-            blob.upload_from_filename(
-                str(source_path),
-                retry=retry.DEFAULT,
-            )
+            blob.upload_from_filename(str(source_path))
 
             # Make public if requested
             if public:
@@ -310,7 +306,7 @@ class CloudStorageController:
             if metadata:
                 blob.metadata = metadata
 
-            blob.upload_from_string(content, retry=retry.DEFAULT)
+            blob.upload_from_string(content)
 
             if public:
                 blob.make_public()
@@ -370,7 +366,7 @@ class CloudStorageController:
             # Create parent directories if they don't exist
             destination_path.parent.mkdir(parents=True, exist_ok=True)
 
-            blob.download_to_filename(str(destination_path), retry=retry.DEFAULT)
+            blob.download_to_filename(str(destination_path))
 
             return destination_path
 
@@ -415,7 +411,7 @@ class CloudStorageController:
                     details={"bucket": bucket_name, "blob": blob_name},
                 )
 
-            return blob.download_as_bytes(retry=retry.DEFAULT)
+            return blob.download_as_bytes()
 
         except ResourceNotFoundError:
             raise
@@ -460,7 +456,7 @@ class CloudStorageController:
                     details={"bucket": bucket_name, "blob": blob_name},
                 )
 
-            return blob.download_as_text(encoding=encoding, retry=retry.DEFAULT)
+            return blob.download_as_text(encoding=encoding)
 
         except ResourceNotFoundError:
             raise

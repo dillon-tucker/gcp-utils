@@ -1,10 +1,10 @@
 """Data models for Artifact Registry operations."""
 
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer, ConfigDict
 
 
 class RepositoryFormat(str, Enum):
@@ -33,9 +33,11 @@ class Repository(BaseModel):
         default_factory=dict, description="Resource labels"
     )
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
+
+    @field_serializer("create_time", "update_time")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None
 
 
 class DockerImage(BaseModel):
@@ -48,8 +50,9 @@ class DockerImage(BaseModel):
     size_bytes: Optional[int] = Field(None, description="Image size in bytes")
     media_type: Optional[str] = Field(None, description="Media type")
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    @field_serializer("upload_time")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None
 
 
 class BuildResult(BaseModel):
@@ -60,8 +63,7 @@ class BuildResult(BaseModel):
     build_time: Optional[float] = Field(None, description="Build time in seconds")
     size_bytes: Optional[int] = Field(None, description="Image size in bytes")
 
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class DeploymentPipeline(BaseModel):
@@ -75,5 +77,4 @@ class DeploymentPipeline(BaseModel):
     deploy_success: bool = Field(..., description="Whether deployment succeeded")
     total_time: Optional[float] = Field(None, description="Total pipeline time in seconds")
 
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)

@@ -1,9 +1,9 @@
 """Data models for Cloud Tasks operations."""
 
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
 class TaskSchedule(BaseModel):
@@ -14,11 +14,13 @@ class TaskSchedule(BaseModel):
     )
     delay: Optional[timedelta] = Field(None, description="Delay before execution")
 
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat(),
-            timedelta: lambda v: v.total_seconds(),
-        }
+    @field_serializer("schedule_time")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None
+
+    @field_serializer("delay")
+    def serialize_td(self, td: Optional[timedelta], _info: Any) -> Optional[float]:
+        return td.total_seconds() if td else None
 
 
 class CloudTask(BaseModel):
@@ -33,8 +35,9 @@ class CloudTask(BaseModel):
     schedule_time: Optional[datetime] = Field(None, description="Scheduled execution time")
     created: Optional[datetime] = Field(None, description="Task creation time")
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    @field_serializer("schedule_time", "created")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None
 
 
 class TaskInfo(BaseModel):
@@ -47,5 +50,6 @@ class TaskInfo(BaseModel):
     dispatch_count: int = Field(default=0, description="Number of dispatch attempts")
     response_count: int = Field(default=0, description="Number of responses received")
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    @field_serializer("schedule_time")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None

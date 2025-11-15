@@ -1,9 +1,9 @@
 """Data models for Cloud Storage operations."""
 
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
 class BlobMetadata(BaseModel):
@@ -23,8 +23,9 @@ class BlobMetadata(BaseModel):
         default_factory=dict, description="Custom metadata key-value pairs"
     )
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    @field_serializer("created", "updated")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None
 
 
 class BucketInfo(BaseModel):
@@ -37,8 +38,9 @@ class BucketInfo(BaseModel):
     versioning_enabled: bool = Field(default=False, description="Whether versioning is enabled")
     labels: dict[str, str] = Field(default_factory=dict, description="Bucket labels")
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    @field_serializer("created")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None
 
 
 class UploadResult(BaseModel):

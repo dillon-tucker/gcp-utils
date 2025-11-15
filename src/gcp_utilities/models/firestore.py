@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
 class QueryOperator(str, Enum):
@@ -39,5 +39,6 @@ class FirestoreDocument(BaseModel):
     create_time: Optional[datetime] = Field(None, description="Document creation time")
     update_time: Optional[datetime] = Field(None, description="Last update time")
 
-    class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    @field_serializer("create_time", "update_time")
+    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+        return dt.isoformat() if dt else None
