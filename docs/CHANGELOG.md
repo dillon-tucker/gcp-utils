@@ -4,6 +4,28 @@
 
 ### Added
 
+*   **Native Object Binding Across All Controllers**: Extended GCS object binding pattern to all controllers/models
+    *   **Firestore**: `FirestoreDocument` now binds `_firestore_ref` (DocumentReference)
+        - Added convenience methods: `update()`, `delete()`, `get()`, `set()`, `path` property, `parent` property
+    *   **Workflows**: Enhanced `WorkflowInfo` and `WorkflowExecution` with native object binding
+        - Added methods: `execute()`, `update()` for Workflow; `cancel()`, `get_state()` for Execution
+    *   **Cloud Run**: `CloudRunService` binds `_service_object`
+        - Added methods: `delete()`, `get_url()`
+    *   **Cloud Tasks**: `TaskInfo` binds `_task_object`
+        - Added methods: `delete()`, `run()`
+    *   **Artifact Registry**: `Repository` and `DockerImage` bind native objects
+        - Added `delete()` method for both
+    *   **Secret Manager**: Created new models `SecretInfo` and `SecretVersionInfo` with native binding
+        - Controllers now return typed models instead of dicts
+    *   **Pub/Sub**: Created new models `TopicInfo` and `SubscriptionInfo` with native binding
+        - Added methods: `publish()`, `delete()` for Topic; `pull()`, `acknowledge()`, `delete()` for Subscription
+        - Controllers now return typed models instead of dicts
+    *   All models use `PrivateAttr(default=None)` for `_native_object` attributes
+    *   All models have `ConfigDict(arbitrary_types_allowed=True)`
+    *   All convenience methods validate object binding before delegation
+
+### Added (continued from above)
+
 *   **IAM Controller**: Added comprehensive IAM (Identity and Access Management) controller for managing service accounts, keys, and IAM policies
     *   `src/gcp_utils/controllers/iam.py` - Full-featured IAM controller with 14+ methods
     *   `src/gcp_utils/models/iam.py` - Type-safe Pydantic models (ServiceAccount, ServiceAccountKey, IAMPolicy, IAMBinding, ServiceAccountInfo)

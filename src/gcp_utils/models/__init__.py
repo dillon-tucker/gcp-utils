@@ -27,6 +27,15 @@ from .artifact_registry import (
     BuildResult,
     DeploymentPipeline,
 )
+from .secret_manager import (
+    SecretInfo,
+    SecretVersionInfo,
+    SecretState,
+)
+from .pubsub import (
+    TopicInfo,
+    SubscriptionInfo,
+)
 from .iam import (
     ServiceAccount,
     ServiceAccountKey,
@@ -78,6 +87,13 @@ __all__ = [
     "DockerImage",
     "BuildResult",
     "DeploymentPipeline",
+    # Secret Manager models
+    "SecretInfo",
+    "SecretVersionInfo",
+    "SecretState",
+    # Pub/Sub models
+    "TopicInfo",
+    "SubscriptionInfo",
     # IAM models
     "ServiceAccount",
     "ServiceAccountKey",

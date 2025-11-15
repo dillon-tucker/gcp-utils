@@ -500,7 +500,7 @@ class CloudTasksController:
         }
 
     def _task_to_info(self, task: Any) -> TaskInfo:
-        """Convert Task to TaskInfo model."""
+        """Convert Task to TaskInfo model with native object binding."""
         task_id = task.name.split("/")[-1]
         queue_name = task.name.split("/")[-3]
 
@@ -508,7 +508,7 @@ class CloudTasksController:
         if hasattr(task, "schedule_time") and task.schedule_time:
             schedule_time = task.schedule_time.ToDatetime()
 
-        return TaskInfo(
+        model = TaskInfo(
             name=task.name,
             task_id=task_id,
             queue_name=queue_name,
@@ -520,3 +520,6 @@ class CloudTasksController:
                 task.response_count if hasattr(task, "response_count") else 0
             ),
         )
+        # Bind the native object
+        model._task_object = task
+        return model

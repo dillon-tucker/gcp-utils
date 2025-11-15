@@ -1,9 +1,12 @@
 """Data models for Cloud Run operations."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_serializer
+
+if TYPE_CHECKING:
+    from google.cloud.run_v2 import Service
 
 
 class TrafficTarget(BaseModel):
@@ -35,7 +38,23 @@ class ServiceRevision(BaseModel):
 
 
 class CloudRunService(BaseModel):
-    """Cloud Run service information."""
+    """
+    Cloud Run service information with native object binding.
+
+    This model wraps the Google Cloud Run Service object, providing both
+    structured Pydantic data and access to the full Cloud Run API
+    via `_service_object`.
+
+    Example:
+        >>> service = run_ctrl.get_service("my-service")
+        >>>
+        >>> # Use Pydantic fields
+        >>> print(f"URL: {service.url}")
+        >>>
+        >>> # Use convenience methods
+        >>> service.delete()
+        >>> url = service.get_url()
+    """
 
     name: str = Field(..., description="Service name")
     region: str = Field(..., description="Service region")
@@ -49,6 +68,44 @@ class CloudRunService(BaseModel):
     )
     labels: dict[str, str] = Field(default_factory=dict, description="Service labels")
 
+    # The actual Service object (private attribute, not serialized)
+    _service_object: Optional["Service"] = PrivateAttr(default=None)
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     @field_serializer("created", "updated")
     def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
         return dt.isoformat() if dt else None
+
+    # Convenience methods that delegate to controller operations
+
+    def delete(self) -> None:
+        """
+        Delete this Cloud Run service.
+
+        Raises:
+            ValueError: If no Service object is bound
+
+        Note:
+            This requires access to the controller. Consider using
+            CloudRunController.delete_service() directly instead.
+        """
+        if not self._service_object:
+            raise ValueError("No Service object bound to this CloudRunService")
+        raise NotImplementedError(
+            "Service deletion must be performed via CloudRunController.delete_service()"
+        )
+
+    def get_url(self) -> str:
+        """
+        Get the service URL.
+
+        Returns:
+            Service URL
+
+        Raises:
+            ValueError: If no Service object is bound
+        """
+        if not self._service_object:
+            raise ValueError("No Service object bound to this CloudRunService")
+        return self.url

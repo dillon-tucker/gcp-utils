@@ -443,7 +443,7 @@ class CloudRunController:
                 print(f"Warning: Failed to set IAM policy: {e}")
 
     def _service_to_model(self, service: Any) -> CloudRunService:
-        """Convert Cloud Run Service to CloudRunService model."""
+        """Convert Cloud Run Service to CloudRunService model with native object binding."""
         # Extract basic info
         name = service.name.split("/")[-1]
         url = service.uri if hasattr(service, "uri") else ""
@@ -479,7 +479,7 @@ class CloudRunController:
         if hasattr(service, "latest_ready_revision"):
             latest_revision = service.latest_ready_revision
 
-        return CloudRunService(
+        model = CloudRunService(
             name=name,
             region=self.region,
             image=image,
@@ -490,3 +490,6 @@ class CloudRunController:
             traffic=traffic,
             labels=dict(service.labels) if hasattr(service, "labels") else {},
         )
+        # Bind the native object
+        model._service_object = service
+        return model

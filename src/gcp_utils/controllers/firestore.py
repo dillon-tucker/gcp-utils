@@ -74,6 +74,30 @@ class FirestoreController:
                 details={"error": str(e)},
             )
 
+    def _doc_snapshot_to_model(
+        self, doc: Any, collection: str
+    ) -> FirestoreDocument:
+        """
+        Convert a Firestore document snapshot to FirestoreDocument model.
+
+        Args:
+            doc: Document snapshot from Firestore
+            collection: Collection path
+
+        Returns:
+            FirestoreDocument with bound native reference
+        """
+        doc_model = FirestoreDocument(
+            id=doc.id,
+            collection=collection,
+            data=doc.to_dict() or {},
+            create_time=doc.create_time,
+            update_time=doc.update_time,
+        )
+        # Bind native reference
+        doc_model._firestore_ref = doc.reference
+        return doc_model
+
     def create_document(
         self,
         collection: str,
@@ -152,13 +176,16 @@ class FirestoreController:
                     details={"collection": collection, "document_id": document_id},
                 )
 
-            return FirestoreDocument(
+            doc_model = FirestoreDocument(
                 id=doc.id,
                 collection=collection,
-                data=doc.to_dict(),
+                data=doc.to_dict() or {},
                 create_time=doc.create_time,
                 update_time=doc.update_time,
             )
+            # Bind native Firestore reference
+            doc_model._firestore_ref = doc_ref
+            return doc_model
 
         except ResourceNotFoundError:
             raise
@@ -287,16 +314,7 @@ class FirestoreController:
 
             docs = query.stream()
 
-            return [
-                FirestoreDocument(
-                    id=doc.id,
-                    collection=collection,
-                    data=doc.to_dict(),
-                    create_time=doc.create_time,
-                    update_time=doc.update_time,
-                )
-                for doc in docs
-            ]
+            return [self._doc_snapshot_to_model(doc, collection) for doc in docs]
 
         except Exception as e:
             raise FirestoreError(
@@ -360,16 +378,7 @@ class FirestoreController:
 
             docs = query.stream()
 
-            return [
-                FirestoreDocument(
-                    id=doc.id,
-                    collection=collection,
-                    data=doc.to_dict(),
-                    create_time=doc.create_time,
-                    update_time=doc.update_time,
-                )
-                for doc in docs
-            ]
+            return [self._doc_snapshot_to_model(doc, collection) for doc in docs]
 
         except ValidationError:
             raise

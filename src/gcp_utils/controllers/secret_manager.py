@@ -12,6 +12,7 @@ from google.auth.credentials import Credentials
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import SecretManagerError, ResourceNotFoundError, ValidationError
+from ..models.secret_manager import SecretInfo, SecretVersionInfo
 
 
 class SecretManagerController:
@@ -64,7 +65,7 @@ class SecretManagerController:
         labels: Optional[dict[str, str]] = None,
         replication_policy: str = "automatic",
         locations: Optional[list[str]] = None,
-    ) -> dict[str, Any]:
+    ) -> SecretInfo:
         """
         Create a new secret (without version/value).
 
@@ -75,7 +76,7 @@ class SecretManagerController:
             locations: Required if replication_policy is 'user-managed'
 
         Returns:
-            Dictionary with secret information
+            SecretInfo object with native object binding
 
         Raises:
             ValidationError: If parameters are invalid
@@ -124,7 +125,7 @@ class SecretManagerController:
 
             created_secret = self.client.create_secret(request=request)
 
-            return self._secret_to_dict(created_secret)
+            return self._secret_to_model(created_secret)
 
         except ValidationError:
             raise
@@ -134,7 +135,7 @@ class SecretManagerController:
                 details={"secret_id": secret_id, "error": str(e)},
             )
 
-    def get_secret(self, secret_id: str) -> dict[str, Any]:
+    def get_secret(self, secret_id: str) -> SecretInfo:
         """
         Get secret metadata (not the secret value).
 
@@ -142,7 +143,7 @@ class SecretManagerController:
             secret_id: Secret ID
 
         Returns:
-            Dictionary with secret information
+            SecretInfo object with native object binding
 
         Raises:
             ResourceNotFoundError: If secret doesn't exist
@@ -152,7 +153,7 @@ class SecretManagerController:
             secret_path = self._get_secret_path(secret_id)
             secret = self.client.get_secret(name=secret_path)
 
-            return self._secret_to_dict(secret)
+            return self._secret_to_model(secret)
 
         except Exception as e:
             if "404" in str(e) or "not found" in str(e).lower():
@@ -165,12 +166,12 @@ class SecretManagerController:
                 details={"secret_id": secret_id, "error": str(e)},
             )
 
-    def list_secrets(self) -> list[dict[str, Any]]:
+    def list_secrets(self) -> list[SecretInfo]:
         """
         List all secrets in the project.
 
         Returns:
-            List of secret dictionaries
+            List of SecretInfo objects with native object binding
 
         Raises:
             SecretManagerError: If listing fails
@@ -179,7 +180,7 @@ class SecretManagerController:
             parent = f"projects/{self.settings.project_id}"
             secrets = self.client.list_secrets(parent=parent)
 
-            return [self._secret_to_dict(secret) for secret in secrets]
+            return [self._secret_to_model(secret) for secret in secrets]
 
         except Exception as e:
             raise SecretManagerError(
@@ -211,7 +212,7 @@ class SecretManagerController:
         self,
         secret_id: str,
         payload: str | bytes,
-    ) -> dict[str, Any]:
+    ) -> SecretVersionInfo:
         """
         Add a new version to an existing secret.
 
@@ -220,7 +221,7 @@ class SecretManagerController:
             payload: Secret value as string or bytes
 
         Returns:
-            Dictionary with version information
+            SecretVersionInfo object with native object binding
 
         Raises:
             ValidationError: If payload is invalid
@@ -245,7 +246,7 @@ class SecretManagerController:
                 }
             )
 
-            return self._version_to_dict(version)
+            return self._version_to_model(version)
 
         except ValidationError:
             raise
@@ -330,7 +331,7 @@ class SecretManagerController:
     def list_secret_versions(
         self,
         secret_id: str,
-    ) -> list[dict[str, Any]]:
+    ) -> list[SecretVersionInfo]:
         """
         List all versions of a secret.
 
@@ -338,7 +339,7 @@ class SecretManagerController:
             secret_id: Secret ID
 
         Returns:
-            List of version dictionaries
+            List of SecretVersionInfo objects with native object binding
 
         Raises:
             SecretManagerError: If listing fails
@@ -347,7 +348,7 @@ class SecretManagerController:
             parent = self._get_secret_path(secret_id)
             versions = self.client.list_secret_versions(parent=parent)
 
-            return [self._version_to_dict(version) for version in versions]
+            return [self._version_to_model(version) for version in versions]
 
         except Exception as e:
             raise SecretManagerError(
@@ -359,7 +360,7 @@ class SecretManagerController:
         self,
         secret_id: str,
         version: str,
-    ) -> dict[str, Any]:
+    ) -> SecretVersionInfo:
         """
         Disable a secret version.
 
@@ -368,7 +369,7 @@ class SecretManagerController:
             version: Version ID to disable
 
         Returns:
-            Dictionary with updated version information
+            SecretVersionInfo object with updated state and native object binding
 
         Raises:
             SecretManagerError: If operation fails
@@ -377,7 +378,7 @@ class SecretManagerController:
             version_path = self._get_version_path(secret_id, version)
             disabled_version = self.client.disable_secret_version(name=version_path)
 
-            return self._version_to_dict(disabled_version)
+            return self._version_to_model(disabled_version)
 
         except Exception as e:
             raise SecretManagerError(
@@ -389,7 +390,7 @@ class SecretManagerController:
         self,
         secret_id: str,
         version: str,
-    ) -> dict[str, Any]:
+    ) -> SecretVersionInfo:
         """
         Enable a previously disabled secret version.
 
@@ -398,7 +399,7 @@ class SecretManagerController:
             version: Version ID to enable
 
         Returns:
-            Dictionary with updated version information
+            SecretVersionInfo object with updated state and native object binding
 
         Raises:
             SecretManagerError: If operation fails
@@ -407,7 +408,7 @@ class SecretManagerController:
             version_path = self._get_version_path(secret_id, version)
             enabled_version = self.client.enable_secret_version(name=version_path)
 
-            return self._version_to_dict(enabled_version)
+            return self._version_to_model(enabled_version)
 
         except Exception as e:
             raise SecretManagerError(
@@ -419,7 +420,7 @@ class SecretManagerController:
         self,
         secret_id: str,
         version: str,
-    ) -> dict[str, Any]:
+    ) -> SecretVersionInfo:
         """
         Permanently destroy a secret version.
 
@@ -428,7 +429,7 @@ class SecretManagerController:
             version: Version ID to destroy
 
         Returns:
-            Dictionary with destroyed version information
+            SecretVersionInfo object with destroyed state and native object binding
 
         Raises:
             SecretManagerError: If operation fails
@@ -437,7 +438,7 @@ class SecretManagerController:
             version_path = self._get_version_path(secret_id, version)
             destroyed_version = self.client.destroy_secret_version(name=version_path)
 
-            return self._version_to_dict(destroyed_version)
+            return self._version_to_model(destroyed_version)
 
         except Exception as e:
             raise SecretManagerError(
@@ -450,7 +451,7 @@ class SecretManagerController:
         secret_id: str,
         payload: str | bytes,
         labels: Optional[dict[str, str]] = None,
-    ) -> dict[str, Any]:
+    ) -> SecretVersionInfo:
         """
         Convenience method to create a secret and add its first version.
 
@@ -460,7 +461,7 @@ class SecretManagerController:
             labels: Optional labels
 
         Returns:
-            Dictionary with version information
+            SecretVersionInfo object for the first version with native object binding
 
         Raises:
             ValidationError: If parameters are invalid
@@ -495,25 +496,31 @@ class SecretManagerController:
         """Get the full version path."""
         return f"{self._get_secret_path(secret_id)}/versions/{version}"
 
-    def _secret_to_dict(self, secret: Any) -> dict[str, Any]:
-        """Convert Secret to dictionary."""
-        return {
-            "name": secret.name.split("/")[-1],
-            "full_name": secret.name,
-            "labels": dict(secret.labels) if hasattr(secret, "labels") else {},
-            "created": secret.create_time if hasattr(secret, "create_time") else None,
-        }
+    def _secret_to_model(self, secret: Any) -> SecretInfo:
+        """Convert Secret to SecretInfo model with native object binding."""
+        model = SecretInfo(
+            name=secret.name.split("/")[-1],
+            full_name=secret.name,
+            labels=dict(secret.labels) if hasattr(secret, "labels") else {},
+            created=secret.create_time if hasattr(secret, "create_time") else None,
+        )
+        # Bind the native object
+        model._secret_object = secret
+        return model
 
-    def _version_to_dict(self, version: Any) -> dict[str, Any]:
-        """Convert SecretVersion to dictionary."""
+    def _version_to_model(self, version: Any) -> SecretVersionInfo:
+        """Convert SecretVersion to SecretVersionInfo model with native object binding."""
         version_id = version.name.split("/")[-1]
 
-        return {
-            "name": version_id,
-            "full_name": version.name,
-            "state": str(version.state) if hasattr(version, "state") else "UNKNOWN",
-            "created": version.create_time if hasattr(version, "create_time") else None,
-            "destroyed": (
+        model = SecretVersionInfo(
+            name=version_id,
+            full_name=version.name,
+            state=str(version.state) if hasattr(version, "state") else "UNKNOWN",
+            created=version.create_time if hasattr(version, "create_time") else None,
+            destroyed=(
                 version.destroy_time if hasattr(version, "destroy_time") else None
             ),
-        }
+        )
+        # Bind the native object
+        model._version_object = version
+        return model

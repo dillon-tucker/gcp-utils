@@ -19,6 +19,7 @@ from ..exceptions import (
     ResourceNotFoundError,
     ValidationError,
 )
+from ..models.artifact_registry import Repository, DockerImage
 
 
 class ArtifactRegistryController:
@@ -91,7 +92,7 @@ class ArtifactRegistryController:
         format: str = "DOCKER",
         description: Optional[str] = None,
         labels: Optional[dict[str, str]] = None,
-    ) -> dict[str, Any]:
+    ) -> Repository:
         """
         Create an Artifact Registry repository.
 
@@ -103,7 +104,7 @@ class ArtifactRegistryController:
             labels: Optional labels for the repository
 
         Returns:
-            Dictionary containing repository information
+            Repository object with native object binding
 
         Raises:
             ArtifactRegistryError: If repository creation fails
@@ -143,14 +144,7 @@ class ArtifactRegistryController:
             operation = client.create_repository(request=request)
             result = operation.result()
 
-            return {
-                "name": result.name,
-                "format": result.format_.name,
-                "description": result.description,
-                "create_time": result.create_time,
-                "update_time": result.update_time,
-                "labels": dict(result.labels),
-            }
+            return self._repository_to_model(result, repository_id, location)
 
         except google_exceptions.AlreadyExists:
             raise ArtifactRegistryError(
@@ -173,7 +167,7 @@ class ArtifactRegistryController:
         self,
         repository_id: str,
         location: str,
-    ) -> dict[str, Any]:
+    ) -> Repository:
         """
         Get repository information.
 
@@ -182,7 +176,7 @@ class ArtifactRegistryController:
             location: GCP location
 
         Returns:
-            Dictionary containing repository information
+            Repository object with native object binding
 
         Raises:
             ArtifactRegistryError: If request fails
@@ -202,14 +196,7 @@ class ArtifactRegistryController:
             request = artifactregistry_v1.GetRepositoryRequest(name=name)
             result = client.get_repository(request=request)
 
-            return {
-                "name": result.name,
-                "format": result.format_.name,
-                "description": result.description,
-                "create_time": result.create_time,
-                "update_time": result.update_time,
-                "labels": dict(result.labels),
-            }
+            return self._repository_to_model(result, repository_id, location)
 
         except google_exceptions.NotFound:
             raise ResourceNotFoundError(
@@ -228,7 +215,7 @@ class ArtifactRegistryController:
         self,
         location: str,
         page_size: int = 100,
-    ) -> list[dict[str, Any]]:
+    ) -> list[Repository]:
         """
         List all repositories in a location.
 
@@ -237,7 +224,7 @@ class ArtifactRegistryController:
             page_size: Maximum number of repositories per page
 
         Returns:
-            List of repository dictionaries
+            List of Repository objects with native object binding
 
         Raises:
             ArtifactRegistryError: If request fails
@@ -257,17 +244,11 @@ class ArtifactRegistryController:
                 page_size=page_size,
             )
 
-            all_repos: list[dict[str, Any]] = []
+            all_repos: list[Repository] = []
 
             for repository in client.list_repositories(request=request):
-                all_repos.append({
-                    "name": repository.name,
-                    "format": repository.format_.name,
-                    "description": repository.description,
-                    "create_time": repository.create_time,
-                    "update_time": repository.update_time,
-                    "labels": dict(repository.labels),
-                })
+                repo_id = repository.name.split("/")[-1]
+                all_repos.append(self._repository_to_model(repository, repo_id, location))
 
             return all_repos
 
@@ -471,3 +452,19 @@ class ArtifactRegistryController:
                 f"Failed to list Docker images: {str(e)}",
                 details={"repository_id": repository_id, "error": str(e)},
             ) from e
+
+    def _repository_to_model(self, repository: Any, repository_id: str, location: str) -> Repository:
+        """Convert Artifact Registry Repository to Repository model with native object binding."""
+        model = Repository(
+            name=repository.name,
+            repository_id=repository_id,
+            format=repository.format_.name,
+            description=repository.description if hasattr(repository, "description") else None,
+            location=location,
+            create_time=repository.create_time if hasattr(repository, "create_time") else None,
+            update_time=repository.update_time if hasattr(repository, "update_time") else None,
+            labels=dict(repository.labels) if hasattr(repository, "labels") else {},
+        )
+        # Bind the native object
+        model._repository_object = repository
+        return model

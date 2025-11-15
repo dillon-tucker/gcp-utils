@@ -427,10 +427,10 @@ class WorkflowsController:
         return f"{self._get_workflow_path(workflow_name)}/executions/{execution_id}"
 
     def _workflow_to_info(self, workflow: Any) -> WorkflowInfo:
-        """Convert Workflow to WorkflowInfo model."""
+        """Convert Workflow to WorkflowInfo model with native object binding."""
         name = workflow.name.split("/")[-1]
 
-        return WorkflowInfo(
+        model = WorkflowInfo(
             name=name,
             description=workflow.description if hasattr(workflow, "description") else None,
             state=str(workflow.state) if hasattr(workflow, "state") else "UNKNOWN",
@@ -441,11 +441,14 @@ class WorkflowsController:
             ),
             labels=dict(workflow.labels) if hasattr(workflow, "labels") else {},
         )
+        # Bind the native object
+        model._workflow_object = workflow
+        return model
 
     def _execution_to_model(
         self, execution: Any, workflow_name: str
     ) -> WorkflowExecution:
-        """Convert Execution to WorkflowExecution model."""
+        """Convert Execution to WorkflowExecution model with native object binding."""
         execution_id = execution.name.split("/")[-1]
 
         # Parse argument
@@ -473,7 +476,7 @@ class WorkflowsController:
             except (KeyError, AttributeError):
                 pass
 
-        return WorkflowExecution(
+        model = WorkflowExecution(
             name=execution_id,
             workflow_name=workflow_name,
             state=state,
@@ -485,3 +488,6 @@ class WorkflowsController:
             ),
             end_time=execution.end_time if hasattr(execution, "end_time") else None,
         )
+        # Bind the native object
+        model._execution_object = execution
+        return model

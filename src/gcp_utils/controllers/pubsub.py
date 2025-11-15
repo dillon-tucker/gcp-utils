@@ -14,6 +14,7 @@ from google.api_core import retry
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import PubSubError, ResourceNotFoundError, ValidationError
+from ..models.pubsub import TopicInfo, SubscriptionInfo
 
 
 class PubSubController:
@@ -66,7 +67,7 @@ class PubSubController:
         self,
         topic_name: str,
         labels: Optional[dict[str, str]] = None,
-    ) -> dict[str, Any]:
+    ) -> TopicInfo:
         """
         Create a new Pub/Sub topic.
 
@@ -75,7 +76,7 @@ class PubSubController:
             labels: Optional labels for the topic
 
         Returns:
-            Dictionary with topic information
+            TopicInfo object with native object binding
 
         Raises:
             ValidationError: If topic name is invalid
@@ -94,7 +95,7 @@ class PubSubController:
                 }
             )
 
-            return self._topic_to_dict(topic)
+            return self._topic_to_model(topic)
 
         except ValidationError:
             raise
@@ -107,7 +108,7 @@ class PubSubController:
                 details={"topic": topic_name, "error": str(e)},
             )
 
-    def get_topic(self, topic_name: str) -> dict[str, Any]:
+    def get_topic(self, topic_name: str) -> TopicInfo:
         """
         Get topic information.
 
@@ -115,7 +116,7 @@ class PubSubController:
             topic_name: Name of the topic
 
         Returns:
-            Dictionary with topic information
+            TopicInfo object with native object binding
 
         Raises:
             ResourceNotFoundError: If topic doesn't exist
@@ -125,7 +126,7 @@ class PubSubController:
             topic_path = self._get_topic_path(topic_name)
             topic = self.publisher.get_topic(topic=topic_path)
 
-            return self._topic_to_dict(topic)
+            return self._topic_to_model(topic)
 
         except Exception as e:
             if "404" in str(e) or "not found" in str(e).lower():
@@ -138,12 +139,12 @@ class PubSubController:
                 details={"topic": topic_name, "error": str(e)},
             )
 
-    def list_topics(self) -> list[dict[str, Any]]:
+    def list_topics(self) -> list[TopicInfo]:
         """
         List all topics in the project.
 
         Returns:
-            List of topic dictionaries
+            List of TopicInfo objects with native object binding
 
         Raises:
             PubSubError: If listing fails
@@ -152,7 +153,7 @@ class PubSubController:
             project_path = f"projects/{self.settings.project_id}"
             topics = self.publisher.list_topics(project=project_path)
 
-            return [self._topic_to_dict(topic) for topic in topics]
+            return [self._topic_to_model(topic) for topic in topics]
 
         except Exception as e:
             raise PubSubError(
@@ -311,7 +312,7 @@ class PubSubController:
         filter_expression: Optional[str] = None,
         retain_acked_messages: bool = False,
         message_retention_duration_seconds: int = 604800,  # 7 days
-    ) -> dict[str, Any]:
+    ) -> SubscriptionInfo:
         """
         Create a subscription to a topic.
 
@@ -325,7 +326,7 @@ class PubSubController:
             message_retention_duration_seconds: Message retention duration
 
         Returns:
-            Dictionary with subscription information
+            SubscriptionInfo object with native object binding
 
         Raises:
             ValidationError: If parameters are invalid
@@ -358,7 +359,7 @@ class PubSubController:
                 request=subscription_config
             )
 
-            return self._subscription_to_dict(subscription)
+            return self._subscription_to_model(subscription)
 
         except ValidationError:
             raise
@@ -370,7 +371,7 @@ class PubSubController:
                 details={"subscription": subscription_name, "error": str(e)},
             )
 
-    def get_subscription(self, subscription_name: str) -> dict[str, Any]:
+    def get_subscription(self, subscription_name: str) -> SubscriptionInfo:
         """
         Get subscription information.
 
@@ -378,7 +379,7 @@ class PubSubController:
             subscription_name: Name of the subscription
 
         Returns:
-            Dictionary with subscription information
+            SubscriptionInfo object with native object binding
 
         Raises:
             ResourceNotFoundError: If subscription doesn't exist
@@ -390,7 +391,7 @@ class PubSubController:
                 subscription=subscription_path
             )
 
-            return self._subscription_to_dict(subscription)
+            return self._subscription_to_model(subscription)
 
         except Exception as e:
             if "404" in str(e) or "not found" in str(e).lower():
@@ -405,7 +406,7 @@ class PubSubController:
 
     def list_subscriptions(
         self, topic_name: Optional[str] = None
-    ) -> list[dict[str, Any]]:
+    ) -> list[SubscriptionInfo]:
         """
         List subscriptions.
 
@@ -413,7 +414,7 @@ class PubSubController:
             topic_name: Optional topic name to filter subscriptions
 
         Returns:
-            List of subscription dictionaries
+            List of SubscriptionInfo objects with native object binding
 
         Raises:
             PubSubError: If listing fails
@@ -426,13 +427,13 @@ class PubSubController:
                 )
                 # Get full subscription details
                 return [
-                    self._subscription_to_dict(self.subscriber.get_subscription(subscription=sub))
+                    self._subscription_to_model(self.subscriber.get_subscription(subscription=sub))
                     for sub in subscriptions
                 ]
             else:
                 project_path = f"projects/{self.settings.project_id}"
                 subscriptions = self.subscriber.list_subscriptions(project=project_path)
-                return [self._subscription_to_dict(sub) for sub in subscriptions]
+                return [self._subscription_to_model(sub) for sub in subscriptions]
 
         except Exception as e:
             raise PubSubError(
@@ -566,28 +567,34 @@ class PubSubController:
             self.settings.project_id, subscription_name
         )
 
-    def _topic_to_dict(self, topic: Any) -> dict[str, Any]:
-        """Convert Topic to dictionary."""
-        return {
-            "name": topic.name.split("/")[-1],
-            "full_name": topic.name,
-            "labels": dict(topic.labels) if hasattr(topic, "labels") else {},
-        }
+    def _topic_to_model(self, topic: Any) -> TopicInfo:
+        """Convert Topic to TopicInfo model with native object binding."""
+        model = TopicInfo(
+            name=topic.name.split("/")[-1],
+            full_name=topic.name,
+            labels=dict(topic.labels) if hasattr(topic, "labels") else {},
+        )
+        # Bind the native object
+        model._topic_object = topic
+        return model
 
-    def _subscription_to_dict(self, subscription: Any) -> dict[str, Any]:
-        """Convert Subscription to dictionary."""
-        return {
-            "name": subscription.name.split("/")[-1],
-            "full_name": subscription.name,
-            "topic": subscription.topic if hasattr(subscription, "topic") else None,
-            "ack_deadline_seconds": (
+    def _subscription_to_model(self, subscription: Any) -> SubscriptionInfo:
+        """Convert Subscription to SubscriptionInfo model with native object binding."""
+        model = SubscriptionInfo(
+            name=subscription.name.split("/")[-1],
+            full_name=subscription.name,
+            topic=subscription.topic if hasattr(subscription, "topic") else None,
+            ack_deadline_seconds=(
                 subscription.ack_deadline_seconds
                 if hasattr(subscription, "ack_deadline_seconds")
                 else None
             ),
-            "retain_acked_messages": (
+            retain_acked_messages=(
                 subscription.retain_acked_messages
                 if hasattr(subscription, "retain_acked_messages")
                 else False
             ),
-        }
+        )
+        # Bind the native object
+        model._subscription_object = subscription
+        return model

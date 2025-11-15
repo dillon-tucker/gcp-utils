@@ -1,9 +1,12 @@
 """Data models for Cloud Tasks operations."""
 
 from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_serializer
+
+if TYPE_CHECKING:
+    from google.cloud.tasks_v2 import Task
 
 
 class TaskSchedule(BaseModel):
@@ -41,7 +44,23 @@ class CloudTask(BaseModel):
 
 
 class TaskInfo(BaseModel):
-    """Information about a created task."""
+    """
+    Information about a created task with native object binding.
+
+    This model wraps the Google Cloud Task object, providing both
+    structured Pydantic data and access to the full Cloud Tasks API
+    via `_task_object`.
+
+    Example:
+        >>> task = tasks_ctrl.create_http_task("my-queue", "https://example.com/handler")
+        >>>
+        >>> # Use Pydantic fields
+        >>> print(f"Task ID: {task.task_id}")
+        >>>
+        >>> # Use convenience methods
+        >>> task.delete()
+        >>> task.run()
+    """
 
     name: str = Field(..., description="Full task name/path")
     task_id: str = Field(..., description="Task ID")
@@ -50,6 +69,47 @@ class TaskInfo(BaseModel):
     dispatch_count: int = Field(default=0, description="Number of dispatch attempts")
     response_count: int = Field(default=0, description="Number of responses received")
 
+    # The actual Task object (private attribute, not serialized)
+    _task_object: Optional["Task"] = PrivateAttr(default=None)
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     @field_serializer("schedule_time")
     def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
         return dt.isoformat() if dt else None
+
+    # Convenience methods that delegate to controller operations
+
+    def delete(self) -> None:
+        """
+        Delete this task.
+
+        Raises:
+            ValueError: If no Task object is bound
+
+        Note:
+            This requires access to the controller. Consider using
+            CloudTasksController.delete_task() directly instead.
+        """
+        if not self._task_object:
+            raise ValueError("No Task object bound to this TaskInfo")
+        raise NotImplementedError(
+            "Task deletion must be performed via CloudTasksController.delete_task()"
+        )
+
+    def run(self) -> None:
+        """
+        Force this task to run immediately.
+
+        Raises:
+            ValueError: If no Task object is bound
+
+        Note:
+            This requires access to the controller. Consider using
+            CloudTasksController.run_task() directly instead.
+        """
+        if not self._task_object:
+            raise ValueError("No Task object bound to this TaskInfo")
+        raise NotImplementedError(
+            "Task immediate execution must be performed via CloudTasksController.run_task()"
+        )
