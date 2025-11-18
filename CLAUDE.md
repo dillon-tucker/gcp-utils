@@ -9,78 +9,238 @@ This is a production-ready Python package providing type-safe controllers for Go
 ## Development Commands
 
 ### Installation & Setup
+
+**IMPORTANT: Virtual Environment Location**
+
+This project uses a Python 3.12+ virtual environment located at `../.venv` (one level up from the project root). This is required because the project requires Python 3.12+.
+
+**Initial Setup (First Time):**
+
 ```bash
+# Create Python 3.12 virtual environment (if not exists)
+cd /home/user && python3.12 -m venv .venv
+
 # Install package in editable mode with dev dependencies
-uv pip install -e ".[dev]"
+cd gcp-utils
+../.venv/bin/pip install -e ".[dev]"
 
 # Create .env file from template
 cp .env.example .env
+
+# Edit .env with your project settings (minimum required: GCP_PROJECT_ID)
+# For tests, you can use: GCP_PROJECT_ID=test-project
 ```
 
-**Note**: This project uses a virtual environment located at `../.venv`. Always ensure you're using this virtual environment when running commands:
-- On Windows: `../.venv/Scripts/python.exe`
-- On Unix/macOS: `../.venv/bin/python`
+**Virtual Environment Usage:**
 
-**Important**: When adding new dependencies to `pyproject.toml`, install them using pip in the virtual environment:
+Always use the virtual environment for all commands:
+- **Python**: `../.venv/bin/python` (or `../.venv/Scripts/python.exe` on Windows)
+- **Pytest**: `../.venv/bin/pytest`
+- **Pip**: `../.venv/bin/pip`
+
+**Adding Dependencies:**
+
+When adding new dependencies to `pyproject.toml`, install them in the virtual environment:
 ```bash
-# From the project root
-cd .. && .venv/Scripts/python.exe -m pip install <package-name>
-
-# Or on Unix/macOS
-cd .. && .venv/bin/python -m pip install <package-name>
+../.venv/bin/pip install <package-name>
 ```
 
 ### Code Quality & Type Checking
+
+**Note**: These tools should be run with the virtual environment:
+
 ```bash
 # Type checking (strict mode) - REQUIRED before commits
-mypy src/
+../.venv/bin/mypy src/
 
 # Linting (fast linter)
-ruff check src/
+../.venv/bin/ruff check src/
 
 # Code formatting
-black src/
-isort src/
+../.venv/bin/black src/
+../.venv/bin/isort src/
 
 # Run all checks
-mypy src/ && ruff check src/ && black --check src/ && isort --check src/
+../.venv/bin/mypy src/ && ../.venv/bin/ruff check src/ && ../.venv/bin/black --check src/ && ../.venv/bin/isort --check src/
 ```
 
 ### Testing
+
+**CRITICAL**: Always use the virtual environment's pytest:
+
 ```bash
 # Run all tests
-pytest tests/
+../.venv/bin/pytest tests/
 
 # Run with coverage
-pytest --cov=src/gcp_utils tests/
+../.venv/bin/pytest --cov=src/gcp_utils tests/
 
 # Run specific test file
-pytest tests/test_import.py
+../.venv/bin/pytest tests/test_import.py
 
 # Run tests matching a pattern
-pytest -k "test_pattern"
+../.venv/bin/pytest -k "test_pattern"
+
+# Run tests for specific controllers
+../.venv/bin/pytest tests/test_firebase_auth.py
+../.venv/bin/pytest tests/test_firebase_hosting.py
+../.venv/bin/pytest tests/test_cloud_run.py
+
+# Run tests with verbose output
+../.venv/bin/pytest -v tests/
+
+# Run tests and stop on first failure
+../.venv/bin/pytest -x tests/
 ```
+
+**Test Environment Requirements:**
+- `.env` file must exist with at minimum `GCP_PROJECT_ID=test-project`
+- Tests use mocked GCP clients, so no real credentials are needed
+- All tests follow the pattern of mocking external dependencies
+
+**Test Coverage:**
+
+The test suite includes comprehensive coverage for all controllers:
+
+1. **test_import.py** - Package import validation (5 tests)
+2. **test_models.py** - Pydantic model validation (15+ tests)
+3. **test_storage.py** - Cloud Storage controller (5 tests)
+4. **test_firestore.py** - Firestore controller (3 tests)
+5. **test_firebase_auth.py** - Firebase Auth controller (27 tests) ✨ NEW
+   - User CRUD operations
+   - Token management and verification
+   - Custom claims
+   - Email verification and password reset
+6. **test_firebase_hosting.py** - Firebase Hosting controller (19 tests) ✨ NEW
+   - Site management
+   - Custom domains
+   - Version and release workflows
+   - File upload and deployment
+7. **test_cloud_run.py** - Cloud Run controller (15 tests)
+8. **test_cloud_tasks.py** - Cloud Tasks controller (7 tests)
+9. **test_workflows.py** - Workflows controller (6 tests)
+10. **test_pubsub.py** - Pub/Sub controller (7 tests)
+11. **test_secret_manager.py** - Secret Manager controller (3 tests)
+12. **test_iam.py** - IAM controller (6 tests)
+13. **test_artifact_registry.py** - Artifact Registry controller (6 tests)
+
+**Total: 110+ test cases across all controllers**
 
 ### Running Examples
+
+**Note**: Examples require real GCP credentials and a valid `.env` configuration:
+
 ```bash
-# Cloud Storage example
-python examples/example_storage.py
+# Firebase Authentication
+../.venv/bin/python examples/example_firebase_auth.py
 
-# Firestore example
-python examples/example_firestore.py
+# Cloud Storage
+../.venv/bin/python examples/example_storage.py
 
-# Firebase Hosting example (deployment)
-python examples/example_firebase_hosting.py
+# Firestore
+../.venv/bin/python examples/example_firestore.py
 
-# Docker build and Cloud Run deployment example
-python examples/example_docker_cloudrun_deploy.py
+# Firebase Hosting (deployment)
+../.venv/bin/python examples/example_firebase_hosting.py
 
-# IAM (service accounts and policies) example
-python examples/example_iam.py
+# Cloud Run (simple deployment)
+../.venv/bin/python examples/example_cloud_run.py
 
-# Multi-service integration example
-python examples/example_all_services.py
+# Cloud Tasks (queue management)
+../.venv/bin/python examples/example_cloud_tasks.py
+
+# Pub/Sub (messaging)
+../.venv/bin/python examples/example_pubsub.py
+
+# Secret Manager
+../.venv/bin/python examples/example_secret_manager.py
+
+# Workflows (orchestration)
+../.venv/bin/python examples/example_workflows.py
+
+# IAM (service accounts and policies)
+../.venv/bin/python examples/example_iam.py
+
+# Docker build and Cloud Run deployment
+../.venv/bin/python examples/example_docker_cloudrun_deploy.py
+
+# Multi-service integration
+../.venv/bin/python examples/example_all_services.py
 ```
+
+**Example Requirements:**
+- Valid GCP project and credentials
+- `.env` file with real `GCP_PROJECT_ID` and optionally `GCP_CREDENTIALS_PATH`
+- Appropriate GCP API permissions enabled for the service being tested
+
+**Available Examples:**
+
+All examples follow a consistent pattern with comprehensive documentation:
+
+1. **example_firebase_auth.py** ✨ NEW - Firebase Authentication
+   - User management and authentication
+   - Custom claims and token generation
+   - Email verification and password reset links
+   - Best practices for user lifecycle
+
+2. **example_cloud_run.py** ✨ NEW - Cloud Run (Simple Deployment)
+   - Service deployment from container images
+   - Environment variables and configuration
+   - Traffic splitting and canary deployments
+   - Resource optimization tips
+
+3. **example_cloud_tasks.py** ✨ NEW - Cloud Tasks
+   - Queue creation with rate limiting
+   - HTTP task creation (immediate and scheduled)
+   - Task monitoring and cancellation
+   - Common use cases
+
+4. **example_pubsub.py** ✨ NEW - Pub/Sub Messaging
+   - Topic and subscription management
+   - Single and batch message publishing
+   - Pull subscriptions with acknowledgments
+   - Event-driven architecture patterns
+
+5. **example_secret_manager.py** ✨ NEW - Secret Manager
+   - Secret creation with labels and replication
+   - Version management and rotation
+   - Access control best practices
+   - Binary data handling (certificates)
+
+6. **example_workflows.py** ✨ NEW - Workflows Orchestration
+   - Simple and complex workflow definitions
+   - Parameterized workflows
+   - Error handling patterns
+   - Execution monitoring
+
+7. **example_storage.py** - Cloud Storage
+   - Bucket and blob operations
+   - File uploads and downloads
+   - Signed URLs
+
+8. **example_firestore.py** - Firestore
+   - Document CRUD operations
+   - Queries and transactions
+   - Batch operations
+
+9. **example_firebase_hosting.py** - Firebase Hosting
+   - Complete website deployment
+   - Custom domain configuration
+   - Version and release management
+
+10. **example_iam.py** - IAM (Identity and Access Management)
+    - Service account management
+    - Service account keys
+    - IAM policy configuration
+
+11. **example_docker_cloudrun_deploy.py** - Full CI/CD Pipeline
+    - Docker build and push to Artifact Registry
+    - Cloud Run deployment
+    - Complete workflow
+
+12. **example_all_services.py** - Multi-Service Integration
+    - Cross-service workflows
+    - Integration patterns
 
 ## Architecture
 
@@ -858,3 +1018,200 @@ Service-specific settings are available for each controller. See `config/setting
 - `examples/example_firebase_hosting.py` - Firebase Hosting usage examples
 - `examples/example_docker_cloudrun_deploy.py` - Complete CI/CD workflow example
 - `examples/example_iam.py` - IAM controller usage examples
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### 1. ModuleNotFoundError: No module named 'gcp_utils'
+
+**Problem**: Tests fail with `ModuleNotFoundError` when running pytest.
+
+**Solution**: The package needs to be installed in editable mode in the virtual environment:
+```bash
+../.venv/bin/pip install -e ".[dev]"
+```
+
+Verify installation:
+```bash
+../.venv/bin/python -c "import gcp_utils; print(gcp_utils.__file__)"
+```
+
+#### 2. Python Version Mismatch
+
+**Problem**: Error message: `ERROR: Package 'gcp-utils' requires a different Python: 3.11.14 not in '>=3.12'`
+
+**Solution**: This project requires Python 3.12+. Use the correct Python version:
+```bash
+# Check Python version
+python3.12 --version
+
+# Recreate virtual environment with Python 3.12
+cd /home/user && rm -rf .venv
+python3.12 -m venv .venv
+
+# Reinstall package
+cd gcp-utils
+../.venv/bin/pip install -e ".[dev]"
+```
+
+#### 3. Pydantic Validation Error in Tests
+
+**Problem**: Tests fail with `pydantic_core._pydantic_core.ValidationError: 1 validation error for GCPSettings`
+
+**Solution**: The `.env` file is missing or doesn't have required settings. Create/update `.env`:
+```bash
+# For tests, minimal .env file:
+echo "GCP_PROJECT_ID=test-project" > .env
+echo "GCP_LOCATION=us-central1" >> .env
+
+# For examples, use real project:
+echo "GCP_PROJECT_ID=your-actual-project-id" > .env
+echo "GCP_CREDENTIALS_PATH=/path/to/service-account.json" >> .env
+```
+
+#### 4. Import Errors in Tests
+
+**Problem**: `ImportError while importing test module`
+
+**Solution**: Ensure you're using the virtual environment's pytest:
+```bash
+# Wrong - uses system pytest
+pytest tests/
+
+# Correct - uses venv pytest
+../.venv/bin/pytest tests/
+```
+
+#### 5. Firebase Admin Already Initialized
+
+**Problem**: `ValueError: The default Firebase app already exists`
+
+**Solution**: This is expected behavior in tests. The controllers handle this automatically with:
+```python
+try:
+    firebase_admin.get_app()
+except ValueError:
+    firebase_admin.initialize_app()
+```
+
+Tests mock this behavior, so no action needed.
+
+#### 6. Tests Running Too Slowly
+
+**Problem**: Test suite takes a long time to run.
+
+**Solution**:
+- Run specific test files instead of the entire suite:
+  ```bash
+  ../.venv/bin/pytest tests/test_firebase_auth.py
+  ```
+- Use pytest markers to skip slow tests:
+  ```bash
+  ../.venv/bin/pytest -m "not slow" tests/
+  ```
+- Run tests in parallel (requires pytest-xdist):
+  ```bash
+  ../.venv/bin/pytest -n auto tests/
+  ```
+
+#### 7. Virtual Environment Not Found
+
+**Problem**: `../.venv/bin/python: No such file or directory`
+
+**Solution**: The virtual environment doesn't exist. Create it:
+```bash
+cd /home/user
+python3.12 -m venv .venv
+cd gcp-utils
+../.venv/bin/pip install -e ".[dev]"
+```
+
+#### 8. Package Dependencies Out of Date
+
+**Problem**: Import errors or version conflicts.
+
+**Solution**: Reinstall dependencies:
+```bash
+../.venv/bin/pip install --upgrade -e ".[dev]"
+```
+
+#### 9. Examples Fail with Authentication Errors
+
+**Problem**: Examples fail with "Could not automatically determine credentials"
+
+**Solution**: Examples require real GCP credentials:
+
+**Option A**: Use service account key file:
+```bash
+# Set in .env file
+GCP_CREDENTIALS_PATH=/path/to/service-account-key.json
+```
+
+**Option B**: Use Application Default Credentials:
+```bash
+gcloud auth application-default login
+```
+
+**Option C**: Set environment variable:
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
+```
+
+#### 10. Type Checking Fails with mypy
+
+**Problem**: `mypy src/` reports errors.
+
+**Solution**: Ensure you're using the venv mypy and all stubs are installed:
+```bash
+../.venv/bin/pip install --upgrade mypy
+../.venv/bin/mypy src/
+```
+
+Common mypy issues are usually missing type stubs for third-party libraries. These are ignored in `pyproject.toml`:
+```toml
+[[tool.mypy.overrides]]
+module = ["google.*", "firebase_admin.*"]
+ignore_missing_imports = true
+```
+
+### Quick Diagnostics
+
+Run these commands to diagnose environment issues:
+
+```bash
+# 1. Check Python version
+python3.12 --version
+
+# 2. Check virtual environment exists
+ls -la /home/user/.venv
+
+# 3. Check package is installed
+../.venv/bin/pip list | grep gcp-utils
+
+# 4. Check .env file exists
+cat .env
+
+# 5. Test import
+../.venv/bin/python -c "from gcp_utils.controllers import CloudStorageController; print('✓ Import successful')"
+
+# 6. Run minimal test
+../.venv/bin/pytest tests/test_import.py -v
+
+# 7. Check all tools available
+../.venv/bin/pytest --version
+../.venv/bin/mypy --version
+../.venv/bin/black --version
+../.venv/bin/ruff --version
+```
+
+### Getting Help
+
+If issues persist:
+
+1. Check this troubleshooting guide
+2. Review error messages carefully - they often indicate the exact problem
+3. Verify virtual environment setup
+4. Ensure `.env` file is configured correctly
+5. Check that all dependencies are installed
+6. Review the test file patterns in existing tests for examples
