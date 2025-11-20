@@ -38,22 +38,99 @@ A comprehensive, production-ready Python package for Google Cloud Platform (GCP)
 
 ### From PyPI (recommended)
 
+The package uses **optional dependencies** to reduce installation overhead. Install only the GCP services you need:
+
+**Using pip:**
 ```bash
+# Install core package only (minimal dependencies)
 pip install gcp-utils
+
+# Install specific services
+pip install gcp-utils[storage]              # Cloud Storage
+pip install gcp-utils[bigquery]             # BigQuery
+pip install gcp-utils[firestore]            # Firestore
+pip install gcp-utils[firebase]             # Firebase (Auth + Hosting)
+
+# Install multiple services
+pip install gcp-utils[storage,bigquery,firestore]
+
+# Install all services (for convenience)
+pip install gcp-utils[all]
 ```
+
+**Using uv (faster, recommended for development):**
+```bash
+# Install core package only
+uv pip install gcp-utils
+
+# Install specific services
+uv pip install gcp-utils[storage]
+uv pip install gcp-utils[bigquery]
+
+# Install multiple services
+uv pip install gcp-utils[storage,bigquery,firestore]
+
+# Install all services
+uv pip install gcp-utils[all]
+```
+
+**Available optional dependencies:**
+
+Individual services:
+- `storage` - Cloud Storage
+- `firestore` - Firestore Database
+- `bigquery` - BigQuery Analytics
+- `artifact-registry` - Artifact Registry
+- `cloud-run` - Cloud Run
+- `cloud-tasks` - Cloud Tasks
+- `cloud-functions` - Cloud Functions
+- `cloud-scheduler` - Cloud Scheduler
+- `cloud-build` - Cloud Build
+- `workflows` - Workflows
+- `pubsub` - Pub/Sub Messaging
+- `secret-manager` - Secret Manager
+- `iam` - IAM (Identity and Access Management)
+- `logging` - Cloud Logging
+- `firebase` - Firebase (Auth + Hosting)
+- `firebase-auth` - Firebase Auth only
+- `firebase-hosting` - Firebase Hosting only
+
+Special extras:
+- `all` - Install all GCP services
+- `dev` - Development dependencies (pytest, mypy, black, ruff, etc.)
 
 ### From source
 
+**Using pip:**
 ```bash
 # Clone the repository
 git clone https://github.com/dillon-tucker/gcp-utils.git
 cd gcp-utils
 
-# Install with pip
-pip install -e .
+# Install with specific services
+pip install -e ".[storage,bigquery]"
+
+# Install with all services
+pip install -e ".[all]"
 
 # With development dependencies
-pip install -e ".[dev]"
+pip install -e ".[all,dev]"
+```
+
+**Using uv:**
+```bash
+# Clone the repository
+git clone https://github.com/dillon-tucker/gcp-utils.git
+cd gcp-utils
+
+# Install with specific services
+uv pip install -e ".[storage,bigquery]"
+
+# Install with all services
+uv pip install -e ".[all]"
+
+# With development dependencies
+uv pip install -e ".[all,dev]"
 ```
 
 ## Quick Start
