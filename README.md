@@ -40,6 +40,7 @@ A comprehensive, production-ready Python package for Google Cloud Platform (GCP)
 
 The package uses **optional dependencies** to reduce installation overhead. Install only the GCP services you need:
 
+**Using pip:**
 ```bash
 # Install core package only (minimal dependencies)
 pip install gcp-utils
@@ -55,6 +56,22 @@ pip install gcp-utils[storage,bigquery,firestore]
 
 # Install all services (for convenience)
 pip install gcp-utils[all]
+```
+
+**Using uv (faster, recommended for development):**
+```bash
+# Install core package only
+uv pip install gcp-utils
+
+# Install specific services
+uv pip install gcp-utils[storage]
+uv pip install gcp-utils[bigquery]
+
+# Install multiple services
+uv pip install gcp-utils[storage,bigquery,firestore]
+
+# Install all services
+uv pip install gcp-utils[all]
 ```
 
 **Available optional dependencies:**
@@ -84,6 +101,7 @@ Special extras:
 
 ### From source
 
+**Using pip:**
 ```bash
 # Clone the repository
 git clone https://github.com/dillon-tucker/gcp-utils.git
@@ -97,6 +115,22 @@ pip install -e ".[all]"
 
 # With development dependencies
 pip install -e ".[all,dev]"
+```
+
+**Using uv:**
+```bash
+# Clone the repository
+git clone https://github.com/dillon-tucker/gcp-utils.git
+cd gcp-utils
+
+# Install with specific services
+uv pip install -e ".[storage,bigquery]"
+
+# Install with all services
+uv pip install -e ".[all]"
+
+# With development dependencies
+uv pip install -e ".[all,dev]"
 ```
 
 ## Quick Start

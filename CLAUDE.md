@@ -22,7 +22,12 @@ cd /home/user && python3.12 -m venv .venv
 
 # Install package in editable mode with dev dependencies
 cd gcp-utils
-../.venv/bin/pip install -e ".[dev]"
+
+# Using pip (standard)
+../.venv/bin/pip install -e ".[all,dev]"
+
+# OR using uv (faster, recommended)
+uv pip install -e ".[all,dev]"
 
 # Create .env file from template
 cp .env.example .env
@@ -35,6 +40,7 @@ cp .env.example .env
 
 This package uses optional dependencies to reduce installation overhead. Install only the GCP services you need:
 
+**Using pip:**
 ```bash
 # Install specific services
 ../.venv/bin/pip install -e ".[storage]"              # Cloud Storage only
@@ -50,6 +56,24 @@ This package uses optional dependencies to reduce installation overhead. Install
 
 # Install with dev dependencies (for development)
 ../.venv/bin/pip install -e ".[all,dev]"
+```
+
+**Using uv (faster alternative):**
+```bash
+# Install specific services
+uv pip install -e ".[storage]"
+uv pip install -e ".[bigquery]"
+uv pip install -e ".[firestore]"
+uv pip install -e ".[firebase]"
+
+# Install multiple services
+uv pip install -e ".[storage,bigquery,firestore]"
+
+# Install all services
+uv pip install -e ".[all]"
+
+# Install with dev dependencies
+uv pip install -e ".[all,dev]"
 ```
 
 **Available Optional Dependencies:**
@@ -88,7 +112,11 @@ Always use the virtual environment for all commands:
 
 When adding new dependencies to `pyproject.toml`, install them in the virtual environment:
 ```bash
+# Using pip
 ../.venv/bin/pip install <package-name>
+
+# OR using uv (faster)
+uv pip install <package-name>
 ```
 
 For new GCP services, add them to the appropriate optional dependency group in `pyproject.toml`.
