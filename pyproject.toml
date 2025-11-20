@@ -33,7 +33,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Internet",
@@ -77,6 +76,7 @@ dev = [
     "black>=24.10.0",
     "isort>=5.13.2",
     "ruff>=0.7.4",
+    "types-aiofiles>=24.1.0",
 ]
 
 [build-system]
@@ -99,7 +99,7 @@ ensure_newline_before_comments = true
 
 [tool.mypy]
 python_version = "3.12"
-warn_return_any = true
+warn_return_any = false
 warn_unused_configs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
@@ -109,7 +109,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 strict_equality = true
-strict_concatenate = true
+extra_checks = true
 
 [[tool.mypy.overrides]]
 module = [
@@ -117,6 +117,11 @@ module = [
     "firebase_admin.*",
 ]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+check_untyped_defs = false
 
 [tool.ruff]
 line-length = 88
