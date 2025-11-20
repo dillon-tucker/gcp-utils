@@ -59,7 +59,7 @@ This allows publishing without storing API tokens.
    ```bash
    git add pyproject.toml CHANGELOG.md
    git commit -m "Bump version to 0.2.0"
-   git push origin main
+   git push origin master
    ```
 
 4. **Create and push a tag**:
@@ -88,7 +88,7 @@ For testing or specific scenarios:
 2. Click "Run workflow"
 
 3. Choose:
-   - **Branch**: `main`
+   - **Branch**: `master`
    - **Test PyPI**: Check if testing, uncheck for production
 
 4. Click "Run workflow"

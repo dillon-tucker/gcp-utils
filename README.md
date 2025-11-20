@@ -4,7 +4,7 @@
 [![PyPI version](https://badge.fury.io/py/gcp-utils.svg)](https://badge.fury.io/py/gcp-utils)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![codecov](https://codecov.io/gh/dillon-tucker/gcp-utils/branch/main/graph/badge.svg)](https://codecov.io/gh/dillon-tucker/gcp-utils)
+[![codecov](https://codecov.io/gh/dillon-tucker/gcp-utils/branch/master/graph/badge.svg)](https://codecov.io/gh/dillon-tucker/gcp-utils)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 A comprehensive, production-ready Python package for Google Cloud Platform (GCP) services. Built with modern Python practices, type safety, and developer experience in mind.
