@@ -1,0 +1,24 @@
+# Include important documentation files
+include README.md
+include LICENSE
+include CHANGELOG.md
+include CLAUDE.md
+include .env.example
+
+# Include all package data
+recursive-include src *.py
+recursive-include src *.typed
+
+# Exclude unnecessary files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude __pycache__
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude .git*
+
+# Exclude test and development files
+prune tests
+prune examples
+prune .github
+exclude .env
