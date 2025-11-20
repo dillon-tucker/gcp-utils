@@ -1,5 +1,12 @@
 # GCP Utils
 
+[![CI](https://github.com/dillon-tucker/gcp-utils/actions/workflows/ci.yml/badge.svg)](https://github.com/dillon-tucker/gcp-utils/actions/workflows/ci.yml)
+[![PyPI version](https://badge.fury.io/py/gcp-utils.svg)](https://badge.fury.io/py/gcp-utils)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/gh/dillon-tucker/gcp-utils/branch/master/graph/badge.svg)](https://codecov.io/gh/dillon-tucker/gcp-utils)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 A comprehensive, production-ready Python package for Google Cloud Platform (GCP) services. Built with modern Python practices, type safety, and developer experience in mind.
 
 ## Features
@@ -29,23 +36,20 @@ A comprehensive, production-ready Python package for Google Cloud Platform (GCP)
 
 ## Installation
 
-### Using uv (recommended)
+### From PyPI (recommended)
+
+```bash
+pip install gcp-utils
+```
+
+### From source
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/gcp-utils.git
+git clone https://github.com/dillon-tucker/gcp-utils.git
 cd gcp-utils
 
-# Install with uv
-uv pip install -e .
-
-# Install with development dependencies
-uv pip install -e ".[dev]"
-```
-
-### Using pip
-
-```bash
+# Install with pip
 pip install -e .
 
 # With development dependencies
