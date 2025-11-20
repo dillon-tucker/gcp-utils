@@ -52,6 +52,12 @@ class GCPSettings(BaseSettings):
         storage_bucket: Default Cloud Storage bucket name
         firestore_database: Firestore database ID (default: '(default)')
         cloud_run_region: Cloud Run deployment region
+        cloud_functions_region: Cloud Functions deployment region
+        cloud_scheduler_location: Cloud Scheduler location
+        cloud_scheduler_timezone: Default timezone for Cloud Scheduler jobs
+        bigquery_location: BigQuery dataset location
+        bigquery_default_dataset: Default BigQuery dataset ID
+        cloud_build_region: Cloud Build region
         workflows_location: Workflows location
         cloud_tasks_location: Cloud Tasks location
         pubsub_topic_prefix: Prefix for Pub/Sub topics
@@ -99,6 +105,36 @@ class GCPSettings(BaseSettings):
     cloud_run_region: str = Field(
         default="us-central1",
         description="Cloud Run deployment region",
+    )
+
+    cloud_functions_region: str = Field(
+        default="us-central1",
+        description="Cloud Functions deployment region",
+    )
+
+    cloud_scheduler_location: str = Field(
+        default="us-central1",
+        description="Cloud Scheduler location",
+    )
+
+    cloud_scheduler_timezone: str = Field(
+        default="America/Los_Angeles",
+        description="Default timezone for Cloud Scheduler jobs",
+    )
+
+    bigquery_location: str = Field(
+        default="US",
+        description="BigQuery dataset location (e.g., 'US', 'EU', 'us-central1')",
+    )
+
+    bigquery_default_dataset: Optional[str] = Field(
+        default=None,
+        description="Default BigQuery dataset ID",
+    )
+
+    cloud_build_region: str = Field(
+        default="global",
+        description="Cloud Build region",
     )
 
     workflows_location: str = Field(

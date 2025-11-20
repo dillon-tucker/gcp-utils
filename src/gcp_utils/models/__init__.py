@@ -45,6 +45,37 @@ from .iam import (
     IAMPolicy,
     ServiceAccountInfo,
 )
+from .cloud_functions import (
+    CloudFunction,
+    Runtime,
+    FunctionState,
+    EventType,
+    BuildConfig,
+    ServiceConfig,
+    EventTrigger,
+)
+from .cloud_scheduler import (
+    SchedulerJob,
+    HttpTarget,
+    PubsubTarget,
+    JobState,
+    HttpMethod,
+)
+from .bigquery import (
+    Dataset,
+    Table,
+    QueryResult,
+    Job,
+    SchemaField,
+    FieldType,
+    JobState as BigQueryJobState,
+)
+from .cloud_build import (
+    Build,
+    BuildTrigger,
+    BuildStep,
+    BuildStatus,
+)
 
 __all__ = [
     # Storage models
@@ -102,4 +133,31 @@ __all__ = [
     "IAMBinding",
     "IAMPolicy",
     "ServiceAccountInfo",
+    # Cloud Functions models
+    "CloudFunction",
+    "Runtime",
+    "FunctionState",
+    "EventType",
+    "BuildConfig",
+    "ServiceConfig",
+    "EventTrigger",
+    # Cloud Scheduler models
+    "SchedulerJob",
+    "HttpTarget",
+    "PubsubTarget",
+    "JobState",
+    "HttpMethod",
+    # BigQuery models
+    "Dataset",
+    "Table",
+    "QueryResult",
+    "Job",
+    "SchemaField",
+    "FieldType",
+    "BigQueryJobState",
+    # Cloud Build models
+    "Build",
+    "BuildTrigger",
+    "BuildStep",
+    "BuildStatus",
 ]
