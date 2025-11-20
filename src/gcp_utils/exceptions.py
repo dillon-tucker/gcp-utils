@@ -71,8 +71,32 @@ class ArtifactRegistryError(GCPUtilitiesError):
     pass
 
 
+class BigQueryError(GCPUtilitiesError):
+    """Raised when BigQuery operations fail."""
+
+    pass
+
+
+class CloudBuildError(GCPUtilitiesError):
+    """Raised when Cloud Build operations fail."""
+
+    pass
+
+
+class CloudFunctionsError(GCPUtilitiesError):
+    """Raised when Cloud Functions operations fail."""
+
+    pass
+
+
 class CloudRunError(GCPUtilitiesError):
     """Raised when Cloud Run operations fail."""
+
+    pass
+
+
+class CloudSchedulerError(GCPUtilitiesError):
+    """Raised when Cloud Scheduler operations fail."""
 
     pass
 
