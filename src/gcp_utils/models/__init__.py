@@ -76,6 +76,15 @@ from .cloud_build import (
     BuildStep,
     BuildStatus,
 )
+from .cloud_logging import (
+    LogEntry,
+    LogSeverity,
+    LogMetric,
+    LogSink,
+    LoggerInfo,
+    HttpRequestInfo,
+    SourceLocation,
+)
 
 __all__ = [
     # Storage models
@@ -160,4 +169,12 @@ __all__ = [
     "BuildTrigger",
     "BuildStep",
     "BuildStatus",
+    # Cloud Logging models
+    "LogEntry",
+    "LogSeverity",
+    "LogMetric",
+    "LogSink",
+    "LoggerInfo",
+    "HttpRequestInfo",
+    "SourceLocation",
 ]

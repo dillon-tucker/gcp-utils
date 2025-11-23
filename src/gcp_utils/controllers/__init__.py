@@ -150,3 +150,12 @@ try:
 except ImportError:
     if not TYPE_CHECKING:
         IAMController = None  # type: ignore
+
+# Cloud Logging
+try:
+    from .cloud_logging import CloudLoggingController
+
+    __all__.append("CloudLoggingController")
+except ImportError:
+    if not TYPE_CHECKING:
+        CloudLoggingController = None  # type: ignore
