@@ -30,24 +30,28 @@ def test_create_queue_success(cloud_tasks_controller):
     """Test creating a queue successfully."""
     mock_queue = MagicMock()
     mock_queue.name = "projects/test-project/locations/us-central1/queues/test-queue"
+    mock_queue.state = "RUNNING"
 
     cloud_tasks_controller._client.create_queue.return_value = mock_queue
 
     queue = cloud_tasks_controller.create_queue("test-queue")
 
-    assert "test-queue" in queue.name
+    assert "test-queue" in queue["name"]
+    assert queue["state"] == "RUNNING"
 
 
 def test_get_queue_success(cloud_tasks_controller):
     """Test getting a queue successfully."""
     mock_queue = MagicMock()
     mock_queue.name = "projects/test-project/locations/us-central1/queues/test-queue"
+    mock_queue.state = "RUNNING"
 
     cloud_tasks_controller._client.get_queue.return_value = mock_queue
 
     queue = cloud_tasks_controller.get_queue("test-queue")
 
-    assert "test-queue" in queue.name
+    assert "test-queue" in queue["name"]
+    assert queue["state"] == "RUNNING"
 
 
 def test_get_queue_not_found(cloud_tasks_controller):
@@ -60,28 +64,38 @@ def test_get_queue_not_found(cloud_tasks_controller):
 
 def test_create_http_task_success(cloud_tasks_controller):
     """Test creating an HTTP task successfully."""
+    from datetime import datetime
+
     mock_task = MagicMock()
     mock_task.name = (
         "projects/test-project/locations/us-central1/queues/test-queue/tasks/task-123"
     )
+    # Mock schedule_time as a protobuf Timestamp with ToDatetime() method
+    mock_schedule_time = MagicMock()
+    mock_schedule_time.ToDatetime.return_value = datetime.now()
+    mock_task.schedule_time = mock_schedule_time
+    mock_task.dispatch_count = 0
+    mock_task.response_count = 0
 
     cloud_tasks_controller._client.create_task.return_value = mock_task
 
     task = cloud_tasks_controller.create_http_task(
-        queue_name="test-queue",
+        queue="test-queue",
         url="https://example.com/api/task",
-        http_method="POST",
+        method="POST",
         payload={"key": "value"},
     )
 
     assert "task-123" in task.name
+    assert task.queue_name == "test-queue"
+    assert task.task_id == "task-123"
 
 
 def test_create_http_task_validation_error(cloud_tasks_controller):
     """Test creating an HTTP task with invalid parameters."""
     with pytest.raises(ValidationError):
         cloud_tasks_controller.create_http_task(
-            queue_name="", url="https://example.com/api/task"
+            queue="test-queue", url=""  # Empty URL should raise ValidationError
         )
 
 
