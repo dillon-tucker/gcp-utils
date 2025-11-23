@@ -12,7 +12,7 @@ from google.cloud.scheduler_v1.types import Job
 
 from gcp_utils.config import GCPSettings
 from gcp_utils.controllers.cloud_scheduler import CloudSchedulerController
-from gcp_utils.exceptions import CloudSchedulerError, ResourceNotFoundError
+from gcp_utils.exceptions import ResourceNotFoundError
 
 
 @pytest.fixture

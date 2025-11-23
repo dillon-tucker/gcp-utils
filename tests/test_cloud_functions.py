@@ -4,7 +4,7 @@ Tests for Cloud Functions controller.
 This module tests the CloudFunctionsController class with mocked GCP clients.
 """
 
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from google.api_core.exceptions import NotFound
@@ -12,7 +12,7 @@ from google.cloud.functions_v2.types import Function
 
 from gcp_utils.config import GCPSettings
 from gcp_utils.controllers.cloud_functions import CloudFunctionsController
-from gcp_utils.exceptions import CloudFunctionsError, ResourceNotFoundError
+from gcp_utils.exceptions import ResourceNotFoundError
 
 
 @pytest.fixture

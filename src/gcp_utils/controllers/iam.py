@@ -8,7 +8,6 @@ This module provides a controller for GCP IAM operations including:
 - Listing and querying service accounts
 """
 
-from typing import Optional
 
 from google.api_core import exceptions as google_exceptions
 from google.auth.credentials import Credentials
@@ -22,6 +21,8 @@ from google.cloud.iam_admin_v1.types import (
     ListServiceAccountKeysRequest,
     ListServiceAccountsRequest,
     PatchServiceAccountRequest,
+)
+from google.cloud.iam_admin_v1.types import (
     ServiceAccount as GCPServiceAccount,
 )
 from google.iam.v1 import iam_policy_pb2, policy_pb2
@@ -52,8 +53,8 @@ class IAMController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
     ) -> None:
         """
         Initialize the IAM controller.
@@ -64,7 +65,7 @@ class IAMController:
         """
         self.settings = settings or get_settings()
         self._credentials = credentials
-        self._client: Optional[iam_admin_v1.IAMClient] = None
+        self._client: iam_admin_v1.IAMClient | None = None
 
     def _get_client(self) -> iam_admin_v1.IAMClient:
         """Lazy initialization of IAM client."""
@@ -75,8 +76,8 @@ class IAMController:
     def create_service_account(
         self,
         account_id: str,
-        display_name: Optional[str] = None,
-        description: Optional[str] = None,
+        display_name: str | None = None,
+        description: str | None = None,
     ) -> ServiceAccount:
         """
         Create a new service account.
@@ -243,8 +244,8 @@ class IAMController:
     def update_service_account(
         self,
         email: str,
-        display_name: Optional[str] = None,
-        description: Optional[str] = None,
+        display_name: str | None = None,
+        description: str | None = None,
     ) -> ServiceAccount:
         """
         Update a service account's display name or description.
@@ -378,9 +379,9 @@ class IAMController:
             request = CreateServiceAccountKeyRequest(
                 name=name,
                 private_key_type=iam_admin_v1.ServiceAccountPrivateKeyType.TYPE_GOOGLE_CREDENTIALS_FILE,
-                key_algorithm=iam_admin_v1.ServiceAccountKeyAlgorithm[
-                    key_algorithm.value
-                ],
+                key_algorithm=getattr(
+                    iam_admin_v1.ServiceAccountKeyAlgorithm, key_algorithm.value
+                ),
             )
 
             response = client.create_service_account_key(request=request)

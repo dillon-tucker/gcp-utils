@@ -1,10 +1,10 @@
 """Data models for Artifact Registry operations."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Optional
 from enum import Enum
+from typing import TYPE_CHECKING, Any, Optional
 
-from pydantic import BaseModel, Field, field_serializer, ConfigDict, PrivateAttr
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_serializer
 
 if TYPE_CHECKING:
     from google.cloud.artifactregistry_v1 import Repository as GCPRepository
@@ -44,10 +44,10 @@ class Repository(BaseModel):
     name: str = Field(..., description="Full resource name of the repository")
     repository_id: str = Field(..., description="Repository identifier")
     format: RepositoryFormat = Field(..., description="Repository format")
-    description: Optional[str] = Field(None, description="Repository description")
+    description: str | None = Field(None, description="Repository description")
     location: str = Field(..., description="GCP location")
-    create_time: Optional[datetime] = Field(None, description="Creation timestamp")
-    update_time: Optional[datetime] = Field(None, description="Last update timestamp")
+    create_time: datetime | None = Field(None, description="Creation timestamp")
+    update_time: datetime | None = Field(None, description="Last update timestamp")
     labels: dict[str, str] = Field(
         default_factory=dict, description="Resource labels"
     )
@@ -58,7 +58,7 @@ class Repository(BaseModel):
     model_config = ConfigDict(use_enum_values=True, arbitrary_types_allowed=True)
 
     @field_serializer("create_time", "update_time")
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
         return dt.isoformat() if dt else None
 
     # Convenience methods that delegate to controller operations
@@ -99,9 +99,9 @@ class DockerImage(BaseModel):
     image_name: str = Field(..., description="Image name")
     tag: str = Field(..., description="Image tag")
     digest: str = Field(..., description="Image digest (SHA256)")
-    upload_time: Optional[datetime] = Field(None, description="Upload timestamp")
-    size_bytes: Optional[int] = Field(None, description="Image size in bytes")
-    media_type: Optional[str] = Field(None, description="Media type")
+    upload_time: datetime | None = Field(None, description="Upload timestamp")
+    size_bytes: int | None = Field(None, description="Image size in bytes")
+    media_type: str | None = Field(None, description="Media type")
 
     # The actual DockerImage object (private attribute, not serialized)
     _image_object: Optional["GCPDockerImage"] = PrivateAttr(default=None)
@@ -109,7 +109,7 @@ class DockerImage(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("upload_time")
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
         return dt.isoformat() if dt else None
 
     # Convenience methods that delegate to controller operations
@@ -137,8 +137,8 @@ class BuildResult(BaseModel):
 
     image_url: str = Field(..., description="Full image URL")
     success: bool = Field(..., description="Whether build succeeded")
-    build_time: Optional[float] = Field(None, description="Build time in seconds")
-    size_bytes: Optional[int] = Field(None, description="Image size in bytes")
+    build_time: float | None = Field(None, description="Build time in seconds")
+    size_bytes: int | None = Field(None, description="Image size in bytes")
 
     model_config = ConfigDict(use_enum_values=True)
 
@@ -152,6 +152,6 @@ class DeploymentPipeline(BaseModel):
     build_success: bool = Field(..., description="Whether build succeeded")
     push_success: bool = Field(..., description="Whether push succeeded")
     deploy_success: bool = Field(..., description="Whether deployment succeeded")
-    total_time: Optional[float] = Field(None, description="Total pipeline time in seconds")
+    total_time: float | None = Field(None, description="Total pipeline time in seconds")
 
     model_config = ConfigDict(use_enum_values=True)

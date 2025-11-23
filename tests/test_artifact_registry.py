@@ -1,11 +1,13 @@
 """
 Tests for ArtifactRegistryController.
 """
-import pytest
 from unittest.mock import MagicMock, patch
-from gcp_utils.controllers.artifact_registry import ArtifactRegistryController
+
+import pytest
+
 from gcp_utils.config import GCPSettings
-from gcp_utils.exceptions import ArtifactRegistryError, ResourceNotFoundError
+from gcp_utils.controllers.artifact_registry import ArtifactRegistryController
+from gcp_utils.exceptions import ResourceNotFoundError
 
 
 @pytest.fixture

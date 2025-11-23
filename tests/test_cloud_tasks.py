@@ -1,11 +1,13 @@
 """
 Tests for CloudTasksController.
 """
-import pytest
 from unittest.mock import MagicMock, patch
-from gcp_utils.controllers.cloud_tasks import CloudTasksController
+
+import pytest
+
 from gcp_utils.config import GCPSettings
-from gcp_utils.exceptions import CloudTasksError, ResourceNotFoundError, ValidationError
+from gcp_utils.controllers.cloud_tasks import CloudTasksController
+from gcp_utils.exceptions import ResourceNotFoundError, ValidationError
 
 
 @pytest.fixture

@@ -1,15 +1,16 @@
 """
 Tests for FirebaseAuthController.
 """
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, Mock
-from gcp_utils.controllers.firebase_auth import FirebaseAuthController
+
 from gcp_utils.config import GCPSettings
+from gcp_utils.controllers.firebase_auth import FirebaseAuthController
 from gcp_utils.exceptions import (
-    FirebaseError,
+    AuthenticationError,
     ResourceNotFoundError,
     ValidationError,
-    AuthenticationError,
 )
 
 
@@ -23,7 +24,7 @@ def settings():
 def firebase_auth_controller(settings):
     """Fixture for FirebaseAuthController with mocked Firebase."""
     with patch('firebase_admin.get_app') as mock_get_app, \
-         patch('firebase_admin.initialize_app') as mock_init_app, \
+         patch('firebase_admin.initialize_app'), \
          patch('firebase_admin.auth') as mock_auth:
 
         # Simulate Firebase already initialized

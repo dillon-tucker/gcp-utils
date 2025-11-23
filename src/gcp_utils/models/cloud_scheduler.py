@@ -7,7 +7,6 @@ jobs, schedules, HTTP targets, Pub/Sub targets, and App Engine targets.
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
@@ -41,7 +40,7 @@ class OAuthToken(BaseModel):
     service_account_email: str = Field(
         ..., description="Service account email for generating OAuth token"
     )
-    scope: Optional[str] = Field(
+    scope: str | None = Field(
         default=None, description="OAuth scope (optional)"
     )
 
@@ -52,7 +51,7 @@ class OidcToken(BaseModel):
     service_account_email: str = Field(
         ..., description="Service account email for generating OIDC token"
     )
-    audience: Optional[str] = Field(
+    audience: str | None = Field(
         default=None, description="OIDC audience claim (optional)"
     )
 
@@ -64,16 +63,16 @@ class HttpTarget(BaseModel):
     http_method: HttpMethod = Field(
         default=HttpMethod.POST, description="HTTP method to use"
     )
-    headers: Optional[dict[str, str]] = Field(
+    headers: dict[str, str] | None = Field(
         default=None, description="HTTP headers to include"
     )
-    body: Optional[bytes] = Field(
+    body: bytes | None = Field(
         default=None, description="HTTP request body (for POST/PUT/PATCH)"
     )
-    oauth_token: Optional[OAuthToken] = Field(
+    oauth_token: OAuthToken | None = Field(
         default=None, description="OAuth token authentication (mutually exclusive with oidc_token)"
     )
-    oidc_token: Optional[OidcToken] = Field(
+    oidc_token: OidcToken | None = Field(
         default=None, description="OIDC token authentication (mutually exclusive with oauth_token)"
     )
 
@@ -82,10 +81,10 @@ class PubsubTarget(BaseModel):
     """Pub/Sub target configuration for a Cloud Scheduler job."""
 
     topic_name: str = Field(..., description="Pub/Sub topic name (projects/{project}/topics/{topic})")
-    data: Optional[bytes] = Field(
+    data: bytes | None = Field(
         default=None, description="Message data as bytes"
     )
-    attributes: Optional[dict[str, str]] = Field(
+    attributes: dict[str, str] | None = Field(
         default=None, description="Message attributes"
     )
 
@@ -96,14 +95,14 @@ class AppEngineHttpTarget(BaseModel):
     http_method: HttpMethod = Field(
         default=HttpMethod.POST, description="HTTP method to use"
     )
-    app_engine_routing: Optional[dict[str, str]] = Field(
+    app_engine_routing: dict[str, str] | None = Field(
         default=None, description="App Engine routing configuration"
     )
     relative_uri: str = Field(..., description="Relative URI for App Engine app")
-    headers: Optional[dict[str, str]] = Field(
+    headers: dict[str, str] | None = Field(
         default=None, description="HTTP headers"
     )
-    body: Optional[bytes] = Field(
+    body: bytes | None = Field(
         default=None, description="HTTP request body"
     )
 
@@ -111,25 +110,25 @@ class AppEngineHttpTarget(BaseModel):
 class RetryConfig(BaseModel):
     """Retry configuration for a Cloud Scheduler job."""
 
-    retry_count: Optional[int] = Field(
+    retry_count: int | None = Field(
         default=None,
         description="Maximum number of retry attempts",
         ge=0,
         le=10,
     )
-    max_retry_duration: Optional[str] = Field(
+    max_retry_duration: str | None = Field(
         default=None,
         description="Maximum retry duration (e.g., '3600s')",
     )
-    min_backoff_duration: Optional[str] = Field(
+    min_backoff_duration: str | None = Field(
         default=None,
         description="Minimum backoff duration between retries (e.g., '5s')",
     )
-    max_backoff_duration: Optional[str] = Field(
+    max_backoff_duration: str | None = Field(
         default=None,
         description="Maximum backoff duration between retries (e.g., '3600s')",
     )
-    max_doublings: Optional[int] = Field(
+    max_doublings: int | None = Field(
         default=None,
         description="Maximum number of times to double the backoff",
         ge=0,
@@ -141,7 +140,7 @@ class SchedulerJob(BaseModel):
     """Cloud Scheduler job model."""
 
     name: str = Field(..., description="Job resource name")
-    description: Optional[str] = Field(
+    description: str | None = Field(
         default=None, description="Job description"
     )
     schedule: str = Field(
@@ -152,32 +151,32 @@ class SchedulerJob(BaseModel):
         default="America/Los_Angeles",
         description="IANA time zone (e.g., 'America/New_York', 'UTC')",
     )
-    state: Optional[JobState] = Field(
+    state: JobState | None = Field(
         default=None, description="Job state"
     )
-    http_target: Optional[HttpTarget] = Field(
+    http_target: HttpTarget | None = Field(
         default=None, description="HTTP target configuration"
     )
-    pubsub_target: Optional[PubsubTarget] = Field(
+    pubsub_target: PubsubTarget | None = Field(
         default=None, description="Pub/Sub target configuration"
     )
-    app_engine_http_target: Optional[AppEngineHttpTarget] = Field(
+    app_engine_http_target: AppEngineHttpTarget | None = Field(
         default=None, description="App Engine HTTP target configuration"
     )
-    retry_config: Optional[RetryConfig] = Field(
+    retry_config: RetryConfig | None = Field(
         default=None, description="Retry configuration"
     )
-    attempt_deadline: Optional[str] = Field(
+    attempt_deadline: str | None = Field(
         default=None,
         description="Maximum time allowed for a single job execution (e.g., '180s')",
     )
-    schedule_time: Optional[datetime] = Field(
+    schedule_time: datetime | None = Field(
         default=None, description="Time when the job is scheduled to run next"
     )
-    last_attempt_time: Optional[datetime] = Field(
+    last_attempt_time: datetime | None = Field(
         default=None, description="Time of last job attempt"
     )
-    user_update_time: Optional[datetime] = Field(
+    user_update_time: datetime | None = Field(
         default=None, description="Time when the job was last modified by a user"
     )
 
@@ -188,7 +187,7 @@ class JobListResponse(BaseModel):
     jobs: list[SchedulerJob] = Field(
         default_factory=list, description="List of jobs"
     )
-    next_page_token: Optional[str] = Field(
+    next_page_token: str | None = Field(
         default=None, description="Token for fetching the next page"
     )
 

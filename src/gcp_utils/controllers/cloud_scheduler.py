@@ -5,11 +5,10 @@ This module provides a type-safe controller for creating and managing
 Cloud Scheduler jobs with HTTP, Pub/Sub, and App Engine targets.
 """
 
-from typing import Optional
 
 from google.api_core.exceptions import GoogleAPIError
 from google.auth.credentials import Credentials
-from google.cloud import scheduler_v1
+from google.cloud import scheduler_v1  # type: ignore[attr-defined]
 from google.cloud.scheduler_v1.types import (
     CreateJobRequest,
     DeleteJobRequest,
@@ -64,8 +63,8 @@ class CloudSchedulerController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
     ) -> None:
         """
         Initialize the Cloud Scheduler controller.
@@ -76,7 +75,7 @@ class CloudSchedulerController:
         """
         self._settings = settings or get_settings()
         self._credentials = credentials
-        self._client: Optional[scheduler_v1.CloudSchedulerClient] = None
+        self._client: scheduler_v1.CloudSchedulerClient | None = None
 
     def _get_client(self) -> scheduler_v1.CloudSchedulerClient:
         """Lazy initialization of the Cloud Scheduler client."""
@@ -103,14 +102,14 @@ class CloudSchedulerController:
         self,
         job_id: str,
         schedule: str,
-        location: Optional[str] = None,
-        time_zone: Optional[str] = None,
-        http_target: Optional[dict] = None,
-        pubsub_target: Optional[dict] = None,
-        app_engine_http_target: Optional[dict] = None,
-        retry_config: Optional[dict] = None,
-        description: Optional[str] = None,
-        attempt_deadline: Optional[str] = None,
+        location: str | None = None,
+        time_zone: str | None = None,
+        http_target: dict | None = None,
+        pubsub_target: dict | None = None,
+        app_engine_http_target: dict | None = None,
+        retry_config: dict | None = None,
+        description: str | None = None,
+        attempt_deadline: str | None = None,
     ) -> SchedulerJob:
         """
         Create a new Cloud Scheduler job.
@@ -165,16 +164,16 @@ class CloudSchedulerController:
             )
 
             if http_target:
-                job.http_target = http_target  # type: ignore[assignment]
+                job.http_target = http_target
 
             if pubsub_target:
-                job.pubsub_target = pubsub_target  # type: ignore[assignment]
+                job.pubsub_target = pubsub_target
 
             if app_engine_http_target:
-                job.app_engine_http_target = app_engine_http_target  # type: ignore[assignment]
+                job.app_engine_http_target = app_engine_http_target
 
             if retry_config:
-                job.retry_config = retry_config  # type: ignore[assignment]
+                job.retry_config = retry_config
 
             if attempt_deadline:
                 from google.protobuf import duration_pb2
@@ -205,13 +204,13 @@ class CloudSchedulerController:
         schedule: str,
         uri: str,
         http_method: str = "POST",
-        location: Optional[str] = None,
-        time_zone: Optional[str] = None,
-        headers: Optional[dict[str, str]] = None,
-        body: Optional[bytes] = None,
-        oauth_service_account: Optional[str] = None,
-        oidc_service_account: Optional[str] = None,
-        description: Optional[str] = None,
+        location: str | None = None,
+        time_zone: str | None = None,
+        headers: dict[str, str] | None = None,
+        body: bytes | None = None,
+        oauth_service_account: str | None = None,
+        oidc_service_account: str | None = None,
+        description: str | None = None,
     ) -> SchedulerJob:
         """
         Create a Cloud Scheduler job with an HTTP target.
@@ -284,11 +283,11 @@ class CloudSchedulerController:
         job_id: str,
         schedule: str,
         topic_name: str,
-        location: Optional[str] = None,
-        time_zone: Optional[str] = None,
-        data: Optional[bytes] = None,
-        attributes: Optional[dict[str, str]] = None,
-        description: Optional[str] = None,
+        location: str | None = None,
+        time_zone: str | None = None,
+        data: bytes | None = None,
+        attributes: dict[str, str] | None = None,
+        description: str | None = None,
     ) -> SchedulerJob:
         """
         Create a Cloud Scheduler job with a Pub/Sub target.
@@ -343,7 +342,7 @@ class CloudSchedulerController:
             description=description,
         )
 
-    def get_job(self, job_id: str, location: Optional[str] = None) -> SchedulerJob:
+    def get_job(self, job_id: str, location: str | None = None) -> SchedulerJob:
         """
         Get details about a Cloud Scheduler job.
 
@@ -389,9 +388,9 @@ class CloudSchedulerController:
 
     def list_jobs(
         self,
-        location: Optional[str] = None,
+        location: str | None = None,
         page_size: int = 100,
-        page_token: Optional[str] = None,
+        page_token: str | None = None,
     ) -> JobListResponse:
         """
         List Cloud Scheduler jobs in a location.
@@ -443,13 +442,13 @@ class CloudSchedulerController:
     def update_job(
         self,
         job_id: str,
-        location: Optional[str] = None,
-        schedule: Optional[str] = None,
-        time_zone: Optional[str] = None,
-        http_target: Optional[dict] = None,
-        pubsub_target: Optional[dict] = None,
-        description: Optional[str] = None,
-        update_mask: Optional[list[str]] = None,
+        location: str | None = None,
+        schedule: str | None = None,
+        time_zone: str | None = None,
+        http_target: dict | None = None,
+        pubsub_target: dict | None = None,
+        description: str | None = None,
+        update_mask: list[str] | None = None,
     ) -> SchedulerJob:
         """
         Update an existing Cloud Scheduler job.
@@ -498,10 +497,10 @@ class CloudSchedulerController:
                 job.description = description
 
             if http_target:
-                job.http_target = http_target  # type: ignore[assignment]
+                job.http_target = http_target
 
             if pubsub_target:
-                job.pubsub_target = pubsub_target  # type: ignore[assignment]
+                job.pubsub_target = pubsub_target
 
             request = UpdateJobRequest(job=job)
 
@@ -526,7 +525,7 @@ class CloudSchedulerController:
                 details={"job_id": job_id, "error": str(e)},
             ) from e
 
-    def delete_job(self, job_id: str, location: Optional[str] = None) -> None:
+    def delete_job(self, job_id: str, location: str | None = None) -> None:
         """
         Delete a Cloud Scheduler job.
 
@@ -563,7 +562,7 @@ class CloudSchedulerController:
                 details={"job_id": job_id, "error": str(e)},
             ) from e
 
-    def pause_job(self, job_id: str, location: Optional[str] = None) -> PauseJobResponse:
+    def pause_job(self, job_id: str, location: str | None = None) -> PauseJobResponse:
         """
         Pause a Cloud Scheduler job.
 
@@ -609,7 +608,7 @@ class CloudSchedulerController:
                 details={"job_id": job_id, "error": str(e)},
             ) from e
 
-    def resume_job(self, job_id: str, location: Optional[str] = None) -> ResumeJobResponse:
+    def resume_job(self, job_id: str, location: str | None = None) -> ResumeJobResponse:
         """
         Resume a paused Cloud Scheduler job.
 
@@ -655,7 +654,7 @@ class CloudSchedulerController:
                 details={"job_id": job_id, "error": str(e)},
             ) from e
 
-    def run_job(self, job_id: str, location: Optional[str] = None) -> RunJobResponse:
+    def run_job(self, job_id: str, location: str | None = None) -> RunJobResponse:
         """
         Manually trigger a Cloud Scheduler job to run immediately.
 

@@ -1,13 +1,10 @@
 """Data models for Firebase Hosting operations."""
 
 from datetime import datetime
-from typing import Optional, Any
 from enum import Enum
+from typing import Any
 
-from pydantic import BaseModel, Field, field_serializer, ConfigDict
-
-
-
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
 
 class DomainStatus(str, Enum):
@@ -56,9 +53,9 @@ class HostingSite(BaseModel):
 
     default_url: str = Field(..., description="Default Firebase Hosting URL")
 
-    app_id: Optional[str] = Field(None, description="Associated Firebase app ID")
+    app_id: str | None = Field(None, description="Associated Firebase app ID")
 
-    type: Optional[str] = Field(None, description="Site type")
+    type: str | None = Field(None, description="Site type")
 
 
 
@@ -78,15 +75,15 @@ class CustomDomain(BaseModel):
 
     status: DomainStatus = Field(..., description="Current status of the domain")
 
-    provisioning: Optional[dict[str, Any]] = Field(
+    provisioning: dict[str, Any] | None = Field(
 
         None, description="DNS provisioning information"
 
     )
 
-    update_time: Optional[datetime] = Field(None, description="Last update timestamp")
+    update_time: datetime | None = Field(None, description="Last update timestamp")
 
-    cert: Optional[dict[str, Any]] = Field(None, description="SSL certificate information")
+    cert: dict[str, Any] | None = Field(None, description="SSL certificate information")
 
 
 
@@ -96,7 +93,7 @@ class CustomDomain(BaseModel):
 
     @field_serializer("update_time")
 
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
 
         return dt.isoformat() if dt else None
 
@@ -116,15 +113,15 @@ class HostingVersion(BaseModel):
 
     status: VersionStatus = Field(..., description="Version status")
 
-    config: Optional[dict[str, Any]] = Field(None, description="Version configuration")
+    config: dict[str, Any] | None = Field(None, description="Version configuration")
 
-    create_time: Optional[datetime] = Field(None, description="Creation timestamp")
+    create_time: datetime | None = Field(None, description="Creation timestamp")
 
-    finalize_time: Optional[datetime] = Field(None, description="Finalization timestamp")
+    finalize_time: datetime | None = Field(None, description="Finalization timestamp")
 
-    file_count: Optional[int] = Field(None, description="Number of files in version")
+    file_count: int | None = Field(None, description="Number of files in version")
 
-    version_bytes: Optional[int] = Field(None, description="Total size in bytes")
+    version_bytes: int | None = Field(None, description="Total size in bytes")
 
 
 
@@ -134,7 +131,7 @@ class HostingVersion(BaseModel):
 
     @field_serializer("create_time", "finalize_time")
 
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
 
         return dt.isoformat() if dt else None
 
@@ -152,11 +149,11 @@ class HostingRelease(BaseModel):
 
     version_name: str = Field(..., description="Version being released")
 
-    message: Optional[str] = Field(None, description="Release message")
+    message: str | None = Field(None, description="Release message")
 
-    release_time: Optional[datetime] = Field(None, description="Release timestamp")
+    release_time: datetime | None = Field(None, description="Release timestamp")
 
-    release_user: Optional[dict[str, str]] = Field(
+    release_user: dict[str, str] | None = Field(
 
         None, description="User who created the release"
 
@@ -166,7 +163,7 @@ class HostingRelease(BaseModel):
 
     @field_serializer("release_time")
 
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
 
         return dt.isoformat() if dt else None
 
@@ -202,11 +199,11 @@ class RewriteRule(BaseModel):
 
     source: str = Field(..., description="Source URL pattern to match")
 
-    destination: Optional[str] = Field(None, description="Destination path")
+    destination: str | None = Field(None, description="Destination path")
 
-    function: Optional[str] = Field(None, description="Cloud Function to invoke")
+    function: str | None = Field(None, description="Cloud Function to invoke")
 
-    run: Optional[dict[str, str]] = Field(None, description="Cloud Run service to invoke")
+    run: dict[str, str] | None = Field(None, description="Cloud Run service to invoke")
 
 
 
@@ -256,7 +253,7 @@ class HostingConfig(BaseModel):
 
     )
 
-    trailing_slash_behavior: Optional[str] = Field(
+    trailing_slash_behavior: str | None = Field(
 
         None, description="How to handle trailing slashes (ADD, REMOVE)"
 
@@ -296,7 +293,7 @@ class DeploymentInfo(BaseModel):
 
     @field_serializer("deployed_at")
 
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
 
         return dt.isoformat() if dt else None
 
@@ -316,7 +313,7 @@ class FileUploadResult(BaseModel):
 
     cached_file_count: int = Field(..., description="Number of files already cached")
 
-    upload_url: Optional[str] = Field(None, description="Upload URL used")
+    upload_url: str | None = Field(None, description="Upload URL used")
 
 
 

@@ -5,20 +5,19 @@ This module provides a high-level interface for Firestore operations including
 document CRUD, querying, batch operations, and transactions.
 """
 
-from typing import Any, Optional
+from typing import Any
 
-from google.cloud import firestore
+from google.auth.credentials import Credentials
+from google.cloud import firestore  # type: ignore[attr-defined]
 from google.cloud.firestore_v1 import (
     Client,
-    DocumentReference,
     CollectionReference,
-    Transaction,
+    Query,
 )
-from google.auth.credentials import Credentials
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import FirestoreError, ResourceNotFoundError, ValidationError
-from ..models.firestore import FirestoreDocument, FirestoreQuery, QueryOperator
+from ..models.firestore import FirestoreDocument, FirestoreQuery
 
 
 class FirestoreController:
@@ -44,9 +43,9 @@ class FirestoreController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
-        database: Optional[str] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
+        database: str | None = None,
     ) -> None:
         """
         Initialize the Firestore controller.
@@ -102,7 +101,7 @@ class FirestoreController:
         self,
         collection: str,
         data: dict[str, Any],
-        document_id: Optional[str] = None,
+        document_id: str | None = None,
     ) -> FirestoreDocument:
         """
         Create a new document in a collection.
@@ -279,8 +278,8 @@ class FirestoreController:
     def list_documents(
         self,
         collection: str,
-        limit: Optional[int] = None,
-        order_by: Optional[str] = None,
+        limit: int | None = None,
+        order_by: str | None = None,
         direction: str = "ASCENDING",
     ) -> list[FirestoreDocument]:
         """
@@ -299,7 +298,7 @@ class FirestoreController:
             FirestoreError: If listing fails
         """
         try:
-            query = self.client.collection(collection)
+            query: Query | CollectionReference = self.client.collection(collection)
 
             if order_by:
                 direction_enum = (
@@ -326,8 +325,8 @@ class FirestoreController:
         self,
         collection: str,
         queries: list[FirestoreQuery],
-        limit: Optional[int] = None,
-        order_by: Optional[str] = None,
+        limit: int | None = None,
+        order_by: str | None = None,
         direction: str = "ASCENDING",
     ) -> list[FirestoreDocument]:
         """
@@ -351,7 +350,7 @@ class FirestoreController:
             raise ValidationError("At least one query is required")
 
         try:
-            query = self.client.collection(collection)
+            query: Query | CollectionReference = self.client.collection(collection)
 
             # Apply filters
             for q in queries:
@@ -438,6 +437,10 @@ class FirestoreController:
                     raise ValidationError(
                         "Each operation must have 'operation', 'collection', and 'document_id'"
                     )
+
+                # Type narrowing: collection and document_id are guaranteed to be strings here
+                assert isinstance(collection, str)
+                assert isinstance(document_id, str)
 
                 doc_ref = self.client.collection(collection).document(document_id)
 

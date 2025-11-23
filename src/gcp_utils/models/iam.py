@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
@@ -40,31 +40,31 @@ class ServiceAccountKey(BaseModel):
     """
 
     name: str = Field(..., description="Resource name of the key")
-    private_key_type: Optional[str] = Field(
+    private_key_type: str | None = Field(
         default=None, description="Private key type"
     )
-    key_algorithm: Optional[ServiceAccountKeyAlgorithm] = Field(
+    key_algorithm: ServiceAccountKeyAlgorithm | None = Field(
         default=None, description="Key algorithm"
     )
-    private_key_data: Optional[str] = Field(
+    private_key_data: str | None = Field(
         default=None, description="Private key data (base64 encoded)"
     )
-    public_key_data: Optional[str] = Field(default=None, description="Public key data")
-    valid_after_time: Optional[datetime] = Field(
+    public_key_data: str | None = Field(default=None, description="Public key data")
+    valid_after_time: datetime | None = Field(
         default=None, description="Key valid after time"
     )
-    valid_before_time: Optional[datetime] = Field(
+    valid_before_time: datetime | None = Field(
         default=None, description="Key valid before time"
     )
-    key_origin: Optional[str] = Field(default=None, description="Key origin")
-    key_type: Optional[ServiceAccountKeyType] = Field(
+    key_origin: str | None = Field(default=None, description="Key origin")
+    key_type: ServiceAccountKeyType | None = Field(
         default=None, description="Key type"
     )
 
     model_config = ConfigDict(use_enum_values=True)
 
     @field_serializer("valid_after_time", "valid_before_time")
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
         return dt.isoformat() if dt else None
 
 
@@ -87,9 +87,9 @@ class ServiceAccount(BaseModel):
     project_id: str = Field(..., description="Project ID")
     unique_id: str = Field(..., description="Unique numeric ID")
     email: str = Field(..., description="Service account email address")
-    display_name: Optional[str] = Field(None, description="Display name")
-    description: Optional[str] = Field(None, description="Description")
-    oauth2_client_id: Optional[str] = Field(None, description="OAuth2 client ID")
+    display_name: str | None = Field(None, description="Display name")
+    description: str | None = Field(None, description="Description")
+    oauth2_client_id: str | None = Field(None, description="OAuth2 client ID")
     disabled: bool = Field(default=False, description="Whether disabled")
 
 
@@ -107,7 +107,7 @@ class IAMBinding(BaseModel):
     members: list[str] = Field(
         default_factory=list, description="List of member identifiers"
     )
-    condition: Optional[dict[str, Any]] = Field(
+    condition: dict[str, Any] | None = Field(
         default=None, description="Optional IAM condition"
     )
 
@@ -126,7 +126,7 @@ class IAMPolicy(BaseModel):
     bindings: list[IAMBinding] = Field(
         default_factory=list, description="Role bindings"
     )
-    etag: Optional[str] = Field(None, description="ETag for concurrency control")
+    etag: str | None = Field(None, description="ETag for concurrency control")
 
 
 class ServiceAccountInfo(BaseModel):

@@ -5,12 +5,10 @@ This module provides a type-safe controller for deploying and managing
 Cloud Functions (2nd gen) including HTTP functions and event-driven functions.
 """
 
-from typing import Optional
 
 from google.api_core.exceptions import GoogleAPIError
-from google.api_core.operation import Operation
 from google.auth.credentials import Credentials
-from google.cloud import functions_v2
+from google.cloud import functions_v2  # type: ignore[attr-defined]
 from google.cloud.functions_v2.types import (
     CreateFunctionRequest,
     DeleteFunctionRequest,
@@ -74,8 +72,8 @@ class CloudFunctionsController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
     ) -> None:
         """
         Initialize the Cloud Functions controller.
@@ -86,7 +84,7 @@ class CloudFunctionsController:
         """
         self._settings = settings or get_settings()
         self._credentials = credentials
-        self._client: Optional[functions_v2.FunctionServiceClient] = None
+        self._client: functions_v2.FunctionServiceClient | None = None
 
     def _get_client(self) -> functions_v2.FunctionServiceClient:
         """Lazy initialization of the Cloud Functions client."""
@@ -111,12 +109,12 @@ class CloudFunctionsController:
     def create_function(
         self,
         function_id: str,
-        location: Optional[str] = None,
-        build_config: Optional[dict] = None,
-        service_config: Optional[dict] = None,
-        event_trigger: Optional[dict] = None,
-        description: Optional[str] = None,
-        labels: Optional[dict[str, str]] = None,
+        location: str | None = None,
+        build_config: dict | None = None,
+        service_config: dict | None = None,
+        event_trigger: dict | None = None,
+        description: str | None = None,
+        labels: dict[str, str] | None = None,
         wait_for_completion: bool = True,
     ) -> CloudFunction:
         """
@@ -179,13 +177,13 @@ class CloudFunctionsController:
             )
 
             if build_config:
-                function.build_config = build_config  # type: ignore[assignment]
+                function.build_config = build_config
 
             if service_config:
-                function.service_config = service_config  # type: ignore[assignment]
+                function.service_config = service_config
 
             if event_trigger:
-                function.event_trigger = event_trigger  # type: ignore[assignment]
+                function.event_trigger = event_trigger
 
             request = CreateFunctionRequest(
                 parent=parent,
@@ -216,7 +214,7 @@ class CloudFunctionsController:
             ) from e
 
     def get_function(
-        self, function_id: str, location: Optional[str] = None
+        self, function_id: str, location: str | None = None
     ) -> CloudFunction:
         """
         Get details about a Cloud Function.
@@ -263,9 +261,9 @@ class CloudFunctionsController:
 
     def list_functions(
         self,
-        location: Optional[str] = None,
+        location: str | None = None,
         page_size: int = 100,
-        page_token: Optional[str] = None,
+        page_token: str | None = None,
     ) -> FunctionListResponse:
         """
         List Cloud Functions in a location.
@@ -318,13 +316,13 @@ class CloudFunctionsController:
     def update_function(
         self,
         function_id: str,
-        location: Optional[str] = None,
-        build_config: Optional[dict] = None,
-        service_config: Optional[dict] = None,
-        event_trigger: Optional[dict] = None,
-        description: Optional[str] = None,
-        labels: Optional[dict[str, str]] = None,
-        update_mask: Optional[list[str]] = None,
+        location: str | None = None,
+        build_config: dict | None = None,
+        service_config: dict | None = None,
+        event_trigger: dict | None = None,
+        description: str | None = None,
+        labels: dict[str, str] | None = None,
+        update_mask: list[str] | None = None,
         wait_for_completion: bool = True,
     ) -> CloudFunction:
         """
@@ -377,13 +375,13 @@ class CloudFunctionsController:
                 function.labels = labels
 
             if build_config:
-                function.build_config = build_config  # type: ignore[assignment]
+                function.build_config = build_config
 
             if service_config:
-                function.service_config = service_config  # type: ignore[assignment]
+                function.service_config = service_config
 
             if event_trigger:
-                function.event_trigger = event_trigger  # type: ignore[assignment]
+                function.event_trigger = event_trigger
 
             request = UpdateFunctionRequest(function=function)
 
@@ -419,7 +417,7 @@ class CloudFunctionsController:
     def delete_function(
         self,
         function_id: str,
-        location: Optional[str] = None,
+        location: str | None = None,
         wait_for_completion: bool = True,
     ) -> None:
         """
@@ -463,7 +461,7 @@ class CloudFunctionsController:
             ) from e
 
     def generate_upload_url(
-        self, location: Optional[str] = None
+        self, location: str | None = None
     ) -> GenerateUploadUrlResponse:
         """
         Generate a signed URL for uploading function source code.
@@ -518,7 +516,7 @@ class CloudFunctionsController:
                 details={"location": location, "error": str(e)},
             ) from e
 
-    def get_function_url(self, function_id: str, location: Optional[str] = None) -> str:
+    def get_function_url(self, function_id: str, location: str | None = None) -> str:
         """
         Get the HTTP URL for a Cloud Function.
 

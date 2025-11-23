@@ -6,7 +6,6 @@ using Pydantic settings with support for environment variables and .env files.
 """
 
 from pathlib import Path
-from typing import Optional
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -82,7 +81,7 @@ class GCPSettings(BaseSettings):
     )
 
     # Optional settings with defaults
-    credentials_path: Optional[Path] = Field(
+    credentials_path: Path | None = Field(
         default=None,
         description="Path to service account JSON key file. If not provided, uses Application Default Credentials.",
     )
@@ -92,7 +91,7 @@ class GCPSettings(BaseSettings):
         description="Default GCP location/region",
     )
 
-    storage_bucket: Optional[str] = Field(
+    storage_bucket: str | None = Field(
         default=None,
         description="Default Cloud Storage bucket name",
     )
@@ -127,7 +126,7 @@ class GCPSettings(BaseSettings):
         description="BigQuery dataset location (e.g., 'US', 'EU', 'us-central1')",
     )
 
-    bigquery_default_dataset: Optional[str] = Field(
+    bigquery_default_dataset: str | None = Field(
         default=None,
         description="Default BigQuery dataset ID",
     )
@@ -152,7 +151,7 @@ class GCPSettings(BaseSettings):
         description="Prefix for Pub/Sub topics",
     )
 
-    firebase_hosting_default_site: Optional[str] = Field(
+    firebase_hosting_default_site: str | None = Field(
         default=None,
         description="Default Firebase Hosting site ID",
     )
@@ -171,7 +170,7 @@ class GCPSettings(BaseSettings):
 
     @field_validator("credentials_path", mode="before")
     @classmethod
-    def validate_credentials_path(cls, v: Optional[str | Path]) -> Optional[Path]:
+    def validate_credentials_path(cls, v: str | Path | None) -> Path | None:
         """Validate that credentials file exists if provided."""
         if v is None:
             return None
@@ -208,7 +207,7 @@ class GCPSettings(BaseSettings):
 
         return v.strip()
 
-    def get_credentials_dict(self) -> Optional[dict]:
+    def get_credentials_dict(self) -> dict | None:
         """
         Load and return credentials as a dictionary.
 
@@ -225,7 +224,7 @@ class GCPSettings(BaseSettings):
             import json
             from typing import cast
 
-            with open(self.credentials_path, "r", encoding="utf-8") as f:
+            with open(self.credentials_path, encoding="utf-8") as f:
                 return cast(dict[str, str], json.load(f))
         except json.JSONDecodeError as e:
             raise ConfigurationError(
@@ -240,7 +239,7 @@ class GCPSettings(BaseSettings):
 
 
 # Global settings instance
-_settings: Optional[GCPSettings] = None
+_settings: GCPSettings | None = None
 
 
 def get_settings() -> GCPSettings:

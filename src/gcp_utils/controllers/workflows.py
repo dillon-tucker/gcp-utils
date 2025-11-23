@@ -6,15 +6,15 @@ executing Google Cloud Workflows.
 """
 
 import json
-from typing import Any, Optional
+from typing import Any
 
+from google.auth.credentials import Credentials
 from google.cloud import workflows_v1
 from google.cloud.workflows import executions_v1
-from google.auth.credentials import Credentials
 
 from ..config import GCPSettings, get_settings
-from ..exceptions import WorkflowsError, ResourceNotFoundError, ValidationError
-from ..models.workflows import WorkflowInfo, WorkflowExecution, ExecutionState
+from ..exceptions import ResourceNotFoundError, ValidationError, WorkflowsError
+from ..models.workflows import ExecutionState, WorkflowExecution, WorkflowInfo
 
 
 class WorkflowsController:
@@ -38,9 +38,9 @@ class WorkflowsController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
-        location: Optional[str] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
+        location: str | None = None,
     ) -> None:
         """
         Initialize the Workflows controller.
@@ -73,9 +73,9 @@ class WorkflowsController:
         self,
         workflow_name: str,
         source_contents: str,
-        description: Optional[str] = None,
-        labels: Optional[dict[str, str]] = None,
-        service_account: Optional[str] = None,
+        description: str | None = None,
+        labels: dict[str, str] | None = None,
+        service_account: str | None = None,
     ) -> WorkflowInfo:
         """
         Create a new workflow.
@@ -186,9 +186,9 @@ class WorkflowsController:
     def update_workflow(
         self,
         workflow_name: str,
-        source_contents: Optional[str] = None,
-        description: Optional[str] = None,
-        labels: Optional[dict[str, str]] = None,
+        source_contents: str | None = None,
+        description: str | None = None,
+        labels: dict[str, str] | None = None,
     ) -> WorkflowInfo:
         """
         Update an existing workflow.
@@ -260,7 +260,7 @@ class WorkflowsController:
     def execute_workflow(
         self,
         workflow_name: str,
-        argument: Optional[dict[str, Any]] = None,
+        argument: dict[str, Any] | None = None,
     ) -> WorkflowExecution:
         """
         Execute a workflow.

@@ -5,13 +5,13 @@ This module provides a high-level interface for Google Cloud Artifact Registry
 operations including repository management, image operations, and Docker integration.
 """
 
-from typing import Any, Optional
-import subprocess
 import json
+import subprocess
+from typing import Any
 
-from google.cloud import artifactregistry_v1
 from google.api_core import exceptions as google_exceptions
 from google.auth.credentials import Credentials
+from google.cloud import artifactregistry_v1
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import (
@@ -19,7 +19,7 @@ from ..exceptions import (
     ResourceNotFoundError,
     ValidationError,
 )
-from ..models.artifact_registry import Repository, DockerImage
+from ..models.artifact_registry import Repository
 
 
 class ArtifactRegistryController:
@@ -45,8 +45,8 @@ class ArtifactRegistryController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
     ) -> None:
         """
         Initialize the Artifact Registry controller.
@@ -60,7 +60,7 @@ class ArtifactRegistryController:
         """
         self._settings = settings or get_settings()
         self._credentials = credentials
-        self._client: Optional[artifactregistry_v1.ArtifactRegistryClient] = None
+        self._client: artifactregistry_v1.ArtifactRegistryClient | None = None
 
     def _get_client(self) -> artifactregistry_v1.ArtifactRegistryClient:
         """
@@ -90,8 +90,8 @@ class ArtifactRegistryController:
         repository_id: str,
         location: str,
         format: str = "DOCKER",
-        description: Optional[str] = None,
-        labels: Optional[dict[str, str]] = None,
+        description: str | None = None,
+        labels: dict[str, str] | None = None,
     ) -> Repository:
         """
         Create an Artifact Registry repository.

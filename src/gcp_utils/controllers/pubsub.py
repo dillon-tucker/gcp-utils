@@ -6,15 +6,14 @@ operations including topic and subscription management.
 """
 
 import json
-from typing import Any, Callable, Optional
+from typing import Any
 
-from google.cloud import pubsub_v1
 from google.auth.credentials import Credentials
-from google.api_core import retry
+from google.cloud import pubsub_v1  # type: ignore[attr-defined]
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import PubSubError, ResourceNotFoundError, ValidationError
-from ..models.pubsub import TopicInfo, SubscriptionInfo
+from ..models.pubsub import SubscriptionInfo, TopicInfo
 
 
 class PubSubController:
@@ -39,8 +38,8 @@ class PubSubController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
     ) -> None:
         """
         Initialize the Pub/Sub controller.
@@ -66,7 +65,7 @@ class PubSubController:
     def create_topic(
         self,
         topic_name: str,
-        labels: Optional[dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
     ) -> TopicInfo:
         """
         Create a new Pub/Sub topic.
@@ -185,8 +184,8 @@ class PubSubController:
         self,
         topic_name: str,
         data: dict[str, Any] | str | bytes,
-        attributes: Optional[dict[str, str]] = None,
-        ordering_key: Optional[str] = None,
+        attributes: dict[str, str] | None = None,
+        ordering_key: str | None = None,
     ) -> str:
         """
         Publish a message to a topic.
@@ -308,8 +307,8 @@ class PubSubController:
         topic_name: str,
         subscription_name: str,
         ack_deadline_seconds: int = 10,
-        push_endpoint: Optional[str] = None,
-        filter_expression: Optional[str] = None,
+        push_endpoint: str | None = None,
+        filter_expression: str | None = None,
         retain_acked_messages: bool = False,
         message_retention_duration_seconds: int = 604800,  # 7 days
     ) -> SubscriptionInfo:
@@ -405,7 +404,7 @@ class PubSubController:
             )
 
     def list_subscriptions(
-        self, topic_name: Optional[str] = None
+        self, topic_name: str | None = None
     ) -> list[SubscriptionInfo]:
         """
         List subscriptions.

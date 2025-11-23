@@ -187,6 +187,8 @@ extra_checks = true
 module = [
     "google.*",
     "firebase_admin.*",
+    "httpx",
+    "aiofiles",
 ]
 ignore_missing_imports = true
 
@@ -212,6 +214,7 @@ select = [
 ignore = [
     "E501",  # line too long (handled by black)
     "B008",  # do not perform function calls in argument defaults
+    "B904",  # raise ... from err - intentional exception wrapping
     "C901",  # too complex
 ]
 

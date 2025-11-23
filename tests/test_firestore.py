@@ -1,12 +1,15 @@
 """
 Tests for FirestoreController.
 """
-import pytest
 from unittest.mock import MagicMock, patch
-from gcp_utils.controllers.firestore import FirestoreController
+
+import pytest
+
 from gcp_utils.config import GCPSettings
+from gcp_utils.controllers.firestore import FirestoreController
 from gcp_utils.exceptions import ResourceNotFoundError
 from gcp_utils.models.firestore import FirestoreQuery, QueryOperator
+
 
 @pytest.fixture
 def settings():
@@ -39,7 +42,7 @@ def test_create_document(firestore_controller):
     # Mock the client and its methods
     mock_collection = MagicMock()
     mock_doc_ref = MagicMock()
-    
+
     # Configure the return value for the document snapshot
     mock_doc_snapshot = MagicMock()
     mock_doc_snapshot.exists = True

@@ -1,12 +1,14 @@
 """
 Tests for FirebaseHostingController.
 """
-import pytest
-from unittest.mock import MagicMock, patch, Mock
 from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
 import httpx
-from gcp_utils.controllers.firebase_hosting import FirebaseHostingController
+import pytest
+
 from gcp_utils.config import GCPSettings
+from gcp_utils.controllers.firebase_hosting import FirebaseHostingController
 from gcp_utils.exceptions import (
     FirebaseHostingError,
     ResourceNotFoundError,
@@ -24,7 +26,7 @@ def settings():
 def firebase_hosting_controller(settings):
     """Fixture for FirebaseHostingController with mocked HTTP client."""
     with patch('firebase_admin.get_app') as mock_get_app, \
-         patch('firebase_admin.initialize_app') as mock_init_app, \
+         patch('firebase_admin.initialize_app'), \
          patch('google.auth.default') as mock_default:
 
         # Simulate Firebase already initialized

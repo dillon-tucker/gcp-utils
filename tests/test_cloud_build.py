@@ -13,7 +13,7 @@ from google.cloud.devtools.cloudbuild_v1.types import BuildTrigger as GCPBuildTr
 
 from gcp_utils.config import GCPSettings
 from gcp_utils.controllers.cloud_build import CloudBuildController
-from gcp_utils.exceptions import CloudBuildError, ResourceNotFoundError
+from gcp_utils.exceptions import ResourceNotFoundError
 
 
 @pytest.fixture

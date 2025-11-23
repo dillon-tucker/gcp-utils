@@ -8,16 +8,15 @@ Tests cover:
 - Error handling
 """
 
-import tempfile
 import zipfile
 from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
 
-from gcp_utils.utils import ZipUtility, zip_directory, zip_and_upload
-from gcp_utils.exceptions import ValidationError, StorageError
+from gcp_utils.exceptions import StorageError, ValidationError
 from gcp_utils.models.storage import UploadResult
+from gcp_utils.utils import ZipUtility, zip_and_upload, zip_directory
 
 
 @pytest.fixture

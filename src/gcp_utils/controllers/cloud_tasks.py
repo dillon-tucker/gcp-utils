@@ -7,15 +7,15 @@ Cloud Tasks queues and tasks for asynchronous workloads.
 
 import json
 from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
-from google.cloud import tasks_v2
 from google.auth.credentials import Credentials
+from google.cloud import tasks_v2
 from google.protobuf import timestamp_pb2
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import CloudTasksError, ResourceNotFoundError, ValidationError
-from ..models.tasks import CloudTask, TaskInfo, TaskSchedule
+from ..models.tasks import TaskInfo
 
 
 class CloudTasksController:
@@ -41,9 +41,9 @@ class CloudTasksController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
-        location: Optional[str] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
+        location: str | None = None,
     ) -> None:
         """
         Initialize the Cloud Tasks controller.
@@ -70,8 +70,8 @@ class CloudTasksController:
     def create_queue(
         self,
         queue_name: str,
-        max_concurrent_dispatches: Optional[int] = None,
-        max_dispatches_per_second: Optional[float] = None,
+        max_concurrent_dispatches: int | None = None,
+        max_dispatches_per_second: float | None = None,
     ) -> dict[str, Any]:
         """
         Create a new task queue.
@@ -249,13 +249,13 @@ class CloudTasksController:
         self,
         queue: str,
         url: str,
-        payload: Optional[dict[str, Any] | str | bytes] = None,
+        payload: dict[str, Any] | str | bytes | None = None,
         method: str = "POST",
-        headers: Optional[dict[str, str]] = None,
-        schedule_time: Optional[datetime] = None,
-        delay_seconds: Optional[int] = None,
-        task_name: Optional[str] = None,
-        oidc_token: Optional[dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
+        schedule_time: datetime | None = None,
+        delay_seconds: int | None = None,
+        task_name: str | None = None,
+        oidc_token: dict[str, str] | None = None,
     ) -> TaskInfo:
         """
         Create an HTTP task.

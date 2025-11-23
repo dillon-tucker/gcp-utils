@@ -5,15 +5,21 @@ This module provides a type-safe controller for managing BigQuery datasets,
 tables, and running queries for data engineering and analytics workflows.
 """
 
-from typing import Any, Iterator, Optional
+from typing import Any
 
 from google.api_core.exceptions import GoogleAPIError
 from google.auth.credentials import Credentials
 from google.cloud import bigquery
 from google.cloud.bigquery import (
     Dataset as BQDataset,
+)
+from google.cloud.bigquery import (
     LoadJobConfig as BQLoadJobConfig,
+)
+from google.cloud.bigquery import (
     QueryJobConfig,
+)
+from google.cloud.bigquery import (
     Table as BQTable,
 )
 
@@ -57,8 +63,8 @@ class BigQueryController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
     ) -> None:
         """
         Initialize the BigQuery controller.
@@ -69,7 +75,7 @@ class BigQueryController:
         """
         self._settings = settings or get_settings()
         self._credentials = credentials
-        self._client: Optional[bigquery.Client] = None
+        self._client: bigquery.Client | None = None
 
     def _get_client(self) -> bigquery.Client:
         """Lazy initialization of the BigQuery client."""
@@ -83,10 +89,10 @@ class BigQueryController:
     def create_dataset(
         self,
         dataset_id: str,
-        location: Optional[str] = None,
-        description: Optional[str] = None,
-        labels: Optional[dict[str, str]] = None,
-        default_table_expiration_ms: Optional[int] = None,
+        location: str | None = None,
+        description: str | None = None,
+        labels: dict[str, str] | None = None,
+        default_table_expiration_ms: int | None = None,
     ) -> Dataset:
         """
         Create a new BigQuery dataset.
@@ -200,7 +206,7 @@ class BigQueryController:
             ) from e
 
     def list_datasets(
-        self, max_results: Optional[int] = None
+        self, max_results: int | None = None
     ) -> DatasetListResponse:
         """
         List BigQuery datasets in the project.
@@ -288,10 +294,10 @@ class BigQueryController:
         dataset_id: str,
         table_id: str,
         schema: list[SchemaField],
-        description: Optional[str] = None,
-        labels: Optional[dict[str, str]] = None,
-        partition_field: Optional[str] = None,
-        clustering_fields: Optional[list[str]] = None,
+        description: str | None = None,
+        labels: dict[str, str] | None = None,
+        partition_field: str | None = None,
+        clustering_fields: list[str] | None = None,
     ) -> Table:
         """
         Create a new BigQuery table.
@@ -443,7 +449,7 @@ class BigQueryController:
             ) from e
 
     def list_tables(
-        self, dataset_id: str, max_results: Optional[int] = None
+        self, dataset_id: str, max_results: int | None = None
     ) -> TableListResponse:
         """
         List tables in a BigQuery dataset.
@@ -529,9 +535,9 @@ class BigQueryController:
     def query(
         self,
         sql: str,
-        location: Optional[str] = None,
+        location: str | None = None,
         use_legacy_sql: bool = False,
-        max_results: Optional[int] = None,
+        max_results: int | None = None,
     ) -> QueryResult:
         """
         Execute a BigQuery SQL query.
@@ -622,7 +628,7 @@ class BigQueryController:
         dataset_id: str,
         table_id: str,
         source_format: str = "CSV",
-        schema: Optional[list[SchemaField]] = None,
+        schema: list[SchemaField] | None = None,
         write_disposition: str = "WRITE_EMPTY",
         autodetect: bool = False,
         skip_leading_rows: int = 0,

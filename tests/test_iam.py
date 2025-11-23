@@ -1,12 +1,13 @@
 """
 Tests for IAMController.
 """
-import pytest
 from unittest.mock import MagicMock, patch
-from gcp_utils.controllers.iam import IAMController
+
+import pytest
+
 from gcp_utils.config import GCPSettings
-from gcp_utils.exceptions import IAMError, ResourceNotFoundError
-from gcp_utils.models.iam import ServiceAccountKeyAlgorithm
+from gcp_utils.controllers.iam import IAMController
+from gcp_utils.exceptions import ResourceNotFoundError
 
 
 @pytest.fixture

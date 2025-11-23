@@ -1,11 +1,13 @@
 """
 Tests for CloudRunController.
 """
-import pytest
-from unittest.mock import MagicMock, patch, Mock
 from datetime import datetime
-from gcp_utils.controllers.cloud_run import CloudRunController
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from gcp_utils.config import GCPSettings
+from gcp_utils.controllers.cloud_run import CloudRunController
 from gcp_utils.exceptions import CloudRunError, ResourceNotFoundError, ValidationError
 from gcp_utils.models.cloud_run import TrafficTarget
 
@@ -132,7 +134,7 @@ def test_update_service_success(cloud_run_controller):
     cloud_run_controller.client.update_service.return_value = mock_operation
 
     # Patch the protobuf classes to avoid validation issues
-    with patch('gcp_utils.controllers.cloud_run.run_v2.UpdateServiceRequest') as mock_request, \
+    with patch('gcp_utils.controllers.cloud_run.run_v2.UpdateServiceRequest'), \
          patch('gcp_utils.controllers.cloud_run.run_v2.ResourceRequirements'), \
          patch('gcp_utils.controllers.cloud_run.run_v2.EnvVar'), \
          patch('gcp_utils.controllers.cloud_run.run_v2.RevisionScaling'):
@@ -187,7 +189,7 @@ def test_update_traffic_success(cloud_run_controller):
 
     # Patch the protobuf classes to avoid validation issues
     with patch('gcp_utils.controllers.cloud_run.run_v2.UpdateServiceRequest'), \
-         patch('gcp_utils.controllers.cloud_run.run_v2.TrafficTarget') as mock_traffic, \
+         patch('gcp_utils.controllers.cloud_run.run_v2.TrafficTarget'), \
          patch('gcp_utils.controllers.cloud_run.run_v2.TrafficTargetAllocationType'):
 
         service = cloud_run_controller.update_traffic("test-service", traffic_targets)

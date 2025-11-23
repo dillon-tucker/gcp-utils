@@ -9,10 +9,9 @@ Cloud Run (via Cloud Build), and other GCP services.
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Optional
 
 from ..controllers.storage import CloudStorageController
-from ..exceptions import ValidationError, StorageError
+from ..exceptions import StorageError, ValidationError
 from ..models.storage import UploadResult
 
 
@@ -49,7 +48,7 @@ class ZipUtility:
         ```
     """
 
-    def __init__(self, storage_controller: Optional[CloudStorageController] = None):
+    def __init__(self, storage_controller: CloudStorageController | None = None):
         """
         Initialize the ZipUtility.
 
@@ -100,8 +99,8 @@ class ZipUtility:
     def zip_directory(
         self,
         source_dir: str | Path,
-        output_path: Optional[str | Path] = None,
-        exclude_patterns: Optional[list[str]] = None,
+        output_path: str | Path | None = None,
+        exclude_patterns: list[str] | None = None,
         compression: int = zipfile.ZIP_DEFLATED,
         compression_level: int = 6,
     ) -> Path:
@@ -222,10 +221,10 @@ class ZipUtility:
         source_dir: str | Path,
         bucket_name: str,
         destination_blob_name: str,
-        exclude_patterns: Optional[list[str]] = None,
+        exclude_patterns: list[str] | None = None,
         cleanup: bool = True,
         public: bool = False,
-        metadata: Optional[dict[str, str]] = None,
+        metadata: dict[str, str] | None = None,
     ) -> UploadResult:
         """
         Zip a directory and upload it to Cloud Storage in one step.
@@ -362,8 +361,8 @@ class ZipUtility:
 # Convenience functions for quick usage
 def zip_directory(
     source_dir: str | Path,
-    output_path: Optional[str | Path] = None,
-    exclude_patterns: Optional[list[str]] = None,
+    output_path: str | Path | None = None,
+    exclude_patterns: list[str] | None = None,
 ) -> Path:
     """
     Convenience function to zip a directory.
@@ -395,7 +394,7 @@ def zip_and_upload(
     source_dir: str | Path,
     bucket_name: str,
     destination_blob_name: str,
-    exclude_patterns: Optional[list[str]] = None,
+    exclude_patterns: list[str] | None = None,
 ) -> UploadResult:
     """
     Convenience function to zip a directory and upload to Cloud Storage.

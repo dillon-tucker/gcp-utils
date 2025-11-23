@@ -1,17 +1,24 @@
 """
 Tests for all Pydantic models.
 """
-import pytest
 from datetime import datetime
-from gcp_utils.models.cloud_run import CloudRunService, TrafficTarget, ServiceRevision
-from gcp_utils.models.storage import BucketInfo, BlobMetadata, UploadResult
-from gcp_utils.models.firestore import FirestoreDocument, FirestoreQuery, QueryOperator
-from gcp_utils.models.iam import ServiceAccount, ServiceAccountKey, IAMPolicy, IAMBinding
-from gcp_utils.models.pubsub import TopicInfo, SubscriptionInfo
-from gcp_utils.models.tasks import CloudTask, TaskInfo
-from gcp_utils.models.workflows import WorkflowInfo, WorkflowExecution
+
+import pytest
+from pydantic import ValidationError
+
 from gcp_utils.models.artifact_registry import Repository
-from gcp_utils.models.secret_manager import SecretVersionInfo, SecretInfo
+from gcp_utils.models.cloud_run import CloudRunService, ServiceRevision, TrafficTarget
+from gcp_utils.models.firestore import FirestoreDocument, FirestoreQuery, QueryOperator
+from gcp_utils.models.iam import (
+    IAMBinding,
+    IAMPolicy,
+    ServiceAccount,
+)
+from gcp_utils.models.pubsub import SubscriptionInfo, TopicInfo
+from gcp_utils.models.secret_manager import SecretInfo, SecretVersionInfo
+from gcp_utils.models.storage import BlobMetadata, BucketInfo, UploadResult
+from gcp_utils.models.tasks import CloudTask, TaskInfo
+from gcp_utils.models.workflows import WorkflowExecution, WorkflowInfo
 
 
 class TestCloudRunModels:
@@ -31,7 +38,7 @@ class TestCloudRunModels:
 
     def test_traffic_target_validation(self):
         """Test TrafficTarget validation."""
-        with pytest.raises(Exception):  # pydantic validation error
+        with pytest.raises(ValidationError):
             TrafficTarget(percent=150)  # percent > 100
 
     def test_service_revision_creation(self):
