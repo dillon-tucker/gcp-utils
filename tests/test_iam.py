@@ -1,6 +1,7 @@
 """
 Tests for IAMController.
 """
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -19,7 +20,7 @@ def settings():
 @pytest.fixture
 def iam_controller(settings):
     """Fixture for IAMController with a mocked client."""
-    with patch('google.cloud.iam_admin_v1.IAMClient') as mock_client:
+    with patch("google.cloud.iam_admin_v1.IAMClient") as mock_client:
         controller = IAMController(settings)
         controller._client = mock_client.return_value
         yield controller
@@ -37,8 +38,7 @@ def test_create_service_account_success(iam_controller):
     iam_controller._client.create_service_account.return_value = mock_account
 
     account = iam_controller.create_service_account(
-        "test-sa",
-        display_name="Test Service Account"
+        "test-sa", display_name="Test Service Account"
     )
 
     assert account.email == "test-sa@test-project.iam.gserviceaccount.com"
@@ -54,7 +54,9 @@ def test_get_service_account_success(iam_controller):
 
     iam_controller._client.get_service_account.return_value = mock_account
 
-    account = iam_controller.get_service_account("test-sa@test-project.iam.gserviceaccount.com")
+    account = iam_controller.get_service_account(
+        "test-sa@test-project.iam.gserviceaccount.com"
+    )
 
     assert account.email == "test-sa@test-project.iam.gserviceaccount.com"
 
@@ -64,7 +66,9 @@ def test_get_service_account_not_found(iam_controller):
     iam_controller._client.get_service_account.side_effect = Exception("404 Not Found")
 
     with pytest.raises(ResourceNotFoundError):
-        iam_controller.get_service_account("nonexistent@test-project.iam.gserviceaccount.com")
+        iam_controller.get_service_account(
+            "nonexistent@test-project.iam.gserviceaccount.com"
+        )
 
 
 def test_list_service_accounts(iam_controller):
@@ -84,7 +88,9 @@ def test_delete_service_account(iam_controller):
     """Test deleting a service account."""
     iam_controller._client.delete_service_account.return_value = None
 
-    iam_controller.delete_service_account("test-sa@test-project.iam.gserviceaccount.com")
+    iam_controller.delete_service_account(
+        "test-sa@test-project.iam.gserviceaccount.com"
+    )
 
     iam_controller._client.delete_service_account.assert_called_once()
 

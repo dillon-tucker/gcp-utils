@@ -5,10 +5,9 @@ This module provides a type-safe controller for deploying and managing
 Cloud Functions (2nd gen) including HTTP functions and event-driven functions.
 """
 
-
 from google.api_core.exceptions import GoogleAPIError
 from google.auth.credentials import Credentials
-from google.cloud import functions_v2  # type: ignore[attr-defined]
+from google.cloud import functions_v2
 from google.cloud.functions_v2.types import (
     CreateFunctionRequest,
     DeleteFunctionRequest,
@@ -177,13 +176,13 @@ class CloudFunctionsController:
             )
 
             if build_config:
-                function.build_config = build_config
+                function.build_config = build_config  # type: ignore[assignment]
 
             if service_config:
-                function.service_config = service_config
+                function.service_config = service_config  # type: ignore[assignment]
 
             if event_trigger:
-                function.event_trigger = event_trigger
+                function.event_trigger = event_trigger  # type: ignore[assignment]
 
             request = CreateFunctionRequest(
                 parent=parent,
@@ -375,13 +374,13 @@ class CloudFunctionsController:
                 function.labels = labels
 
             if build_config:
-                function.build_config = build_config
+                function.build_config = build_config  # type: ignore[assignment]
 
             if service_config:
-                function.service_config = service_config
+                function.service_config = service_config  # type: ignore[assignment]
 
             if event_trigger:
-                function.event_trigger = event_trigger
+                function.event_trigger = event_trigger  # type: ignore[assignment]
 
             request = UpdateFunctionRequest(function=function)
 

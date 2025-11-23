@@ -57,7 +57,9 @@ def test_create_job(controller: CloudSchedulerController, mock_client: Mock) -> 
     mock_client.create_job.assert_called_once()
 
 
-def test_create_http_job(controller: CloudSchedulerController, mock_client: Mock) -> None:
+def test_create_http_job(
+    controller: CloudSchedulerController, mock_client: Mock
+) -> None:
     """Test creating an HTTP job with convenience method."""
     # Setup mock
     mock_job = Job(
@@ -218,6 +220,7 @@ def test_run_job(controller: CloudSchedulerController, mock_client: Mock) -> Non
     """Test manually running a Cloud Scheduler job."""
     # Setup mock
     from datetime import datetime
+
     mock_job = Job(
         name="projects/test-project/locations/us-central1/jobs/my-job",
     )

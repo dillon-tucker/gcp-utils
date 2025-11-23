@@ -66,7 +66,9 @@ def zip_util() -> ZipUtility:
 class TestZipDirectory:
     """Tests for zip_directory method."""
 
-    def test_zip_directory_basic(self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path) -> None:
+    def test_zip_directory_basic(
+        self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path
+    ) -> None:
         """Test basic directory zipping."""
         output_path = tmp_path / "output.zip"
 
@@ -87,7 +89,9 @@ class TestZipDirectory:
             assert "requirements.txt" in names
             assert "subdir/utils.py" in names
 
-    def test_zip_directory_with_exclusions(self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path) -> None:
+    def test_zip_directory_with_exclusions(
+        self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path
+    ) -> None:
         """Test directory zipping with exclusion patterns."""
         output_path = tmp_path / "output.zip"
 
@@ -111,7 +115,9 @@ class TestZipDirectory:
             assert not any(".pyc" in name for name in names)
             assert not any("__pycache__" in name for name in names)
 
-    def test_zip_directory_default_exclusions(self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path) -> None:
+    def test_zip_directory_default_exclusions(
+        self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path
+    ) -> None:
         """Test that default exclusions work correctly."""
         output_path = tmp_path / "output.zip"
 
@@ -134,7 +140,9 @@ class TestZipDirectory:
             assert not any(".pyc" in name for name in names)
             assert not any("__pycache__" in name for name in names)
 
-    def test_zip_directory_temp_file(self, zip_util: ZipUtility, sample_directory: Path) -> None:
+    def test_zip_directory_temp_file(
+        self, zip_util: ZipUtility, sample_directory: Path
+    ) -> None:
         """Test zipping to a temporary file (no output_path specified)."""
         result = zip_util.zip_directory(
             source_dir=sample_directory,
@@ -147,7 +155,9 @@ class TestZipDirectory:
         # Clean up
         result.unlink()
 
-    def test_zip_directory_nonexistent_source(self, zip_util: ZipUtility, tmp_path: Path) -> None:
+    def test_zip_directory_nonexistent_source(
+        self, zip_util: ZipUtility, tmp_path: Path
+    ) -> None:
         """Test zipping a non-existent directory."""
         nonexistent = tmp_path / "nonexistent"
 
@@ -159,7 +169,9 @@ class TestZipDirectory:
 
         assert "does not exist" in str(exc_info.value)
 
-    def test_zip_directory_source_is_file(self, zip_util: ZipUtility, tmp_path: Path) -> None:
+    def test_zip_directory_source_is_file(
+        self, zip_util: ZipUtility, tmp_path: Path
+    ) -> None:
         """Test zipping when source is a file, not a directory."""
         file_path = tmp_path / "file.txt"
         file_path.write_text("content")
@@ -172,7 +184,9 @@ class TestZipDirectory:
 
         assert "not a directory" in str(exc_info.value)
 
-    def test_zip_directory_creates_parent_dirs(self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path) -> None:
+    def test_zip_directory_creates_parent_dirs(
+        self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path
+    ) -> None:
         """Test that parent directories are created if they don't exist."""
         output_path = tmp_path / "nested" / "dirs" / "output.zip"
 
@@ -188,7 +202,9 @@ class TestZipDirectory:
 class TestZipUtilityHelpers:
     """Tests for helper methods."""
 
-    def test_get_zip_size(self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path) -> None:
+    def test_get_zip_size(
+        self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path
+    ) -> None:
         """Test getting ZIP file size."""
         zip_path = tmp_path / "test.zip"
         zip_util.zip_directory(sample_directory, zip_path)
@@ -198,14 +214,18 @@ class TestZipUtilityHelpers:
         assert size > 0
         assert size == zip_path.stat().st_size
 
-    def test_get_zip_size_nonexistent(self, zip_util: ZipUtility, tmp_path: Path) -> None:
+    def test_get_zip_size_nonexistent(
+        self, zip_util: ZipUtility, tmp_path: Path
+    ) -> None:
         """Test getting size of non-existent ZIP."""
         with pytest.raises(ValidationError) as exc_info:
             zip_util.get_zip_size(tmp_path / "nonexistent.zip")
 
         assert "does not exist" in str(exc_info.value)
 
-    def test_list_zip_contents(self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path) -> None:
+    def test_list_zip_contents(
+        self, zip_util: ZipUtility, sample_directory: Path, tmp_path: Path
+    ) -> None:
         """Test listing ZIP contents."""
         zip_path = tmp_path / "test.zip"
         zip_util.zip_directory(sample_directory, zip_path, exclude_patterns=[])
@@ -217,14 +237,18 @@ class TestZipUtilityHelpers:
         assert "main.py" in contents
         assert "requirements.txt" in contents
 
-    def test_list_zip_contents_nonexistent(self, zip_util: ZipUtility, tmp_path: Path) -> None:
+    def test_list_zip_contents_nonexistent(
+        self, zip_util: ZipUtility, tmp_path: Path
+    ) -> None:
         """Test listing contents of non-existent ZIP."""
         with pytest.raises(ValidationError) as exc_info:
             zip_util.list_zip_contents(tmp_path / "nonexistent.zip")
 
         assert "does not exist" in str(exc_info.value)
 
-    def test_list_zip_contents_invalid_zip(self, zip_util: ZipUtility, tmp_path: Path) -> None:
+    def test_list_zip_contents_invalid_zip(
+        self, zip_util: ZipUtility, tmp_path: Path
+    ) -> None:
         """Test listing contents of invalid ZIP file."""
         invalid_zip = tmp_path / "invalid.zip"
         invalid_zip.write_text("not a zip file")
@@ -329,7 +353,9 @@ class TestZipAndUpload:
 class TestConvenienceFunctions:
     """Tests for convenience functions."""
 
-    def test_zip_directory_function(self, sample_directory: Path, tmp_path: Path) -> None:
+    def test_zip_directory_function(
+        self, sample_directory: Path, tmp_path: Path
+    ) -> None:
         """Test zip_directory convenience function."""
         output_path = tmp_path / "output.zip"
 
@@ -344,7 +370,9 @@ class TestConvenienceFunctions:
 
     def test_zip_and_upload_function(self, sample_directory: Path) -> None:
         """Test zip_and_upload convenience function."""
-        with patch("gcp_utils.utils.zip_utils.CloudStorageController") as mock_controller_class:
+        with patch(
+            "gcp_utils.utils.zip_utils.CloudStorageController"
+        ) as mock_controller_class:
             mock_storage = Mock()
             mock_storage.upload_file.return_value = UploadResult(
                 blob_name="test.zip",
@@ -425,7 +453,9 @@ class TestErrorHandling:
             # Output file should not exist (cleaned up)
             assert not output_path.exists()
 
-    def test_lazy_storage_controller_initialization(self, sample_directory: Path) -> None:
+    def test_lazy_storage_controller_initialization(
+        self, sample_directory: Path
+    ) -> None:
         """Test that storage controller is lazily initialized."""
         zip_util = ZipUtility()  # No storage controller provided
 
@@ -433,7 +463,9 @@ class TestErrorHandling:
         assert zip_util._storage_controller is None
 
         # Mock the storage controller creation
-        with patch("gcp_utils.utils.zip_utils.CloudStorageController") as mock_controller_class:
+        with patch(
+            "gcp_utils.utils.zip_utils.CloudStorageController"
+        ) as mock_controller_class:
             mock_storage = Mock()
             mock_storage.upload_file.return_value = UploadResult(
                 blob_name="test.zip",

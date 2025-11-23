@@ -40,7 +40,9 @@ class BlobMetadata(BaseModel):
     updated: datetime | None = Field(None, description="Last update timestamp")
     generation: int | None = Field(None, description="Object generation number")
     metageneration: int | None = Field(None, description="Metadata generation number")
-    public_url: str | None = Field(None, description="Public URL if publicly accessible")
+    public_url: str | None = Field(
+        None, description="Public URL if publicly accessible"
+    )
     metadata: dict[str, str] = Field(
         default_factory=dict, description="Custom metadata key-value pairs"
     )
@@ -152,7 +154,9 @@ class BlobMetadata(BaseModel):
             raise ValueError("No GCS object bound to this metadata")
         self._gcs_object.download_to_filename(filename)
 
-    def upload_from_filename(self, filename: str, content_type: str | None = None) -> None:
+    def upload_from_filename(
+        self, filename: str, content_type: str | None = None
+    ) -> None:
         """
         Upload content from a local file.
 
@@ -171,9 +175,7 @@ class BlobMetadata(BaseModel):
         self.reload()  # Update metadata after upload
 
     def upload_from_string(
-        self,
-        data: str | bytes,
-        content_type: str | None = None
+        self, data: str | bytes, content_type: str | None = None
     ) -> None:
         """
         Upload content from a string or bytes.
@@ -259,9 +261,13 @@ class BucketInfo(BaseModel):
 
     name: str = Field(..., description="Bucket name")
     location: str = Field(..., description="Bucket location")
-    storage_class: str = Field(..., description="Storage class (STANDARD, NEARLINE, etc.)")
+    storage_class: str = Field(
+        ..., description="Storage class (STANDARD, NEARLINE, etc.)"
+    )
     created: datetime | None = Field(None, description="Creation timestamp")
-    versioning_enabled: bool = Field(default=False, description="Whether versioning is enabled")
+    versioning_enabled: bool = Field(
+        default=False, description="Whether versioning is enabled"
+    )
     labels: dict[str, str] = Field(default_factory=dict, description="Bucket labels")
 
     # The actual GCS Bucket object (private attribute, not serialized)
@@ -376,11 +382,13 @@ class BucketInfo(BaseModel):
         if not self._gcs_object:
             raise ValueError("No GCS object bound to this bucket info")
 
-        return list(self._gcs_object.list_blobs(
-            prefix=prefix,
-            delimiter=delimiter,
-            max_results=max_results,
-        ))
+        return list(
+            self._gcs_object.list_blobs(
+                prefix=prefix,
+                delimiter=delimiter,
+                max_results=max_results,
+            )
+        )
 
     def get_blob(self, blob_name: str) -> Optional["Blob"]:
         """

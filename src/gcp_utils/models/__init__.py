@@ -15,9 +15,7 @@ from .bigquery import (
     SchemaField,
     Table,
 )
-from .bigquery import (
-    JobState as BigQueryJobState,
-)
+from .bigquery import JobState as BigQueryJobState
 from .cloud_build import (
     Build,
     BuildStatus,

@@ -1,6 +1,7 @@
 """
 Tests for FirestoreController.
 """
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -16,22 +17,27 @@ def settings():
     """Fixture for GCPSettings."""
     return GCPSettings()  # Reads from .env file
 
+
 @pytest.fixture
 def firestore_controller(settings):
     """Fixture for FirestoreController with a mocked client."""
-    with patch('google.cloud.firestore.Client') as mock_client:
+    with patch("google.cloud.firestore.Client") as mock_client:
         controller = FirestoreController(settings)
         controller.client = mock_client.return_value
         yield controller
+
 
 def test_get_document_not_found(firestore_controller):
     """Test that get_document raises ResourceNotFoundError for a non-existent document."""
     mock_doc_ref = MagicMock()
     mock_doc_ref.get.return_value.exists = False
-    firestore_controller.client.collection.return_value.document.return_value = mock_doc_ref
+    firestore_controller.client.collection.return_value.document.return_value = (
+        mock_doc_ref
+    )
 
     with pytest.raises(ResourceNotFoundError):
         firestore_controller.get_document("my-collection", "non-existent-doc")
+
 
 def test_create_document(firestore_controller):
     """Test creating a document."""
@@ -57,15 +63,17 @@ def test_create_document(firestore_controller):
     mock_doc_ref.get.return_value = mock_doc_snapshot
     mock_doc_ref.set.return_value = None
 
-
     # Call the method under test
-    created_doc = firestore_controller.create_document(collection_id, data, document_id=document_id)
+    created_doc = firestore_controller.create_document(
+        collection_id, data, document_id=document_id
+    )
 
     # Assertions
     mock_collection.document.assert_called_with(document_id)
     mock_doc_ref.set.assert_called_once_with(data)
     assert created_doc.id == document_id
     assert created_doc.data["name"] == "Test User"
+
 
 @pytest.mark.integration
 def test_document_lifecycle(settings):
@@ -76,7 +84,9 @@ def test_document_lifecycle(settings):
     doc_data = {"name": "Test", "value": 123}
 
     # Create document
-    created_doc = controller.create_document(collection_id, doc_data, document_id=document_id)
+    created_doc = controller.create_document(
+        collection_id, doc_data, document_id=document_id
+    )
     assert created_doc.id == document_id
 
     # Get document

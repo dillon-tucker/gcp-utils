@@ -1,6 +1,7 @@
 """
 Tests for CloudTasksController.
 """
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -19,7 +20,7 @@ def settings():
 @pytest.fixture
 def cloud_tasks_controller(settings):
     """Fixture for CloudTasksController with a mocked client."""
-    with patch('google.cloud.tasks_v2.CloudTasksClient') as mock_client:
+    with patch("google.cloud.tasks_v2.CloudTasksClient") as mock_client:
         controller = CloudTasksController(settings)
         controller._client = mock_client.return_value
         yield controller
@@ -60,7 +61,9 @@ def test_get_queue_not_found(cloud_tasks_controller):
 def test_create_http_task_success(cloud_tasks_controller):
     """Test creating an HTTP task successfully."""
     mock_task = MagicMock()
-    mock_task.name = "projects/test-project/locations/us-central1/queues/test-queue/tasks/task-123"
+    mock_task.name = (
+        "projects/test-project/locations/us-central1/queues/test-queue/tasks/task-123"
+    )
 
     cloud_tasks_controller._client.create_task.return_value = mock_task
 
@@ -68,7 +71,7 @@ def test_create_http_task_success(cloud_tasks_controller):
         queue_name="test-queue",
         url="https://example.com/api/task",
         http_method="POST",
-        payload={"key": "value"}
+        payload={"key": "value"},
     )
 
     assert "task-123" in task.name
@@ -78,8 +81,7 @@ def test_create_http_task_validation_error(cloud_tasks_controller):
     """Test creating an HTTP task with invalid parameters."""
     with pytest.raises(ValidationError):
         cloud_tasks_controller.create_http_task(
-            queue_name="",
-            url="https://example.com/api/task"
+            queue_name="", url="https://example.com/api/task"
         )
 
 
@@ -95,7 +97,9 @@ def test_delete_queue(cloud_tasks_controller):
 def test_list_tasks(cloud_tasks_controller):
     """Test listing tasks in a queue."""
     mock_task = MagicMock()
-    mock_task.name = "projects/test-project/locations/us-central1/queues/test-queue/tasks/task-123"
+    mock_task.name = (
+        "projects/test-project/locations/us-central1/queues/test-queue/tasks/task-123"
+    )
 
     cloud_tasks_controller._client.list_tasks.return_value = [mock_task]
 

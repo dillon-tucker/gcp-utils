@@ -426,7 +426,9 @@ class PubSubController:
                 )
                 # Get full subscription details
                 return [
-                    self._subscription_to_model(self.subscriber.get_subscription(subscription=sub))
+                    self._subscription_to_model(
+                        self.subscriber.get_subscription(subscription=sub)
+                    )
                     for sub in subscriptions
                 ]
             else:

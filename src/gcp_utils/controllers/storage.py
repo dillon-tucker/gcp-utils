@@ -118,7 +118,9 @@ class CloudStorageController:
                 bucket.labels = labels
 
             # Set uniform bucket-level access
-            bucket.iam_configuration.uniform_bucket_level_access_enabled = uniform_bucket_level_access
+            bucket.iam_configuration.uniform_bucket_level_access_enabled = (
+                uniform_bucket_level_access
+            )
 
             created_bucket = self.client.create_bucket(
                 bucket,

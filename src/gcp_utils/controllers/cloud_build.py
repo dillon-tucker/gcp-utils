@@ -5,16 +5,11 @@ This module provides a type-safe controller for managing Cloud Build triggers
 and executing builds for continuous integration and deployment workflows.
 """
 
-
 from google.api_core.exceptions import GoogleAPIError
 from google.auth.credentials import Credentials
 from google.cloud.devtools import cloudbuild_v1
-from google.cloud.devtools.cloudbuild_v1.types import (
-    Build as GCPBuild,
-)
-from google.cloud.devtools.cloudbuild_v1.types import (
-    BuildTrigger as GCPBuildTrigger,
-)
+from google.cloud.devtools.cloudbuild_v1.types import Build as GCPBuild
+from google.cloud.devtools.cloudbuild_v1.types import BuildTrigger as GCPBuildTrigger
 from google.cloud.devtools.cloudbuild_v1.types import (
     CancelBuildRequest,
     CreateBuildRequest,
@@ -90,9 +85,7 @@ class CloudBuildController:
     def _get_client(self) -> cloudbuild_v1.CloudBuildClient:
         """Lazy initialization of the Cloud Build client."""
         if self._client is None:
-            self._client = cloudbuild_v1.CloudBuildClient(
-                credentials=self._credentials
-            )
+            self._client = cloudbuild_v1.CloudBuildClient(credentials=self._credentials)
         return self._client
 
     def _build_to_model(self, build: GCPBuild) -> Build:
@@ -118,7 +111,9 @@ class CloudBuildController:
             tags=list(trigger.tags) if trigger.tags else None,
             create_time=trigger.create_time,
             disabled=trigger.disabled,
-            substitutions=dict(trigger.substitutions) if trigger.substitutions else None,
+            substitutions=(
+                dict(trigger.substitutions) if trigger.substitutions else None
+            ),
             filename=trigger.filename or None,
             filter=trigger.filter or None,
         )
@@ -180,7 +175,7 @@ class CloudBuildController:
             )
 
             if source:
-                build.source = source
+                build.source = source  # type: ignore[assignment]
 
             if images:
                 build.images = images
@@ -423,13 +418,13 @@ class CloudBuildController:
                 trigger.description = description
 
             if trigger_template:
-                trigger.trigger_template = trigger_template
+                trigger.trigger_template = trigger_template  # type: ignore[assignment]
 
             if github:
-                trigger.github = github
+                trigger.github = github  # type: ignore[assignment]
 
             if build:
-                trigger.build = build
+                trigger.build = build  # type: ignore[assignment]
 
             if filename:
                 trigger.filename = filename
@@ -534,7 +529,9 @@ class CloudBuildController:
 
             response = client.list_build_triggers(request=request)
 
-            triggers = [self._trigger_to_model(trigger) for trigger in response.triggers]
+            triggers = [
+                self._trigger_to_model(trigger) for trigger in response.triggers
+            ]
 
             return TriggerListResponse(
                 triggers=triggers,

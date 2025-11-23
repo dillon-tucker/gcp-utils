@@ -248,7 +248,9 @@ class ArtifactRegistryController:
 
             for repository in client.list_repositories(request=request):
                 repo_id = repository.name.split("/")[-1]
-                all_repos.append(self._repository_to_model(repository, repo_id, location))
+                all_repos.append(
+                    self._repository_to_model(repository, repo_id, location)
+                )
 
             return all_repos
 
@@ -453,16 +455,24 @@ class ArtifactRegistryController:
                 details={"repository_id": repository_id, "error": str(e)},
             ) from e
 
-    def _repository_to_model(self, repository: Any, repository_id: str, location: str) -> Repository:
+    def _repository_to_model(
+        self, repository: Any, repository_id: str, location: str
+    ) -> Repository:
         """Convert Artifact Registry Repository to Repository model with native object binding."""
         model = Repository(
             name=repository.name,
             repository_id=repository_id,
             format=repository.format_.name,
-            description=repository.description if hasattr(repository, "description") else None,
+            description=(
+                repository.description if hasattr(repository, "description") else None
+            ),
             location=location,
-            create_time=repository.create_time if hasattr(repository, "create_time") else None,
-            update_time=repository.update_time if hasattr(repository, "update_time") else None,
+            create_time=(
+                repository.create_time if hasattr(repository, "create_time") else None
+            ),
+            update_time=(
+                repository.update_time if hasattr(repository, "update_time") else None
+            ),
             labels=dict(repository.labels) if hasattr(repository, "labels") else {},
         )
         # Bind the native object

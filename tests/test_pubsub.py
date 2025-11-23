@@ -1,6 +1,7 @@
 """
 Tests for PubSubController.
 """
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -19,8 +20,10 @@ def settings():
 @pytest.fixture
 def pubsub_controller(settings):
     """Fixture for PubSubController with mocked clients."""
-    with patch('google.cloud.pubsub_v1.PublisherClient') as mock_publisher, \
-         patch('google.cloud.pubsub_v1.SubscriberClient') as mock_subscriber:
+    with (
+        patch("google.cloud.pubsub_v1.PublisherClient") as mock_publisher,
+        patch("google.cloud.pubsub_v1.SubscriberClient") as mock_subscriber,
+    ):
         controller = PubSubController(settings)
         controller._publisher = mock_publisher.return_value
         controller._subscriber = mock_subscriber.return_value
@@ -79,8 +82,7 @@ def test_create_subscription_success(pubsub_controller):
     pubsub_controller._subscriber.create_subscription.return_value = mock_subscription
 
     subscription = pubsub_controller.create_subscription(
-        "test-subscription",
-        "test-topic"
+        "test-subscription", "test-topic"
     )
 
     assert subscription.name == "test-subscription"

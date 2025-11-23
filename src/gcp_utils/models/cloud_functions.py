@@ -124,7 +124,8 @@ class ServiceConfig(BaseModel):
     """Configuration for the function service."""
 
     available_memory: str | None = Field(
-        default="256M", description="Memory allocated to the function (e.g., '256M', '1G')"
+        default="256M",
+        description="Memory allocated to the function (e.g., '256M', '1G')",
     )
     timeout_seconds: int | None = Field(
         default=60,
@@ -169,9 +170,7 @@ class ServiceConfig(BaseModel):
     ingress_settings: IngressSettings | None = Field(
         default=IngressSettings.ALLOW_ALL, description="Ingress settings"
     )
-    vpc_connector: str | None = Field(
-        default=None, description="VPC connector name"
-    )
+    vpc_connector: str | None = Field(default=None, description="VPC connector name")
     vpc_connector_egress_settings: VpcConnectorEgressSettings | None = Field(
         default=None, description="VPC connector egress settings"
     )
@@ -197,9 +196,7 @@ class BuildConfig(BaseModel):
     docker_repository: str | None = Field(
         default=None, description="Docker repository for storing function images"
     )
-    worker_pool: str | None = Field(
-        default=None, description="Cloud Build worker pool"
-    )
+    worker_pool: str | None = Field(default=None, description="Cloud Build worker pool")
 
 
 class EventFilter(BaseModel):
@@ -232,9 +229,7 @@ class EventTrigger(BaseModel):
         default=None,
         description="Retry policy: 'RETRY_POLICY_UNSPECIFIED', 'RETRY_POLICY_DO_NOT_RETRY', 'RETRY_POLICY_RETRY'",
     )
-    channel: str | None = Field(
-        default=None, description="Eventarc channel name"
-    )
+    channel: str | None = Field(default=None, description="Eventarc channel name")
 
 
 class CloudFunction(BaseModel):
@@ -257,9 +252,7 @@ class CloudFunction(BaseModel):
     update_time: datetime | None = Field(
         default=None, description="Last update timestamp"
     )
-    labels: dict[str, str] | None = Field(
-        default=None, description="Resource labels"
-    )
+    labels: dict[str, str] | None = Field(default=None, description="Resource labels")
     url: str | None = Field(default=None, description="HTTP trigger URL")
     kms_key_name: str | None = Field(
         default=None, description="Cloud KMS key for encryption"

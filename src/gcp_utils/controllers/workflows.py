@@ -432,7 +432,9 @@ class WorkflowsController:
 
         model = WorkflowInfo(
             name=name,
-            description=workflow.description if hasattr(workflow, "description") else None,
+            description=(
+                workflow.description if hasattr(workflow, "description") else None
+            ),
             state=str(workflow.state) if hasattr(workflow, "state") else "UNKNOWN",
             created=workflow.create_time if hasattr(workflow, "create_time") else None,
             updated=workflow.update_time if hasattr(workflow, "update_time") else None,

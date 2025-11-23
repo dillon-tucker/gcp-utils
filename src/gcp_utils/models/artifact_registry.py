@@ -48,9 +48,7 @@ class Repository(BaseModel):
     location: str = Field(..., description="GCP location")
     create_time: datetime | None = Field(None, description="Creation timestamp")
     update_time: datetime | None = Field(None, description="Last update timestamp")
-    labels: dict[str, str] = Field(
-        default_factory=dict, description="Resource labels"
-    )
+    labels: dict[str, str] = Field(default_factory=dict, description="Resource labels")
 
     # The actual Repository object (private attribute, not serialized)
     _repository_object: Optional["GCPRepository"] = PrivateAttr(default=None)

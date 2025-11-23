@@ -5,10 +5,9 @@ This module provides a type-safe controller for creating and managing
 Cloud Scheduler jobs with HTTP, Pub/Sub, and App Engine targets.
 """
 
-
 from google.api_core.exceptions import GoogleAPIError
 from google.auth.credentials import Credentials
-from google.cloud import scheduler_v1  # type: ignore[attr-defined]
+from google.cloud import scheduler_v1
 from google.cloud.scheduler_v1.types import (
     CreateJobRequest,
     DeleteJobRequest,
@@ -164,16 +163,16 @@ class CloudSchedulerController:
             )
 
             if http_target:
-                job.http_target = http_target
+                job.http_target = http_target  # type: ignore[assignment]
 
             if pubsub_target:
-                job.pubsub_target = pubsub_target
+                job.pubsub_target = pubsub_target  # type: ignore[assignment]
 
             if app_engine_http_target:
-                job.app_engine_http_target = app_engine_http_target
+                job.app_engine_http_target = app_engine_http_target  # type: ignore[assignment]
 
             if retry_config:
-                job.retry_config = retry_config
+                job.retry_config = retry_config  # type: ignore[assignment]
 
             if attempt_deadline:
                 from google.protobuf import duration_pb2
@@ -265,9 +264,7 @@ class CloudSchedulerController:
             }
 
         if oidc_service_account:
-            http_target["oidc_token"] = {
-                "service_account_email": oidc_service_account
-            }
+            http_target["oidc_token"] = {"service_account_email": oidc_service_account}
 
         return self.create_job(
             job_id=job_id,
@@ -367,7 +364,9 @@ class CloudSchedulerController:
         try:
             client = self._get_client()
             region = location or self._settings.cloud_scheduler_location
-            name = f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            name = (
+                f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            )
 
             request = GetJobRequest(name=name)
             job = client.get_job(request=request)
@@ -483,7 +482,9 @@ class CloudSchedulerController:
         try:
             client = self._get_client()
             region = location or self._settings.cloud_scheduler_location
-            name = f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            name = (
+                f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            )
 
             job = Job(name=name)
 
@@ -497,10 +498,10 @@ class CloudSchedulerController:
                 job.description = description
 
             if http_target:
-                job.http_target = http_target
+                job.http_target = http_target  # type: ignore[assignment]
 
             if pubsub_target:
-                job.pubsub_target = pubsub_target
+                job.pubsub_target = pubsub_target  # type: ignore[assignment]
 
             request = UpdateJobRequest(job=job)
 
@@ -545,7 +546,9 @@ class CloudSchedulerController:
         try:
             client = self._get_client()
             region = location or self._settings.cloud_scheduler_location
-            name = f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            name = (
+                f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            )
 
             request = DeleteJobRequest(name=name)
             client.delete_job(request=request)
@@ -586,7 +589,9 @@ class CloudSchedulerController:
         try:
             client = self._get_client()
             region = location or self._settings.cloud_scheduler_location
-            name = f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            name = (
+                f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            )
 
             request = PauseJobRequest(name=name)
             job = client.pause_job(request=request)
@@ -632,7 +637,9 @@ class CloudSchedulerController:
         try:
             client = self._get_client()
             region = location or self._settings.cloud_scheduler_location
-            name = f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            name = (
+                f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            )
 
             request = ResumeJobRequest(name=name)
             job = client.resume_job(request=request)
@@ -680,7 +687,9 @@ class CloudSchedulerController:
         try:
             client = self._get_client()
             region = location or self._settings.cloud_scheduler_location
-            name = f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            name = (
+                f"projects/{self._settings.project_id}/locations/{region}/jobs/{job_id}"
+            )
 
             request = RunJobRequest(name=name)
             job = client.run_job(request=request)

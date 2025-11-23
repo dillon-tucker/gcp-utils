@@ -74,7 +74,9 @@ class FirebaseHostingController:
             except ValueError:
                 # Firebase not initialized yet
                 cred_path = (
-                    str(self._settings.credentials_path) if self._settings.credentials_path else None
+                    str(self._settings.credentials_path)
+                    if self._settings.credentials_path
+                    else None
                 )
 
                 if cred_path:
@@ -115,6 +117,7 @@ class FirebaseHostingController:
                 # Refresh credentials if needed
                 if not creds.valid:
                     from google.auth.transport.requests import Request
+
                     creds.refresh(Request())
 
                 self._client = httpx.Client(
@@ -630,7 +633,9 @@ class FirebaseHostingController:
             if message:
                 payload["message"] = message
 
-            result = self._make_request("POST", endpoint, json_data=payload, params=params)
+            result = self._make_request(
+                "POST", endpoint, json_data=payload, params=params
+            )
             return result
 
         except Exception as e:
@@ -788,9 +793,7 @@ class FirebaseHostingController:
 
             # Step 2: Populate files endpoint - tell API about all files
             endpoint = f"{version_name}:populateFiles"
-            payload = {
-                "files": dict(file_hashes.items())
-            }
+            payload = {"files": dict(file_hashes.items())}
 
             response = self._make_request("POST", endpoint, json_data=payload)
 
@@ -955,7 +958,9 @@ class FirebaseHostingController:
             # Step 3: Finalize version
             print("Finalizing version...")
             finalized_version = self.finalize_version(version_name)
-            print(f"✓ Version finalized: {finalized_version.get('status', 'FINALIZED')}")
+            print(
+                f"✓ Version finalized: {finalized_version.get('status', 'FINALIZED')}"
+            )
 
             # Step 4: Create release
             print("Creating release...")

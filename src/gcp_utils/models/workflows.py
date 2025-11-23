@@ -82,7 +82,9 @@ class WorkflowInfo(BaseModel):
             "Workflow execution must be performed via WorkflowsController.execute_workflow()"
         )
 
-    def update(self, source_contents: str | None = None, description: str | None = None) -> None:
+    def update(
+        self, source_contents: str | None = None, description: str | None = None
+    ) -> None:
         """
         Update this workflow's source or description.
 

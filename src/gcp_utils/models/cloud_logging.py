@@ -41,7 +41,9 @@ class HttpRequestInfo(BaseModel):
     server_ip: str | None = Field(None, description="Server IP address")
     referer: str | None = Field(None, description="Referer URL")
     latency: float | None = Field(None, description="Request latency in seconds")
-    cache_lookup: bool | None = Field(None, description="Whether a cache lookup was made")
+    cache_lookup: bool | None = Field(
+        None, description="Whether a cache lookup was made"
+    )
     cache_hit: bool | None = Field(None, description="Whether a cache hit occurred")
     cache_validated_with_origin_server: bool | None = Field(
         None, description="Whether cache was validated with origin"
@@ -79,21 +81,31 @@ class LogEntry(BaseModel):
     log_name: str = Field(..., description="Full log name path")
     resource: dict[str, Any] = Field(..., description="Monitored resource")
     timestamp: datetime | None = Field(None, description="Log entry timestamp")
-    receive_timestamp: datetime | None = Field(None, description="Time entry was received")
+    receive_timestamp: datetime | None = Field(
+        None, description="Time entry was received"
+    )
     severity: LogSeverity = Field(LogSeverity.DEFAULT, description="Entry severity")
     insert_id: str | None = Field(None, description="Unique entry ID")
-    labels: dict[str, str] = Field(default_factory=dict, description="User-defined labels")
+    labels: dict[str, str] = Field(
+        default_factory=dict, description="User-defined labels"
+    )
 
     # Payload - exactly one should be set
     text_payload: str | None = Field(None, description="Text log entry")
     json_payload: dict[str, Any] | None = Field(None, description="Structured JSON log")
-    proto_payload: dict[str, Any] | None = Field(None, description="Protocol buffer payload")
+    proto_payload: dict[str, Any] | None = Field(
+        None, description="Protocol buffer payload"
+    )
 
     # HTTP request information
-    http_request: HttpRequestInfo | None = Field(None, description="HTTP request metadata")
+    http_request: HttpRequestInfo | None = Field(
+        None, description="HTTP request metadata"
+    )
 
     # Source location
-    source_location: SourceLocation | None = Field(None, description="Source code location")
+    source_location: SourceLocation | None = Field(
+        None, description="Source code location"
+    )
 
     # Operation information
     operation_id: str | None = Field(None, description="Operation ID")
@@ -141,7 +153,9 @@ class LogEntry(BaseModel):
             entry_dict["http_request"] = self.http_request.model_dump(exclude_none=True)
 
         if self.source_location:
-            entry_dict["source_location"] = self.source_location.model_dump(exclude_none=True)
+            entry_dict["source_location"] = self.source_location.model_dump(
+                exclude_none=True
+            )
 
         if self.trace:
             entry_dict["trace"] = self.trace
@@ -170,14 +184,19 @@ class LogMetric(BaseModel):
     name: str = Field(..., description="Metric name")
     description: str | None = Field(None, description="Metric description")
     filter: str = Field(..., description="Log filter expression")
-    metric_kind: str | None = Field(None, description="Metric kind (DELTA, GAUGE, CUMULATIVE)")
-    value_type: str | None = Field(None, description="Value type (INT64, DOUBLE, DISTRIBUTION)")
+    metric_kind: str | None = Field(
+        None, description="Metric kind (DELTA, GAUGE, CUMULATIVE)"
+    )
+    value_type: str | None = Field(
+        None, description="Value type (INT64, DOUBLE, DISTRIBUTION)"
+    )
     labels: dict[str, str] = Field(default_factory=dict, description="Metric labels")
     label_extractors: dict[str, str] = Field(
-        default_factory=dict,
-        description="Label value extraction patterns"
+        default_factory=dict, description="Label value extraction patterns"
     )
-    bucket_options: dict[str, Any] | None = Field(None, description="Distribution bucket options")
+    bucket_options: dict[str, Any] | None = Field(
+        None, description="Distribution bucket options"
+    )
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -203,8 +222,7 @@ class LogSink(BaseModel):
     description: str | None = Field(None, description="Sink description")
     disabled: bool = Field(default=False, description="Whether sink is disabled")
     include_children: bool = Field(
-        default=False,
-        description="Include logs from child resources"
+        default=False, description="Include logs from child resources"
     )
     writer_identity: str | None = Field(None, description="Service account for writing")
     create_time: datetime | None = Field(None, description="Sink creation time")
@@ -221,7 +239,9 @@ class LoggerInfo(BaseModel):
     """
 
     name: str = Field(..., description="Logger name")
-    resource: dict[str, Any] | None = Field(None, description="Default monitored resource")
+    resource: dict[str, Any] | None = Field(
+        None, description="Default monitored resource"
+    )
     labels: dict[str, str] = Field(default_factory=dict, description="Default labels")
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

@@ -40,9 +40,7 @@ class OAuthToken(BaseModel):
     service_account_email: str = Field(
         ..., description="Service account email for generating OAuth token"
     )
-    scope: str | None = Field(
-        default=None, description="OAuth scope (optional)"
-    )
+    scope: str | None = Field(default=None, description="OAuth scope (optional)")
 
 
 class OidcToken(BaseModel):
@@ -70,20 +68,22 @@ class HttpTarget(BaseModel):
         default=None, description="HTTP request body (for POST/PUT/PATCH)"
     )
     oauth_token: OAuthToken | None = Field(
-        default=None, description="OAuth token authentication (mutually exclusive with oidc_token)"
+        default=None,
+        description="OAuth token authentication (mutually exclusive with oidc_token)",
     )
     oidc_token: OidcToken | None = Field(
-        default=None, description="OIDC token authentication (mutually exclusive with oauth_token)"
+        default=None,
+        description="OIDC token authentication (mutually exclusive with oauth_token)",
     )
 
 
 class PubsubTarget(BaseModel):
     """Pub/Sub target configuration for a Cloud Scheduler job."""
 
-    topic_name: str = Field(..., description="Pub/Sub topic name (projects/{project}/topics/{topic})")
-    data: bytes | None = Field(
-        default=None, description="Message data as bytes"
+    topic_name: str = Field(
+        ..., description="Pub/Sub topic name (projects/{project}/topics/{topic})"
     )
+    data: bytes | None = Field(default=None, description="Message data as bytes")
     attributes: dict[str, str] | None = Field(
         default=None, description="Message attributes"
     )
@@ -99,12 +99,8 @@ class AppEngineHttpTarget(BaseModel):
         default=None, description="App Engine routing configuration"
     )
     relative_uri: str = Field(..., description="Relative URI for App Engine app")
-    headers: dict[str, str] | None = Field(
-        default=None, description="HTTP headers"
-    )
-    body: bytes | None = Field(
-        default=None, description="HTTP request body"
-    )
+    headers: dict[str, str] | None = Field(default=None, description="HTTP headers")
+    body: bytes | None = Field(default=None, description="HTTP request body")
 
 
 class RetryConfig(BaseModel):
@@ -140,9 +136,7 @@ class SchedulerJob(BaseModel):
     """Cloud Scheduler job model."""
 
     name: str = Field(..., description="Job resource name")
-    description: str | None = Field(
-        default=None, description="Job description"
-    )
+    description: str | None = Field(default=None, description="Job description")
     schedule: str = Field(
         ...,
         description="Job schedule in cron format (e.g., '0 9 * * 1' for 9 AM every Monday)",
@@ -151,9 +145,7 @@ class SchedulerJob(BaseModel):
         default="America/Los_Angeles",
         description="IANA time zone (e.g., 'America/New_York', 'UTC')",
     )
-    state: JobState | None = Field(
-        default=None, description="Job state"
-    )
+    state: JobState | None = Field(default=None, description="Job state")
     http_target: HttpTarget | None = Field(
         default=None, description="HTTP target configuration"
     )
@@ -184,9 +176,7 @@ class SchedulerJob(BaseModel):
 class JobListResponse(BaseModel):
     """Response model for listing Cloud Scheduler jobs."""
 
-    jobs: list[SchedulerJob] = Field(
-        default_factory=list, description="List of jobs"
-    )
+    jobs: list[SchedulerJob] = Field(default_factory=list, description="List of jobs")
     next_page_token: str | None = Field(
         default=None, description="Token for fetching the next page"
     )

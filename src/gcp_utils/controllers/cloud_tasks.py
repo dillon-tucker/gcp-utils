@@ -282,9 +282,7 @@ class CloudTasksController:
             raise ValidationError("URL cannot be empty")
 
         if schedule_time and delay_seconds:
-            raise ValidationError(
-                "Cannot specify both schedule_time and delay_seconds"
-            )
+            raise ValidationError("Cannot specify both schedule_time and delay_seconds")
 
         try:
             queue_path = self._get_queue_path(queue)
@@ -481,22 +479,24 @@ class CloudTasksController:
             "name": queue_name,
             "full_name": queue.name,
             "state": str(queue.state) if hasattr(queue, "state") else "UNKNOWN",
-            "rate_limits": {
-                "max_dispatches_per_second": (
-                    queue.rate_limits.max_dispatches_per_second
-                    if hasattr(queue, "rate_limits")
-                    and hasattr(queue.rate_limits, "max_dispatches_per_second")
-                    else None
-                ),
-                "max_concurrent_dispatches": (
-                    queue.rate_limits.max_concurrent_dispatches
-                    if hasattr(queue, "rate_limits")
-                    and hasattr(queue.rate_limits, "max_concurrent_dispatches")
-                    else None
-                ),
-            }
-            if hasattr(queue, "rate_limits")
-            else {},
+            "rate_limits": (
+                {
+                    "max_dispatches_per_second": (
+                        queue.rate_limits.max_dispatches_per_second
+                        if hasattr(queue, "rate_limits")
+                        and hasattr(queue.rate_limits, "max_dispatches_per_second")
+                        else None
+                    ),
+                    "max_concurrent_dispatches": (
+                        queue.rate_limits.max_concurrent_dispatches
+                        if hasattr(queue, "rate_limits")
+                        and hasattr(queue.rate_limits, "max_concurrent_dispatches")
+                        else None
+                    ),
+                }
+                if hasattr(queue, "rate_limits")
+                else {}
+            ),
         }
 
     def _task_to_info(self, task: Any) -> TaskInfo:

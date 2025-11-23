@@ -15,7 +15,9 @@ from pydantic import BaseModel, Field
 class DatasetAccess(BaseModel):
     """Access control configuration for a dataset."""
 
-    role: str | None = Field(default=None, description="IAM role (e.g., 'READER', 'WRITER', 'OWNER')")
+    role: str | None = Field(
+        default=None, description="IAM role (e.g., 'READER', 'WRITER', 'OWNER')"
+    )
     user_by_email: str | None = Field(default=None, description="User email")
     group_by_email: str | None = Field(default=None, description="Group email")
     domain: str | None = Field(default=None, description="Domain")
@@ -44,7 +46,9 @@ class Dataset(BaseModel):
         default=None, description="Default table expiration in milliseconds"
     )
     created: datetime | None = Field(default=None, description="Creation timestamp")
-    modified: datetime | None = Field(default=None, description="Last modified timestamp")
+    modified: datetime | None = Field(
+        default=None, description="Last modified timestamp"
+    )
 
 
 class FieldMode(str, Enum):
@@ -83,7 +87,9 @@ class SchemaField(BaseModel):
 
     name: str = Field(..., description="Field name")
     field_type: str = Field(..., description="Field type (e.g., 'STRING', 'INTEGER')")
-    mode: str = Field(default="NULLABLE", description="Field mode (NULLABLE, REQUIRED, REPEATED)")
+    mode: str = Field(
+        default="NULLABLE", description="Field mode (NULLABLE, REQUIRED, REPEATED)"
+    )
     description: str | None = Field(default=None, description="Field description")
     fields: list["SchemaField"] | None = Field(
         default=None, description="Nested fields (for RECORD/STRUCT types)"
@@ -143,7 +149,9 @@ class Table(BaseModel):
     description: str | None = Field(default=None, description="Table description")
     friendly_name: str | None = Field(default=None, description="Table friendly name")
     labels: dict[str, str] | None = Field(default=None, description="Table labels")
-    table_schema: list[SchemaField] | None = Field(default=None, description="Table schema", alias="schema")
+    table_schema: list[SchemaField] | None = Field(
+        default=None, description="Table schema", alias="schema"
+    )
     num_rows: int | None = Field(default=None, description="Number of rows")
     num_bytes: int | None = Field(default=None, description="Size in bytes")
     table_type: TableType | None = Field(default=None, description="Table type")
@@ -154,7 +162,9 @@ class Table(BaseModel):
         default=None, description="Clustering configuration"
     )
     created: datetime | None = Field(default=None, description="Creation timestamp")
-    modified: datetime | None = Field(default=None, description="Last modified timestamp")
+    modified: datetime | None = Field(
+        default=None, description="Last modified timestamp"
+    )
     expires: datetime | None = Field(default=None, description="Expiration timestamp")
 
 
@@ -228,7 +238,9 @@ class Job(BaseModel):
     created: datetime | None = Field(default=None, description="Creation timestamp")
     started: datetime | None = Field(default=None, description="Start timestamp")
     ended: datetime | None = Field(default=None, description="End timestamp")
-    error_result: dict[str, Any] | None = Field(default=None, description="Error details if failed")
+    error_result: dict[str, Any] | None = Field(
+        default=None, description="Error details if failed"
+    )
     total_bytes_processed: int | None = Field(
         default=None, description="Total bytes processed"
     )
@@ -250,7 +262,9 @@ class QueryResult(BaseModel):
 
     total_rows: int = Field(..., description="Total number of rows")
     rows: list[QueryRow] = Field(default_factory=list, description="Query result rows")
-    result_schema: list[SchemaField] = Field(..., description="Result schema", alias="schema")
+    result_schema: list[SchemaField] = Field(
+        ..., description="Result schema", alias="schema"
+    )
     job_id: str | None = Field(default=None, description="Job ID for the query")
     total_bytes_processed: int | None = Field(
         default=None, description="Total bytes processed"
@@ -277,9 +291,7 @@ class DatasetListResponse(BaseModel):
 class TableListResponse(BaseModel):
     """Response model for listing tables."""
 
-    tables: list[Table] = Field(
-        default_factory=list, description="List of tables"
-    )
+    tables: list[Table] = Field(default_factory=list, description="List of tables")
     next_page_token: str | None = Field(
         default=None, description="Token for fetching the next page"
     )
@@ -288,9 +300,7 @@ class TableListResponse(BaseModel):
 class JobListResponse(BaseModel):
     """Response model for listing jobs."""
 
-    jobs: list[Job] = Field(
-        default_factory=list, description="List of jobs"
-    )
+    jobs: list[Job] = Field(default_factory=list, description="List of jobs")
     next_page_token: str | None = Field(
         default=None, description="Token for fetching the next page"
     )
@@ -311,7 +321,9 @@ class LoadJobConfig(BaseModel):
         default=CreateDisposition.CREATE_IF_NEEDED, description="Create disposition"
     )
     load_schema: list[SchemaField] | None = Field(
-        default=None, description="Table schema (required if table doesn't exist)", alias="schema"
+        default=None,
+        description="Table schema (required if table doesn't exist)",
+        alias="schema",
     )
     skip_leading_rows: int | None = Field(
         default=None, description="Number of rows to skip (CSV only)"

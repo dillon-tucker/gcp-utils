@@ -67,19 +67,17 @@ class MachineType(str, Enum):
 class BuildStep(BaseModel):
     """A step in a Cloud Build."""
 
-    name: str = Field(..., description="Docker image name (e.g., 'gcr.io/cloud-builders/docker')")
+    name: str = Field(
+        ..., description="Docker image name (e.g., 'gcr.io/cloud-builders/docker')"
+    )
     args: list[str] | None = Field(
         default=None, description="Arguments to pass to the builder"
     )
     env: list[str] | None = Field(
         default=None, description="Environment variables (KEY=value format)"
     )
-    dir: str | None = Field(
-        default=None, description="Working directory for the step"
-    )
-    id: str | None = Field(
-        default=None, description="Step ID (for dependencies)"
-    )
+    dir: str | None = Field(default=None, description="Working directory for the step")
+    id: str | None = Field(default=None, description="Step ID (for dependencies)")
     wait_for: list[str] | None = Field(
         default=None, description="Step IDs to wait for before running this step"
     )
@@ -92,9 +90,7 @@ class BuildStep(BaseModel):
     volumes: list[dict[str, str]] | None = Field(
         default=None, description="Volumes to mount"
     )
-    timeout: str | None = Field(
-        default=None, description="Step timeout (e.g., '300s')"
-    )
+    timeout: str | None = Field(default=None, description="Step timeout (e.g., '300s')")
     script: str | None = Field(
         default=None, description="Script to execute (alternative to args)"
     )
@@ -105,9 +101,7 @@ class StorageSource(BaseModel):
 
     bucket: str = Field(..., description="GCS bucket name")
     object_: str = Field(..., description="GCS object path", alias="object")
-    generation: int | None = Field(
-        default=None, description="Object generation number"
-    )
+    generation: int | None = Field(default=None, description="Object generation number")
 
 
 class RepoSource(BaseModel):
@@ -117,21 +111,11 @@ class RepoSource(BaseModel):
         default=None, description="Project ID containing the repo"
     )
     repo_name: str = Field(..., description="Repository name")
-    branch_name: str | None = Field(
-        default=None, description="Branch name to build"
-    )
-    tag_name: str | None = Field(
-        default=None, description="Tag name to build"
-    )
-    commit_sha: str | None = Field(
-        default=None, description="Commit SHA to build"
-    )
-    dir: str | None = Field(
-        default=None, description="Directory in the repository"
-    )
-    invert_regex: bool = Field(
-        default=False, description="Invert the regex match"
-    )
+    branch_name: str | None = Field(default=None, description="Branch name to build")
+    tag_name: str | None = Field(default=None, description="Tag name to build")
+    commit_sha: str | None = Field(default=None, description="Commit SHA to build")
+    dir: str | None = Field(default=None, description="Directory in the repository")
+    invert_regex: bool = Field(default=False, description="Invert the regex match")
 
 
 class GitHubEventsConfig(BaseModel):
@@ -170,9 +154,7 @@ class BuildOptions(BaseModel):
     machine_type: MachineType | None = Field(
         default=None, description="Machine type for build execution"
     )
-    disk_size_gb: int | None = Field(
-        default=None, description="Disk size in GB"
-    )
+    disk_size_gb: int | None = Field(default=None, description="Disk size in GB")
     substitution_option: SubstitutionOption | None = Field(
         default=None, description="Substitution option"
     )
@@ -185,9 +167,7 @@ class BuildOptions(BaseModel):
     worker_pool: str | None = Field(
         default=None, description="Private worker pool resource name"
     )
-    logging: LoggingMode | None = Field(
-        default=None, description="Logging mode"
-    )
+    logging: LoggingMode | None = Field(default=None, description="Logging mode")
     env: list[str] | None = Field(
         default=None, description="Global environment variables (KEY=value format)"
     )
@@ -227,33 +207,23 @@ class Build(BaseModel):
     status: BuildStatus | None = Field(default=None, description="Build status")
     source: Source | None = Field(default=None, description="Build source")
     steps: list[BuildStep] = Field(..., description="Build steps to execute")
-    results: BuildResults | None = Field(
-        default=None, description="Build results"
-    )
+    results: BuildResults | None = Field(default=None, description="Build results")
     create_time: datetime | None = Field(
         default=None, description="Build creation time"
     )
-    start_time: datetime | None = Field(
-        default=None, description="Build start time"
-    )
-    finish_time: datetime | None = Field(
-        default=None, description="Build finish time"
-    )
+    start_time: datetime | None = Field(default=None, description="Build start time")
+    finish_time: datetime | None = Field(default=None, description="Build finish time")
     timeout: str | None = Field(
         default="600s", description="Build timeout (e.g., '600s')"
     )
     images: list[str] | None = Field(
         default=None, description="Container images to build and push"
     )
-    queue_ttl: str | None = Field(
-        default=None, description="Queue TTL (e.g., '3600s')"
-    )
+    queue_ttl: str | None = Field(default=None, description="Queue TTL (e.g., '3600s')")
     artifacts: dict[str, Any] | None = Field(
         default=None, description="Artifacts configuration"
     )
-    logs_bucket: str | None = Field(
-        default=None, description="GCS bucket for logs"
-    )
+    logs_bucket: str | None = Field(default=None, description="GCS bucket for logs")
     source_provenance: dict[str, Any] | None = Field(
         default=None, description="Source provenance information"
     )
@@ -308,17 +278,13 @@ class BuildTrigger(BaseModel):
     included_files: list[str] | None = Field(
         default=None, description="Glob patterns for files to include"
     )
-    filter: str | None = Field(
-        default=None, description="CEL expression filter"
-    )
+    filter: str | None = Field(default=None, description="CEL expression filter")
 
 
 class BuildListResponse(BaseModel):
     """Response model for listing builds."""
 
-    builds: list[Build] = Field(
-        default_factory=list, description="List of builds"
-    )
+    builds: list[Build] = Field(default_factory=list, description="List of builds")
     next_page_token: str | None = Field(
         default=None, description="Token for fetching the next page"
     )

@@ -38,7 +38,11 @@ class TopicInfo(BaseModel):
 
     # Convenience methods that delegate to controller operations
 
-    def publish(self, data: dict[str, Any] | str | bytes, attributes: dict[str, str] | None = None) -> str:
+    def publish(
+        self,
+        data: dict[str, Any] | str | bytes,
+        attributes: dict[str, str] | None = None,
+    ) -> str:
         """
         Publish a message to this topic.
 
@@ -104,8 +108,12 @@ class SubscriptionInfo(BaseModel):
     name: str = Field(..., description="Subscription name (without prefix)")
     full_name: str = Field(..., description="Full subscription path")
     topic: str | None = Field(None, description="Topic path")
-    ack_deadline_seconds: int | None = Field(None, description="Acknowledgement deadline in seconds")
-    retain_acked_messages: bool = Field(default=False, description="Whether to retain acknowledged messages")
+    ack_deadline_seconds: int | None = Field(
+        None, description="Acknowledgement deadline in seconds"
+    )
+    retain_acked_messages: bool = Field(
+        default=False, description="Whether to retain acknowledged messages"
+    )
 
     # The actual Subscription object (private attribute, not serialized)
     _subscription_object: Optional["Subscription"] = PrivateAttr(default=None)

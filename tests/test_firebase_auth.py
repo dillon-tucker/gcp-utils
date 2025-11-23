@@ -1,6 +1,7 @@
 """
 Tests for FirebaseAuthController.
 """
+
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -23,9 +24,11 @@ def settings():
 @pytest.fixture
 def firebase_auth_controller(settings):
     """Fixture for FirebaseAuthController with mocked Firebase."""
-    with patch('firebase_admin.get_app') as mock_get_app, \
-         patch('firebase_admin.initialize_app'), \
-         patch('firebase_admin.auth') as mock_auth:
+    with (
+        patch("firebase_admin.get_app") as mock_get_app,
+        patch("firebase_admin.initialize_app"),
+        patch("firebase_admin.auth") as mock_auth,
+    ):
 
         # Simulate Firebase already initialized
         mock_get_app.return_value = Mock()
@@ -54,9 +57,7 @@ def test_create_user_success(firebase_auth_controller):
     mock_auth.create_user.return_value = mock_user
 
     user = controller.create_user(
-        email="test@example.com",
-        password="password123",
-        display_name="Test User"
+        email="test@example.com", password="password123", display_name="Test User"
     )
 
     assert user["uid"] == "test-uid-123"
@@ -72,7 +73,9 @@ def test_create_user_validation_error(firebase_auth_controller):
     with pytest.raises(ValidationError) as exc_info:
         controller.create_user(password="password123")
 
-    assert "Either email or phone_number must be provided" in str(exc_info.value.message)
+    assert "Either email or phone_number must be provided" in str(
+        exc_info.value.message
+    )
 
 
 def test_get_user_success(firebase_auth_controller):
@@ -106,6 +109,7 @@ def test_get_user_not_found(firebase_auth_controller):
     controller, mock_auth = firebase_auth_controller
 
     from firebase_admin.auth import UserNotFoundError
+
     mock_auth.get_user.side_effect = UserNotFoundError("User not found")
     mock_auth.UserNotFoundError = UserNotFoundError
 
@@ -183,9 +187,7 @@ def test_update_user_success(firebase_auth_controller):
     mock_auth.update_user.return_value = mock_user
 
     user = controller.update_user(
-        "test-uid-123",
-        email="updated@example.com",
-        display_name="Updated Name"
+        "test-uid-123", email="updated@example.com", display_name="Updated Name"
     )
 
     assert user["email"] == "updated@example.com"
@@ -284,7 +286,9 @@ def test_set_custom_user_claims_success(firebase_auth_controller):
 
     controller.set_custom_user_claims("test-uid", {"admin": True, "role": "superuser"})
 
-    mock_auth.set_custom_user_claims.assert_called_once_with("test-uid", {"admin": True, "role": "superuser"})
+    mock_auth.set_custom_user_claims.assert_called_once_with(
+        "test-uid", {"admin": True, "role": "superuser"}
+    )
 
 
 def test_set_custom_user_claims_validation_error(firebase_auth_controller):
@@ -304,7 +308,7 @@ def test_verify_id_token_success(firebase_auth_controller):
     mock_decoded = {
         "uid": "test-uid-123",
         "email": "test@example.com",
-        "exp": 1234567890
+        "exp": 1234567890,
     }
 
     mock_auth.verify_id_token.return_value = mock_decoded
@@ -320,8 +324,11 @@ def test_verify_id_token_invalid(firebase_auth_controller):
     controller, mock_auth = firebase_auth_controller
 
     from firebase_admin import auth as firebase_auth
+
     mock_auth.InvalidIdTokenError = firebase_auth.InvalidIdTokenError
-    mock_auth.verify_id_token.side_effect = firebase_auth.InvalidIdTokenError("Invalid token")
+    mock_auth.verify_id_token.side_effect = firebase_auth.InvalidIdTokenError(
+        "Invalid token"
+    )
 
     with pytest.raises(AuthenticationError) as exc_info:
         controller.verify_id_token("invalid-token")
@@ -334,8 +341,11 @@ def test_verify_id_token_expired(firebase_auth_controller):
     controller, mock_auth = firebase_auth_controller
 
     from firebase_admin import auth as firebase_auth
+
     mock_auth.ExpiredIdTokenError = firebase_auth.ExpiredIdTokenError
-    mock_auth.verify_id_token.side_effect = firebase_auth.ExpiredIdTokenError("Token expired")
+    mock_auth.verify_id_token.side_effect = firebase_auth.ExpiredIdTokenError(
+        "Token expired"
+    )
 
     with pytest.raises(AuthenticationError) as exc_info:
         controller.verify_id_token("expired-token")
@@ -348,8 +358,11 @@ def test_verify_id_token_revoked(firebase_auth_controller):
     controller, mock_auth = firebase_auth_controller
 
     from firebase_admin import auth as firebase_auth
+
     mock_auth.RevokedIdTokenError = firebase_auth.RevokedIdTokenError
-    mock_auth.verify_id_token.side_effect = firebase_auth.RevokedIdTokenError("Token revoked")
+    mock_auth.verify_id_token.side_effect = firebase_auth.RevokedIdTokenError(
+        "Token revoked"
+    )
 
     with pytest.raises(AuthenticationError) as exc_info:
         controller.verify_id_token("revoked-token", check_revoked=True)
@@ -377,14 +390,18 @@ def test_create_custom_token_success(firebase_auth_controller):
     token = controller.create_custom_token("test-uid", {"claim1": "value1"})
 
     assert token == "custom-token-bytes"
-    mock_auth.create_custom_token.assert_called_once_with("test-uid", developer_claims={"claim1": "value1"})
+    mock_auth.create_custom_token.assert_called_once_with(
+        "test-uid", developer_claims={"claim1": "value1"}
+    )
 
 
 def test_generate_email_verification_link_success(firebase_auth_controller):
     """Test generating an email verification link successfully."""
     controller, mock_auth = firebase_auth_controller
 
-    mock_auth.generate_email_verification_link.return_value = "https://example.com/verify?token=abc123"
+    mock_auth.generate_email_verification_link.return_value = (
+        "https://example.com/verify?token=abc123"
+    )
 
     link = controller.generate_email_verification_link("test@example.com")
 
@@ -396,7 +413,9 @@ def test_generate_password_reset_link_success(firebase_auth_controller):
     """Test generating a password reset link successfully."""
     controller, mock_auth = firebase_auth_controller
 
-    mock_auth.generate_password_reset_link.return_value = "https://example.com/reset?token=xyz789"
+    mock_auth.generate_password_reset_link.return_value = (
+        "https://example.com/reset?token=xyz789"
+    )
 
     link = controller.generate_password_reset_link("test@example.com")
 

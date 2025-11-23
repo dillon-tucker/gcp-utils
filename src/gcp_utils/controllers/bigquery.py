@@ -10,18 +10,12 @@ from typing import Any
 from google.api_core.exceptions import GoogleAPIError
 from google.auth.credentials import Credentials
 from google.cloud import bigquery
-from google.cloud.bigquery import (
-    Dataset as BQDataset,
-)
-from google.cloud.bigquery import (
-    LoadJobConfig as BQLoadJobConfig,
-)
+from google.cloud.bigquery import Dataset as BQDataset
+from google.cloud.bigquery import LoadJobConfig as BQLoadJobConfig
 from google.cloud.bigquery import (
     QueryJobConfig,
 )
-from google.cloud.bigquery import (
-    Table as BQTable,
-)
+from google.cloud.bigquery import Table as BQTable
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import BigQueryError, ResourceNotFoundError
@@ -205,9 +199,7 @@ class BigQueryController:
                 details={"dataset_id": dataset_id, "error": str(e)},
             ) from e
 
-    def list_datasets(
-        self, max_results: int | None = None
-    ) -> DatasetListResponse:
+    def list_datasets(self, max_results: int | None = None) -> DatasetListResponse:
         """
         List BigQuery datasets in the project.
 
@@ -249,9 +241,7 @@ class BigQueryController:
                 details={"error": str(e)},
             ) from e
 
-    def delete_dataset(
-        self, dataset_id: str, delete_contents: bool = False
-    ) -> None:
+    def delete_dataset(self, dataset_id: str, delete_contents: bool = False) -> None:
         """
         Delete a BigQuery dataset.
 
@@ -360,7 +350,9 @@ class BigQueryController:
                 table.labels = labels
 
             if partition_field:
-                table.time_partitioning = bigquery.TimePartitioning(field=partition_field)
+                table.time_partitioning = bigquery.TimePartitioning(
+                    field=partition_field
+                )
 
             if clustering_fields:
                 table.clustering_fields = clustering_fields

@@ -12,9 +12,7 @@ if TYPE_CHECKING:
 class TaskSchedule(BaseModel):
     """Schedule configuration for a Cloud Task."""
 
-    schedule_time: datetime | None = Field(
-        None, description="When to execute the task"
-    )
+    schedule_time: datetime | None = Field(None, description="When to execute the task")
     delay: timedelta | None = Field(None, description="Delay before execution")
 
     @field_serializer("schedule_time")

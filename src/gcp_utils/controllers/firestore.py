@@ -73,9 +73,7 @@ class FirestoreController:
                 details={"error": str(e)},
             )
 
-    def _doc_snapshot_to_model(
-        self, doc: Any, collection: str
-    ) -> FirestoreDocument:
+    def _doc_snapshot_to_model(self, doc: Any, collection: str) -> FirestoreDocument:
         """
         Convert a Firestore document snapshot to FirestoreDocument model.
 

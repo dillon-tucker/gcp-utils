@@ -9,9 +9,7 @@ from typing import Any
 
 import firebase_admin
 from firebase_admin import auth, credentials
-from firebase_admin.auth import (
-    UserNotFoundError as FirebaseUserNotFoundError,
-)
+from firebase_admin.auth import UserNotFoundError as FirebaseUserNotFoundError
 from firebase_admin.auth import (
     UserRecord,
 )
@@ -71,7 +69,9 @@ class FirebaseAuthController:
             except ValueError:
                 # Firebase not initialized yet
                 cred_path = credentials_path or (
-                    str(self.settings.credentials_path) if self.settings.credentials_path else None
+                    str(self.settings.credentials_path)
+                    if self.settings.credentials_path
+                    else None
                 )
 
                 if cred_path:
@@ -347,8 +347,7 @@ class FirebaseAuthController:
                 "success_count": result.success_count,
                 "failure_count": result.failure_count,
                 "errors": [
-                    {"index": err.index, "reason": err.reason}
-                    for err in result.errors
+                    {"index": err.index, "reason": err.reason} for err in result.errors
                 ],
             }
 
@@ -618,11 +617,13 @@ class FirebaseAuthController:
                 for provider in user.provider_data
             ],
             "tokens_valid_after_timestamp": user.tokens_valid_after_timestamp,
-            "user_metadata": {
-                "creation_timestamp": user.user_metadata.creation_timestamp,
-                "last_sign_in_timestamp": user.user_metadata.last_sign_in_timestamp,
-                "last_refresh_timestamp": user.user_metadata.last_refresh_timestamp,
-            }
-            if user.user_metadata
-            else None,
+            "user_metadata": (
+                {
+                    "creation_timestamp": user.user_metadata.creation_timestamp,
+                    "last_sign_in_timestamp": user.user_metadata.last_sign_in_timestamp,
+                    "last_refresh_timestamp": user.user_metadata.last_refresh_timestamp,
+                }
+                if user.user_metadata
+                else None
+            ),
         }

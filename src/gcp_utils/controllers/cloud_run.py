@@ -264,8 +264,8 @@ class CloudRunController:
                     limits["cpu"] = cpu
                 if memory:
                     limits["memory"] = memory
-                service.template.containers[0].resources = (
-                    run_v2.ResourceRequirements(limits=limits)
+                service.template.containers[0].resources = run_v2.ResourceRequirements(
+                    limits=limits
                 )
 
             if env_vars is not None:
@@ -564,10 +564,7 @@ class CloudRunController:
 
         # Extract container image
         image = ""
-        if (
-            hasattr(service, "template")
-            and service.template.containers
-        ):
+        if hasattr(service, "template") and service.template.containers:
             image = service.template.containers[0].image
 
         # Extract traffic configuration

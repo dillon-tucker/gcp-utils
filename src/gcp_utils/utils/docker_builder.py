@@ -120,8 +120,10 @@ class DockerBuilder:
             cmd = [
                 "docker",
                 "build",
-                "-f", str(dockerfile),
-                "-t", image_url,
+                "-f",
+                str(dockerfile),
+                "-t",
+                image_url,
             ]
 
             # Add build args
@@ -336,7 +338,11 @@ class DockerBuilder:
                 raise
             raise ArtifactRegistryError(
                 f"Docker tag failed: {str(e)}",
-                details={"source": source_image, "target": target_image, "error": str(e)},
+                details={
+                    "source": source_image,
+                    "target": target_image,
+                    "error": str(e),
+                },
             ) from e
 
     def get_image_info(self, image_url: str) -> dict[str, Any]:

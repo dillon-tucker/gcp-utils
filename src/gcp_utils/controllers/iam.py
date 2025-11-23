@@ -8,7 +8,6 @@ This module provides a controller for GCP IAM operations including:
 - Listing and querying service accounts
 """
 
-
 from google.api_core import exceptions as google_exceptions
 from google.auth.credentials import Credentials
 from google.cloud import iam_admin_v1
@@ -22,9 +21,7 @@ from google.cloud.iam_admin_v1.types import (
     ListServiceAccountsRequest,
     PatchServiceAccountRequest,
 )
-from google.cloud.iam_admin_v1.types import (
-    ServiceAccount as GCPServiceAccount,
-)
+from google.cloud.iam_admin_v1.types import ServiceAccount as GCPServiceAccount
 from google.iam.v1 import iam_policy_pb2, policy_pb2
 
 from ..config import GCPSettings, get_settings
@@ -394,9 +391,11 @@ class IAMController:
                     if hasattr(response.key_algorithm, "name")
                     else "KEY_ALG_RSA_2048"
                 ),
-                private_key_data=response.private_key_data.decode("utf-8")
-                if response.private_key_data
-                else None,
+                private_key_data=(
+                    response.private_key_data.decode("utf-8")
+                    if response.private_key_data
+                    else None
+                ),
                 valid_after_time=response.valid_after_time,
                 valid_before_time=response.valid_before_time,
             )
@@ -447,7 +446,9 @@ class IAMController:
                         ),
                         valid_after_time=key.valid_after_time,
                         valid_before_time=key.valid_before_time,
-                        key_type=key.key_type.name if hasattr(key.key_type, "name") else None,
+                        key_type=(
+                            key.key_type.name if hasattr(key.key_type, "name") else None
+                        ),
                     )
                 )
 

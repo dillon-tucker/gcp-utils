@@ -40,9 +40,7 @@ class ServiceAccountKey(BaseModel):
     """
 
     name: str = Field(..., description="Resource name of the key")
-    private_key_type: str | None = Field(
-        default=None, description="Private key type"
-    )
+    private_key_type: str | None = Field(default=None, description="Private key type")
     key_algorithm: ServiceAccountKeyAlgorithm | None = Field(
         default=None, description="Key algorithm"
     )
@@ -57,9 +55,7 @@ class ServiceAccountKey(BaseModel):
         default=None, description="Key valid before time"
     )
     key_origin: str | None = Field(default=None, description="Key origin")
-    key_type: ServiceAccountKeyType | None = Field(
-        default=None, description="Key type"
-    )
+    key_type: ServiceAccountKeyType | None = Field(default=None, description="Key type")
 
     model_config = ConfigDict(use_enum_values=True)
 

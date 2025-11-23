@@ -187,7 +187,10 @@ class ZipUtility:
         try:
             # Create ZIP file
             with zipfile.ZipFile(
-                output_path, "w", compression=compression, compresslevel=compression_level
+                output_path,
+                "w",
+                compression=compression,
+                compresslevel=compression_level,
             ) as zipf:
                 # Walk through directory
                 for file_path in source_dir.rglob("*"):

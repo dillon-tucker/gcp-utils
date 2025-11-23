@@ -373,11 +373,14 @@ class CloudLoggingController:
         try:
             # Build time filter
             from datetime import UTC
+
             start_time = datetime.now(UTC) - timedelta(hours=hours)
             time_filter = f'timestamp>="{start_time.isoformat()}Z"'
 
             # Build log name filter
-            log_filter = f'logName="projects/{self.settings.project_id}/logs/{log_name}"'
+            log_filter = (
+                f'logName="projects/{self.settings.project_id}/logs/{log_name}"'
+            )
 
             # Build severity filter
             filters = [log_filter, time_filter]
@@ -851,15 +854,18 @@ class CloudLoggingController:
         if hasattr(entry, "resource") and entry.resource:
             resource = {
                 "type": entry.resource.type if hasattr(entry.resource, "type") else "",
-                "labels": dict(entry.resource.labels)
-                if hasattr(entry.resource, "labels")
-                else {},
+                "labels": (
+                    dict(entry.resource.labels)
+                    if hasattr(entry.resource, "labels")
+                    else {}
+                ),
             }
 
         # Extract HTTP request
         http_request = None
         if hasattr(entry, "http_request") and entry.http_request:
             http_req = entry.http_request
+
             # Helper to safely extract string attributes
             def get_str_val(obj: Any, attr: str) -> str | None:
                 val = getattr(obj, attr, None)
@@ -897,13 +903,16 @@ class CloudLoggingController:
                 latency=get_num_val(http_req, "latency"),
                 cache_lookup=get_bool_val(http_req, "cache_lookup"),
                 cache_hit=get_bool_val(http_req, "cache_hit"),
-                cache_validated_with_origin_server=get_bool_val(http_req, "cache_validated_with_origin_server"),
+                cache_validated_with_origin_server=get_bool_val(
+                    http_req, "cache_validated_with_origin_server"
+                ),
             )
 
         # Extract source location
         source_location = None
         if hasattr(entry, "source_location") and entry.source_location:
             src_loc = entry.source_location
+
             # Helper to safely extract string attributes
             def get_str_val(obj: Any, attr: str) -> str | None:
                 val = getattr(obj, attr, None)
@@ -988,6 +997,7 @@ class CloudLoggingController:
 
     def _convert_metric(self, metric: Any) -> LogMetric:
         """Convert a GCP log metric to LogMetric model."""
+
         # Helper to safely get string attribute
         def get_str_attr(obj: Any, attr: str) -> str | None:
             if hasattr(obj, attr):
@@ -999,24 +1009,34 @@ class CloudLoggingController:
             name=metric.name.split("/")[-1] if "/" in metric.name else metric.name,
             description=get_str_attr(metric, "description"),
             filter=metric.filter,
-            metric_kind=str(metric.metric_descriptor.metric_kind)
-            if hasattr(metric, "metric_descriptor")
-            and hasattr(metric.metric_descriptor, "metric_kind")
-            else None,
-            value_type=str(metric.metric_descriptor.value_type)
-            if hasattr(metric, "metric_descriptor")
-            and hasattr(metric.metric_descriptor, "value_type")
-            else None,
-            label_extractors=dict(metric.label_extractors)
-            if hasattr(metric, "label_extractors") and isinstance(metric.label_extractors, dict)
-            else {},
-            bucket_options=dict(metric.bucket_options)
-            if hasattr(metric, "bucket_options") and metric.bucket_options
-            else None,
+            metric_kind=(
+                str(metric.metric_descriptor.metric_kind)
+                if hasattr(metric, "metric_descriptor")
+                and hasattr(metric.metric_descriptor, "metric_kind")
+                else None
+            ),
+            value_type=(
+                str(metric.metric_descriptor.value_type)
+                if hasattr(metric, "metric_descriptor")
+                and hasattr(metric.metric_descriptor, "value_type")
+                else None
+            ),
+            label_extractors=(
+                dict(metric.label_extractors)
+                if hasattr(metric, "label_extractors")
+                and isinstance(metric.label_extractors, dict)
+                else {}
+            ),
+            bucket_options=(
+                dict(metric.bucket_options)
+                if hasattr(metric, "bucket_options") and metric.bucket_options
+                else None
+            ),
         )
 
     def _convert_sink(self, sink: Any) -> LogSink:
         """Convert a GCP log sink to LogSink model."""
+
         # Helper to safely get string attribute
         def get_str_attr(obj: Any, attr: str) -> str | None:
             if hasattr(obj, attr):
@@ -1037,10 +1057,17 @@ class CloudLoggingController:
             destination=sink.destination,
             filter=get_str_attr(sink, "filter"),
             description=get_str_attr(sink, "description"),
-            disabled=sink.disabled if hasattr(sink, "disabled") and isinstance(sink.disabled, bool) else False,
-            include_children=sink.include_children
-            if hasattr(sink, "include_children") and isinstance(sink.include_children, bool)
-            else False,
+            disabled=(
+                sink.disabled
+                if hasattr(sink, "disabled") and isinstance(sink.disabled, bool)
+                else False
+            ),
+            include_children=(
+                sink.include_children
+                if hasattr(sink, "include_children")
+                and isinstance(sink.include_children, bool)
+                else False
+            ),
             writer_identity=get_str_attr(sink, "writer_identity"),
             create_time=get_datetime_attr(sink, "create_time"),
             update_time=get_datetime_attr(sink, "update_time"),
