@@ -44,14 +44,10 @@ jobs:
     - name: Run tests with coverage
       run: |
         pytest --cov=src/gcp_utils --cov-report=xml --cov-report=term tests/ \
-          --ignore=tests/test_artifact_registry.py \
-          --ignore=tests/test_cloud_tasks.py \
           --ignore=tests/test_firebase_auth.py \
           --ignore=tests/test_firebase_hosting.py \
-          --ignore=tests/test_iam.py \
           --ignore=tests/test_pubsub.py \
           --ignore=tests/test_secret_manager.py \
-          --ignore=tests/test_workflows.py \
           --ignore=tests/test1.py
 
     - name: Upload coverage to Codecov
