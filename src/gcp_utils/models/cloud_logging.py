@@ -31,19 +31,21 @@ class LogSeverity(str, Enum):
 class HttpRequestInfo(BaseModel):
     """HTTP request information for structured logs."""
 
-    request_method: Optional[str] = Field(None, description="HTTP request method")
-    request_url: Optional[str] = Field(None, description="Request URL")
-    request_size: Optional[int] = Field(None, description="Request size in bytes")
-    status: Optional[int] = Field(None, description="HTTP status code")
-    response_size: Optional[int] = Field(None, description="Response size in bytes")
-    user_agent: Optional[str] = Field(None, description="User agent string")
-    remote_ip: Optional[str] = Field(None, description="Client IP address")
-    server_ip: Optional[str] = Field(None, description="Server IP address")
-    referer: Optional[str] = Field(None, description="Referer URL")
-    latency: Optional[float] = Field(None, description="Request latency in seconds")
-    cache_lookup: Optional[bool] = Field(None, description="Whether a cache lookup was made")
-    cache_hit: Optional[bool] = Field(None, description="Whether a cache hit occurred")
-    cache_validated_with_origin_server: Optional[bool] = Field(
+    request_method: str | None = Field(None, description="HTTP request method")
+    request_url: str | None = Field(None, description="Request URL")
+    request_size: int | None = Field(None, description="Request size in bytes")
+    status: int | None = Field(None, description="HTTP status code")
+    response_size: int | None = Field(None, description="Response size in bytes")
+    user_agent: str | None = Field(None, description="User agent string")
+    remote_ip: str | None = Field(None, description="Client IP address")
+    server_ip: str | None = Field(None, description="Server IP address")
+    referer: str | None = Field(None, description="Referer URL")
+    latency: float | None = Field(None, description="Request latency in seconds")
+    cache_lookup: bool | None = Field(
+        None, description="Whether a cache lookup was made"
+    )
+    cache_hit: bool | None = Field(None, description="Whether a cache hit occurred")
+    cache_validated_with_origin_server: bool | None = Field(
         None, description="Whether cache was validated with origin"
     )
 
@@ -53,9 +55,9 @@ class HttpRequestInfo(BaseModel):
 class SourceLocation(BaseModel):
     """Source code location information."""
 
-    file: Optional[str] = Field(None, description="Source file name")
-    line: Optional[int] = Field(None, description="Line number")
-    function: Optional[str] = Field(None, description="Function name")
+    file: str | None = Field(None, description="Source file name")
+    line: int | None = Field(None, description="Line number")
+    function: str | None = Field(None, description="Function name")
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -78,33 +80,43 @@ class LogEntry(BaseModel):
 
     log_name: str = Field(..., description="Full log name path")
     resource: dict[str, Any] = Field(..., description="Monitored resource")
-    timestamp: Optional[datetime] = Field(None, description="Log entry timestamp")
-    receive_timestamp: Optional[datetime] = Field(None, description="Time entry was received")
+    timestamp: datetime | None = Field(None, description="Log entry timestamp")
+    receive_timestamp: datetime | None = Field(
+        None, description="Time entry was received"
+    )
     severity: LogSeverity = Field(LogSeverity.DEFAULT, description="Entry severity")
-    insert_id: Optional[str] = Field(None, description="Unique entry ID")
-    labels: dict[str, str] = Field(default_factory=dict, description="User-defined labels")
+    insert_id: str | None = Field(None, description="Unique entry ID")
+    labels: dict[str, str] = Field(
+        default_factory=dict, description="User-defined labels"
+    )
 
     # Payload - exactly one should be set
-    text_payload: Optional[str] = Field(None, description="Text log entry")
-    json_payload: Optional[dict[str, Any]] = Field(None, description="Structured JSON log")
-    proto_payload: Optional[dict[str, Any]] = Field(None, description="Protocol buffer payload")
+    text_payload: str | None = Field(None, description="Text log entry")
+    json_payload: dict[str, Any] | None = Field(None, description="Structured JSON log")
+    proto_payload: dict[str, Any] | None = Field(
+        None, description="Protocol buffer payload"
+    )
 
     # HTTP request information
-    http_request: Optional[HttpRequestInfo] = Field(None, description="HTTP request metadata")
+    http_request: HttpRequestInfo | None = Field(
+        None, description="HTTP request metadata"
+    )
 
     # Source location
-    source_location: Optional[SourceLocation] = Field(None, description="Source code location")
+    source_location: SourceLocation | None = Field(
+        None, description="Source code location"
+    )
 
     # Operation information
-    operation_id: Optional[str] = Field(None, description="Operation ID")
-    operation_producer: Optional[str] = Field(None, description="Operation producer")
-    operation_first: Optional[bool] = Field(None, description="First entry in operation")
-    operation_last: Optional[bool] = Field(None, description="Last entry in operation")
+    operation_id: str | None = Field(None, description="Operation ID")
+    operation_producer: str | None = Field(None, description="Operation producer")
+    operation_first: bool | None = Field(None, description="First entry in operation")
+    operation_last: bool | None = Field(None, description="Last entry in operation")
 
     # Trace and span information
-    trace: Optional[str] = Field(None, description="Trace ID")
-    span_id: Optional[str] = Field(None, description="Span ID")
-    trace_sampled: Optional[bool] = Field(None, description="Whether trace is sampled")
+    trace: str | None = Field(None, description="Trace ID")
+    span_id: str | None = Field(None, description="Span ID")
+    trace_sampled: bool | None = Field(None, description="Whether trace is sampled")
 
     # The actual log entry object (private attribute, not serialized)
     _entry_object: Optional["entries.StructEntry"] = PrivateAttr(default=None)
@@ -141,7 +153,9 @@ class LogEntry(BaseModel):
             entry_dict["http_request"] = self.http_request.model_dump(exclude_none=True)
 
         if self.source_location:
-            entry_dict["source_location"] = self.source_location.model_dump(exclude_none=True)
+            entry_dict["source_location"] = self.source_location.model_dump(
+                exclude_none=True
+            )
 
         if self.trace:
             entry_dict["trace"] = self.trace
@@ -168,16 +182,21 @@ class LogMetric(BaseModel):
     """
 
     name: str = Field(..., description="Metric name")
-    description: Optional[str] = Field(None, description="Metric description")
+    description: str | None = Field(None, description="Metric description")
     filter: str = Field(..., description="Log filter expression")
-    metric_kind: Optional[str] = Field(None, description="Metric kind (DELTA, GAUGE, CUMULATIVE)")
-    value_type: Optional[str] = Field(None, description="Value type (INT64, DOUBLE, DISTRIBUTION)")
+    metric_kind: str | None = Field(
+        None, description="Metric kind (DELTA, GAUGE, CUMULATIVE)"
+    )
+    value_type: str | None = Field(
+        None, description="Value type (INT64, DOUBLE, DISTRIBUTION)"
+    )
     labels: dict[str, str] = Field(default_factory=dict, description="Metric labels")
     label_extractors: dict[str, str] = Field(
-        default_factory=dict,
-        description="Label value extraction patterns"
+        default_factory=dict, description="Label value extraction patterns"
     )
-    bucket_options: Optional[dict[str, Any]] = Field(None, description="Distribution bucket options")
+    bucket_options: dict[str, Any] | None = Field(
+        None, description="Distribution bucket options"
+    )
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -199,16 +218,15 @@ class LogSink(BaseModel):
 
     name: str = Field(..., description="Sink name")
     destination: str = Field(..., description="Destination (storage, bigquery, pubsub)")
-    filter: Optional[str] = Field(None, description="Log filter expression")
-    description: Optional[str] = Field(None, description="Sink description")
+    filter: str | None = Field(None, description="Log filter expression")
+    description: str | None = Field(None, description="Sink description")
     disabled: bool = Field(default=False, description="Whether sink is disabled")
     include_children: bool = Field(
-        default=False,
-        description="Include logs from child resources"
+        default=False, description="Include logs from child resources"
     )
-    writer_identity: Optional[str] = Field(None, description="Service account for writing")
-    create_time: Optional[datetime] = Field(None, description="Sink creation time")
-    update_time: Optional[datetime] = Field(None, description="Last update time")
+    writer_identity: str | None = Field(None, description="Service account for writing")
+    create_time: datetime | None = Field(None, description="Sink creation time")
+    update_time: datetime | None = Field(None, description="Last update time")
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -221,7 +239,9 @@ class LoggerInfo(BaseModel):
     """
 
     name: str = Field(..., description="Logger name")
-    resource: Optional[dict[str, Any]] = Field(None, description="Default monitored resource")
+    resource: dict[str, Any] | None = Field(
+        None, description="Default monitored resource"
+    )
     labels: dict[str, str] = Field(default_factory=dict, description="Default labels")
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

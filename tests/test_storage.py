@@ -1,24 +1,30 @@
 """
 Tests for CloudStorageController.
 """
-import pytest
+
 from unittest.mock import MagicMock, patch
-from gcp_utils.controllers.storage import CloudStorageController
+
+import pytest
+
 from gcp_utils.config import GCPSettings
+from gcp_utils.controllers.storage import CloudStorageController
 from gcp_utils.exceptions import ResourceNotFoundError, ValidationError
+
 
 @pytest.fixture
 def settings():
     """Fixture for GCPSettings."""
     return GCPSettings()  # Reads from .env file
 
+
 @pytest.fixture
 def storage_controller(settings):
     """Fixture for CloudStorageController with a mocked client."""
-    with patch('google.cloud.storage.Client') as mock_client:
+    with patch("google.cloud.storage.Client") as mock_client:
         controller = CloudStorageController(settings)
         controller.client = mock_client.return_value
         yield controller
+
 
 def test_get_bucket_not_found(storage_controller):
     """Test that get_bucket raises ResourceNotFoundError for a non-existent bucket."""
@@ -26,10 +32,14 @@ def test_get_bucket_not_found(storage_controller):
     with pytest.raises(ResourceNotFoundError):
         storage_controller.get_bucket("non-existent-bucket")
 
+
 def test_upload_file_validation_error(storage_controller):
     """Test that upload_file raises ValidationError for a non-existent file."""
     with pytest.raises(ValidationError):
-        storage_controller.upload_file("my-bucket", "non-existent-file.txt", "remote.txt")
+        storage_controller.upload_file(
+            "my-bucket", "non-existent-file.txt", "remote.txt"
+        )
+
 
 def test_delete_blob(storage_controller):
     """Test deleting a blob."""
@@ -42,6 +52,7 @@ def test_delete_blob(storage_controller):
 
     mock_bucket.blob.assert_called_once_with("my-blob")
     mock_blob.delete.assert_called_once()
+
 
 @pytest.mark.integration
 def test_bucket_lifecycle(settings):
@@ -62,6 +73,7 @@ def test_bucket_lifecycle(settings):
 
     with pytest.raises(ResourceNotFoundError):
         controller.get_bucket(bucket_name)
+
 
 @pytest.mark.integration
 def test_blob_lifecycle(settings):
@@ -100,4 +112,5 @@ def test_blob_lifecycle(settings):
     # Cleanup
     controller.delete_bucket(bucket_name)
     import os
+
     os.remove(local_file_path)

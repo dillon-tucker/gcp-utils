@@ -5,13 +5,13 @@ This module defines custom exception classes for better error handling
 and debugging across all GCP service controllers.
 """
 
-from typing import Any, Optional
+from typing import Any
 
 
 class GCPUtilitiesError(Exception):
     """Base exception for all GCP utilities errors."""
 
-    def __init__(self, message: str, details: Optional[dict[str, Any]] = None) -> None:
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
         """
         Initialize the base exception.
 

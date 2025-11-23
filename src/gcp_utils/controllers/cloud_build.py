@@ -5,15 +5,12 @@ This module provides a type-safe controller for managing Cloud Build triggers
 and executing builds for continuous integration and deployment workflows.
 """
 
-from typing import Optional
-
 from google.api_core.exceptions import GoogleAPIError
-from google.api_core.operation import Operation
 from google.auth.credentials import Credentials
 from google.cloud.devtools import cloudbuild_v1
+from google.cloud.devtools.cloudbuild_v1.types import Build as GCPBuild
+from google.cloud.devtools.cloudbuild_v1.types import BuildTrigger as GCPBuildTrigger
 from google.cloud.devtools.cloudbuild_v1.types import (
-    Build as GCPBuild,
-    BuildTrigger as GCPBuildTrigger,
     CancelBuildRequest,
     CreateBuildRequest,
     CreateBuildTriggerRequest,
@@ -71,8 +68,8 @@ class CloudBuildController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
     ) -> None:
         """
         Initialize the Cloud Build controller.
@@ -83,14 +80,12 @@ class CloudBuildController:
         """
         self._settings = settings or get_settings()
         self._credentials = credentials
-        self._client: Optional[cloudbuild_v1.CloudBuildClient] = None
+        self._client: cloudbuild_v1.CloudBuildClient | None = None
 
     def _get_client(self) -> cloudbuild_v1.CloudBuildClient:
         """Lazy initialization of the Cloud Build client."""
         if self._client is None:
-            self._client = cloudbuild_v1.CloudBuildClient(
-                credentials=self._credentials
-            )
+            self._client = cloudbuild_v1.CloudBuildClient(credentials=self._credentials)
         return self._client
 
     def _build_to_model(self, build: GCPBuild) -> Build:
@@ -116,7 +111,9 @@ class CloudBuildController:
             tags=list(trigger.tags) if trigger.tags else None,
             create_time=trigger.create_time,
             disabled=trigger.disabled,
-            substitutions=dict(trigger.substitutions) if trigger.substitutions else None,
+            substitutions=(
+                dict(trigger.substitutions) if trigger.substitutions else None
+            ),
             filename=trigger.filename or None,
             filter=trigger.filter or None,
         )
@@ -124,11 +121,11 @@ class CloudBuildController:
     def create_build(
         self,
         steps: list[dict],
-        source: Optional[dict] = None,
-        images: Optional[list[str]] = None,
-        timeout: Optional[str] = None,
-        substitutions: Optional[dict[str, str]] = None,
-        tags: Optional[list[str]] = None,
+        source: dict | None = None,
+        images: list[str] | None = None,
+        timeout: str | None = None,
+        substitutions: dict[str, str] | None = None,
+        tags: list[str] | None = None,
         wait_for_completion: bool = False,
     ) -> Build:
         """
@@ -268,8 +265,8 @@ class CloudBuildController:
     def list_builds(
         self,
         page_size: int = 100,
-        page_token: Optional[str] = None,
-        filter_: Optional[str] = None,
+        page_token: str | None = None,
+        filter_: str | None = None,
     ) -> BuildListResponse:
         """
         List Cloud Builds in the project.
@@ -368,13 +365,13 @@ class CloudBuildController:
     def create_build_trigger(
         self,
         name: str,
-        description: Optional[str] = None,
-        trigger_template: Optional[dict] = None,
-        github: Optional[dict] = None,
-        build: Optional[dict] = None,
-        filename: Optional[str] = None,
-        substitutions: Optional[dict[str, str]] = None,
-        tags: Optional[list[str]] = None,
+        description: str | None = None,
+        trigger_template: dict | None = None,
+        github: dict | None = None,
+        build: dict | None = None,
+        filename: str | None = None,
+        substitutions: dict[str, str] | None = None,
+        tags: list[str] | None = None,
     ) -> BuildTrigger:
         """
         Create a Cloud Build trigger.
@@ -499,7 +496,7 @@ class CloudBuildController:
             ) from e
 
     def list_build_triggers(
-        self, page_size: int = 100, page_token: Optional[str] = None
+        self, page_size: int = 100, page_token: str | None = None
     ) -> TriggerListResponse:
         """
         List Cloud Build triggers in the project.
@@ -532,7 +529,9 @@ class CloudBuildController:
 
             response = client.list_build_triggers(request=request)
 
-            triggers = [self._trigger_to_model(trigger) for trigger in response.triggers]
+            triggers = [
+                self._trigger_to_model(trigger) for trigger in response.triggers
+            ]
 
             return TriggerListResponse(
                 triggers=triggers,
@@ -548,10 +547,10 @@ class CloudBuildController:
     def update_build_trigger(
         self,
         trigger_id: str,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        disabled: Optional[bool] = None,
-        substitutions: Optional[dict[str, str]] = None,
+        name: str | None = None,
+        description: str | None = None,
+        disabled: bool | None = None,
+        substitutions: dict[str, str] | None = None,
     ) -> BuildTrigger:
         """
         Update a Cloud Build trigger.
@@ -663,7 +662,7 @@ class CloudBuildController:
             ) from e
 
     def run_build_trigger(
-        self, trigger_id: str, branch_name: Optional[str] = None
+        self, trigger_id: str, branch_name: str | None = None
     ) -> RunBuildTriggerResponse:
         """
         Manually run a Cloud Build trigger.

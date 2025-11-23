@@ -41,7 +41,7 @@ class SecretInfo(BaseModel):
     name: str = Field(..., description="Secret name (without prefix)")
     full_name: str = Field(..., description="Full resource name")
     labels: dict[str, str] = Field(default_factory=dict, description="Secret labels")
-    created: Optional[datetime] = Field(None, description="Creation timestamp")
+    created: datetime | None = Field(None, description="Creation timestamp")
 
     # The actual Secret object (private attribute, not serialized)
     _secret_object: Optional["Secret"] = PrivateAttr(default=None)
@@ -49,7 +49,7 @@ class SecretInfo(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("created")
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
         return dt.isoformat() if dt else None
 
     # Convenience methods that delegate to the Secret object
@@ -99,8 +99,8 @@ class SecretVersionInfo(BaseModel):
     name: str = Field(..., description="Version ID")
     full_name: str = Field(..., description="Full resource name")
     state: str = Field(..., description="Version state (ENABLED, DISABLED, DESTROYED)")
-    created: Optional[datetime] = Field(None, description="Creation timestamp")
-    destroyed: Optional[datetime] = Field(None, description="Destruction timestamp")
+    created: datetime | None = Field(None, description="Creation timestamp")
+    destroyed: datetime | None = Field(None, description="Destruction timestamp")
 
     # The actual SecretVersion object (private attribute, not serialized)
     _version_object: Optional["SecretVersion"] = PrivateAttr(default=None)
@@ -108,7 +108,7 @@ class SecretVersionInfo(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("created", "destroyed")
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
         return dt.isoformat() if dt else None
 
     # Convenience methods that delegate to the SecretVersion object

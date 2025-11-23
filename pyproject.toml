@@ -187,6 +187,8 @@ extra_checks = true
 module = [
     "google.*",
     "firebase_admin.*",
+    "httpx",
+    "aiofiles",
 ]
 ignore_missing_imports = true
 
@@ -204,7 +206,7 @@ select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
     "F",   # pyflakes
-    "I",   # isort
+    # "I",   # isort - disabled in favor of standalone isort tool
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
@@ -212,6 +214,7 @@ select = [
 ignore = [
     "E501",  # line too long (handled by black)
     "B008",  # do not perform function calls in argument defaults
+    "B904",  # raise ... from err - intentional exception wrapping
     "C901",  # too complex
 ]
 

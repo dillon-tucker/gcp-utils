@@ -5,18 +5,17 @@ This module provides a high-level interface for Cloud Run operations including
 service deployment, management, and traffic splitting.
 """
 
-from typing import Any, Optional
+from typing import Any
 
-from google.cloud import run_v2
-from google.auth.credentials import Credentials
-from google.api_core import operation
-from google.auth.transport.requests import Request
-from google.auth import default
 import httpx
+from google.auth import default
+from google.auth.credentials import Credentials
+from google.auth.transport.requests import Request
+from google.cloud import run_v2
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import CloudRunError, ResourceNotFoundError, ValidationError
-from ..models.cloud_run import CloudRunService, ServiceRevision, TrafficTarget
+from ..models.cloud_run import CloudRunService, TrafficTarget
 
 
 class CloudRunController:
@@ -38,9 +37,9 @@ class CloudRunController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
-        region: Optional[str] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
+        region: str | None = None,
     ) -> None:
         """
         Initialize the Cloud Run controller.
@@ -124,12 +123,12 @@ class CloudRunController:
         port: int = 8080,
         cpu: str = "1000m",
         memory: str = "512Mi",
-        max_instances: Optional[int] = None,
+        max_instances: int | None = None,
         min_instances: int = 0,
         timeout: int = 300,
-        env_vars: Optional[dict[str, str]] = None,
+        env_vars: dict[str, str] | None = None,
         allow_unauthenticated: bool = False,
-        labels: Optional[dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
     ) -> CloudRunService:
         """
         Create a new Cloud Run service.
@@ -221,14 +220,14 @@ class CloudRunController:
     def update_service(
         self,
         service_name: str,
-        image: Optional[str] = None,
-        cpu: Optional[str] = None,
-        memory: Optional[str] = None,
-        max_instances: Optional[int] = None,
-        min_instances: Optional[int] = None,
-        timeout: Optional[int] = None,
-        env_vars: Optional[dict[str, str]] = None,
-        labels: Optional[dict[str, str]] = None,
+        image: str | None = None,
+        cpu: str | None = None,
+        memory: str | None = None,
+        max_instances: int | None = None,
+        min_instances: int | None = None,
+        timeout: int | None = None,
+        env_vars: dict[str, str] | None = None,
+        labels: dict[str, str] | None = None,
     ) -> CloudRunService:
         """
         Update an existing Cloud Run service.
@@ -265,8 +264,8 @@ class CloudRunController:
                     limits["cpu"] = cpu
                 if memory:
                     limits["memory"] = memory
-                service.template.containers[0].resources = (
-                    run_v2.ResourceRequirements(limits=limits)
+                service.template.containers[0].resources = run_v2.ResourceRequirements(
+                    limits=limits
                 )
 
             if env_vars is not None:
@@ -372,7 +371,7 @@ class CloudRunController:
                 if target.revision_name:
                     traffic.revision = target.revision_name
                 elif target.latest_revision:
-                    traffic.type_ = run_v2.TrafficTargetAllocationType.TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST
+                    traffic.type_ = run_v2.TrafficTargetAllocationType.TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST  # type: ignore[assignment]
                 if target.tag:
                     traffic.tag = target.tag
 
@@ -415,8 +414,8 @@ class CloudRunController:
         service_name: str,
         path: str = "/",
         method: str = "GET",
-        data: Optional[dict[str, Any]] = None,
-        headers: Optional[dict[str, str]] = None,
+        data: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
         timeout: int = 60,
     ) -> dict[str, Any]:
         """
@@ -530,7 +529,6 @@ class CloudRunController:
     def _set_iam_policy_unauthenticated(self, service_name: str) -> None:
         """Set IAM policy to allow unauthenticated access."""
         try:
-            from google.cloud.run_v2 import ServicesClient
             from google.iam.v1 import iam_policy_pb2, policy_pb2
 
             service_path = self._get_service_path(service_name)
@@ -566,10 +564,7 @@ class CloudRunController:
 
         # Extract container image
         image = ""
-        if (
-            hasattr(service, "template")
-            and service.template.containers
-        ):
+        if hasattr(service, "template") and service.template.containers:
             image = service.template.containers[0].image
 
         # Extract traffic configuration

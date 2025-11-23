@@ -5,21 +5,21 @@ This module provides a high-level interface for Firebase Authentication
 operations including user management, token verification, and custom claims.
 """
 
-from typing import Any, Optional
+from typing import Any
 
 import firebase_admin
 from firebase_admin import auth, credentials
+from firebase_admin.auth import UserNotFoundError as FirebaseUserNotFoundError
 from firebase_admin.auth import (
     UserRecord,
-    UserNotFoundError as FirebaseUserNotFoundError,
 )
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import (
+    AuthenticationError,
     FirebaseError,
     ResourceNotFoundError,
     ValidationError,
-    AuthenticationError,
 )
 
 
@@ -46,8 +46,8 @@ class FirebaseAuthController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials_path: Optional[str] = None,
+        settings: GCPSettings | None = None,
+        credentials_path: str | None = None,
     ) -> None:
         """
         Initialize the Firebase Auth controller.
@@ -69,7 +69,9 @@ class FirebaseAuthController:
             except ValueError:
                 # Firebase not initialized yet
                 cred_path = credentials_path or (
-                    str(self.settings.credentials_path) if self.settings.credentials_path else None
+                    str(self.settings.credentials_path)
+                    if self.settings.credentials_path
+                    else None
                 )
 
                 if cred_path:
@@ -92,14 +94,14 @@ class FirebaseAuthController:
 
     def create_user(
         self,
-        email: Optional[str] = None,
-        password: Optional[str] = None,
-        phone_number: Optional[str] = None,
-        display_name: Optional[str] = None,
-        photo_url: Optional[str] = None,
+        email: str | None = None,
+        password: str | None = None,
+        phone_number: str | None = None,
+        display_name: str | None = None,
+        photo_url: str | None = None,
         email_verified: bool = False,
         disabled: bool = False,
-        uid: Optional[str] = None,
+        uid: str | None = None,
     ) -> dict[str, Any]:
         """
         Create a new Firebase user.
@@ -236,13 +238,13 @@ class FirebaseAuthController:
     def update_user(
         self,
         uid: str,
-        email: Optional[str] = None,
-        password: Optional[str] = None,
-        phone_number: Optional[str] = None,
-        display_name: Optional[str] = None,
-        photo_url: Optional[str] = None,
-        email_verified: Optional[bool] = None,
-        disabled: Optional[bool] = None,
+        email: str | None = None,
+        password: str | None = None,
+        phone_number: str | None = None,
+        display_name: str | None = None,
+        photo_url: str | None = None,
+        email_verified: bool | None = None,
+        disabled: bool | None = None,
     ) -> dict[str, Any]:
         """
         Update user information.
@@ -265,7 +267,7 @@ class FirebaseAuthController:
             FirebaseError: If update fails
         """
         try:
-            update_kwargs = {}
+            update_kwargs: dict[str, Any] = {}
 
             if email is not None:
                 update_kwargs["email"] = email
@@ -345,8 +347,7 @@ class FirebaseAuthController:
                 "success_count": result.success_count,
                 "failure_count": result.failure_count,
                 "errors": [
-                    {"index": err.index, "reason": err.reason}
-                    for err in result.errors
+                    {"index": err.index, "reason": err.reason} for err in result.errors
                 ],
             }
 
@@ -361,7 +362,7 @@ class FirebaseAuthController:
     def list_users(
         self,
         max_results: int = 1000,
-        page_token: Optional[str] = None,
+        page_token: str | None = None,
     ) -> dict[str, Any]:
         """
         List all users.
@@ -503,7 +504,7 @@ class FirebaseAuthController:
     def create_custom_token(
         self,
         uid: str,
-        developer_claims: Optional[dict[str, Any]] = None,
+        developer_claims: dict[str, Any] | None = None,
     ) -> str:
         """
         Create a custom authentication token.
@@ -534,7 +535,7 @@ class FirebaseAuthController:
     def generate_email_verification_link(
         self,
         email: str,
-        action_code_settings: Optional[dict[str, Any]] = None,
+        action_code_settings: dict[str, Any] | None = None,
     ) -> str:
         """
         Generate an email verification link.
@@ -565,7 +566,7 @@ class FirebaseAuthController:
     def generate_password_reset_link(
         self,
         email: str,
-        action_code_settings: Optional[dict[str, Any]] = None,
+        action_code_settings: dict[str, Any] | None = None,
     ) -> str:
         """
         Generate a password reset link.
@@ -616,11 +617,13 @@ class FirebaseAuthController:
                 for provider in user.provider_data
             ],
             "tokens_valid_after_timestamp": user.tokens_valid_after_timestamp,
-            "user_metadata": {
-                "creation_timestamp": user.user_metadata.creation_timestamp,
-                "last_sign_in_timestamp": user.user_metadata.last_sign_in_timestamp,
-                "last_refresh_timestamp": user.user_metadata.last_refresh_timestamp,
-            }
-            if user.user_metadata
-            else None,
+            "user_metadata": (
+                {
+                    "creation_timestamp": user.user_metadata.creation_timestamp,
+                    "last_sign_in_timestamp": user.user_metadata.last_sign_in_timestamp,
+                    "last_refresh_timestamp": user.user_metadata.last_refresh_timestamp,
+                }
+                if user.user_metadata
+                else None
+            ),
         }

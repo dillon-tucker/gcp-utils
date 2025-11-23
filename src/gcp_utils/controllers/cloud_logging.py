@@ -6,18 +6,16 @@ creating log-based metrics, and managing log sinks for export.
 """
 
 from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 from google.auth.credentials import Credentials
 from google.cloud import logging as cloud_logging
-from google.cloud.logging_v2 import entries
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import CloudLoggingError, ResourceNotFoundError, ValidationError
 from ..models.cloud_logging import (
     HttpRequestInfo,
     LogEntry,
-    LoggerInfo,
     LogMetric,
     LogSeverity,
     LogSink,
@@ -54,8 +52,8 @@ class CloudLoggingController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
     ) -> None:
         """
         Initialize the Cloud Logging controller.
@@ -69,7 +67,7 @@ class CloudLoggingController:
         """
         self.settings = settings or get_settings()
         self._credentials = credentials
-        self._client: Optional[cloud_logging.Client] = None
+        self._client: cloud_logging.Client | None = None
         self._loggers: dict[str, cloud_logging.Logger] = {}
 
     def _get_client(self) -> cloud_logging.Client:
@@ -107,12 +105,12 @@ class CloudLoggingController:
         log_name: str,
         message: str | dict[str, Any],
         severity: LogSeverity = LogSeverity.INFO,
-        labels: Optional[dict[str, str]] = None,
-        resource: Optional[dict[str, Any]] = None,
-        http_request: Optional[HttpRequestInfo] = None,
-        source_location: Optional[SourceLocation] = None,
-        trace: Optional[str] = None,
-        span_id: Optional[str] = None,
+        labels: dict[str, str] | None = None,
+        resource: dict[str, Any] | None = None,
+        http_request: HttpRequestInfo | None = None,
+        source_location: SourceLocation | None = None,
+        trace: str | None = None,
+        span_id: str | None = None,
     ) -> None:
         """
         Write a log entry.
@@ -214,6 +212,7 @@ class CloudLoggingController:
             logger = self._get_logger(log_name)
 
             # Determine payload
+            payload: str | dict[str, Any]
             if entry.text_payload:
                 payload = entry.text_payload
             elif entry.json_payload:
@@ -269,9 +268,9 @@ class CloudLoggingController:
 
     def list_entries(
         self,
-        filter: Optional[str] = None,
+        filter: str | None = None,
         order_by: str = "timestamp desc",
-        max_results: Optional[int] = None,
+        max_results: int | None = None,
         page_size: int = 100,
     ) -> list[LogEntry]:
         """
@@ -310,7 +309,7 @@ class CloudLoggingController:
             client = self._get_client()
 
             # Build filter
-            project_filter = f'resource.type!=""'  # Basic filter
+            project_filter = 'resource.type!=""'  # Basic filter
             if filter:
                 project_filter = f"({filter})"
 
@@ -342,8 +341,8 @@ class CloudLoggingController:
         self,
         log_name: str,
         hours: int = 24,
-        severity: Optional[LogSeverity] = None,
-        max_results: Optional[int] = None,
+        severity: LogSeverity | None = None,
+        max_results: int | None = None,
     ) -> list[LogEntry]:
         """
         List entries for a specific log.
@@ -374,11 +373,14 @@ class CloudLoggingController:
         try:
             # Build time filter
             from datetime import UTC
+
             start_time = datetime.now(UTC) - timedelta(hours=hours)
             time_filter = f'timestamp>="{start_time.isoformat()}Z"'
 
             # Build log name filter
-            log_filter = f'logName="projects/{self.settings.project_id}/logs/{log_name}"'
+            log_filter = (
+                f'logName="projects/{self.settings.project_id}/logs/{log_name}"'
+            )
 
             # Build severity filter
             filters = [log_filter, time_filter]
@@ -429,10 +431,10 @@ class CloudLoggingController:
         self,
         metric_name: str,
         filter: str,
-        description: Optional[str] = None,
-        metric_kind: Optional[str] = None,
-        value_type: Optional[str] = None,
-        label_extractors: Optional[dict[str, str]] = None,
+        description: str | None = None,
+        metric_kind: str | None = None,
+        value_type: str | None = None,
+        label_extractors: dict[str, str] | None = None,
     ) -> LogMetric:
         """
         Create a logs-based metric.
@@ -610,7 +612,7 @@ class CloudLoggingController:
         self,
         sink_name: str,
         destination: str,
-        filter: Optional[str] = None,
+        filter: str | None = None,
         include_children: bool = False,
     ) -> LogSink:
         """
@@ -755,8 +757,8 @@ class CloudLoggingController:
     def update_sink(
         self,
         sink_name: str,
-        destination: Optional[str] = None,
-        filter: Optional[str] = None,
+        destination: str | None = None,
+        filter: str | None = None,
     ) -> LogSink:
         """
         Update a log sink.
@@ -852,36 +854,48 @@ class CloudLoggingController:
         if hasattr(entry, "resource") and entry.resource:
             resource = {
                 "type": entry.resource.type if hasattr(entry.resource, "type") else "",
-                "labels": dict(entry.resource.labels)
-                if hasattr(entry.resource, "labels")
-                else {},
+                "labels": (
+                    dict(entry.resource.labels)
+                    if hasattr(entry.resource, "labels")
+                    else {}
+                ),
             }
 
         # Extract HTTP request
         http_request = None
         if hasattr(entry, "http_request") and entry.http_request:
             http_req = entry.http_request
+
             # Helper to safely extract string attributes
-            def get_str_val(obj: Any, attr: str) -> Optional[str]:
+            def get_str_val(obj: Any, attr: str) -> str | None:
                 val = getattr(obj, attr, None)
                 return val if isinstance(val, str) else None
 
             # Helper to safely extract numeric attributes
-            def get_num_val(obj: Any, attr: str) -> Optional[int | float]:
+            def get_num_val(obj: Any, attr: str) -> int | float | None:
                 val = getattr(obj, attr, None)
                 return val if isinstance(val, (int, float)) else None
 
+            # Helper to safely extract int attributes
+            def get_int_val(obj: Any, attr: str) -> int | None:
+                val = getattr(obj, attr, None)
+                if isinstance(val, int):
+                    return val
+                elif isinstance(val, float):
+                    return int(val)
+                return None
+
             # Helper to safely extract boolean attributes
-            def get_bool_val(obj: Any, attr: str) -> Optional[bool]:
+            def get_bool_val(obj: Any, attr: str) -> bool | None:
                 val = getattr(obj, attr, None)
                 return val if isinstance(val, bool) else None
 
             http_request = HttpRequestInfo(
                 request_method=get_str_val(http_req, "request_method"),
                 request_url=get_str_val(http_req, "request_url"),
-                request_size=get_num_val(http_req, "request_size"),
-                status=get_num_val(http_req, "status"),
-                response_size=get_num_val(http_req, "response_size"),
+                request_size=get_int_val(http_req, "request_size"),
+                status=get_int_val(http_req, "status"),
+                response_size=get_int_val(http_req, "response_size"),
                 user_agent=get_str_val(http_req, "user_agent"),
                 remote_ip=get_str_val(http_req, "remote_ip"),
                 server_ip=get_str_val(http_req, "server_ip"),
@@ -889,20 +903,23 @@ class CloudLoggingController:
                 latency=get_num_val(http_req, "latency"),
                 cache_lookup=get_bool_val(http_req, "cache_lookup"),
                 cache_hit=get_bool_val(http_req, "cache_hit"),
-                cache_validated_with_origin_server=get_bool_val(http_req, "cache_validated_with_origin_server"),
+                cache_validated_with_origin_server=get_bool_val(
+                    http_req, "cache_validated_with_origin_server"
+                ),
             )
 
         # Extract source location
         source_location = None
         if hasattr(entry, "source_location") and entry.source_location:
             src_loc = entry.source_location
+
             # Helper to safely extract string attributes
-            def get_str_val(obj: Any, attr: str) -> Optional[str]:
+            def get_str_val(obj: Any, attr: str) -> str | None:
                 val = getattr(obj, attr, None)
                 return val if isinstance(val, str) else None
 
             # Helper to safely extract int attributes
-            def get_int_val(obj: Any, attr: str) -> Optional[int]:
+            def get_int_val(obj: Any, attr: str) -> int | None:
                 val = getattr(obj, attr, None)
                 return val if isinstance(val, int) else None
 
@@ -920,33 +937,42 @@ class CloudLoggingController:
             except ValueError:
                 severity = LogSeverity.DEFAULT
 
-        # Handle timestamps - check if they're datetime objects
-        timestamp_str = None
+        # Handle timestamps - keep as datetime objects
+        timestamp_val = None
         if hasattr(entry, "timestamp") and entry.timestamp:
             if isinstance(entry.timestamp, datetime):
-                timestamp_str = entry.timestamp.isoformat()
+                timestamp_val = entry.timestamp
             elif hasattr(entry.timestamp, "isoformat"):
-                timestamp_str = entry.timestamp.isoformat()
+                # It's a protobuf timestamp, try to convert
+                timestamp_val = entry.timestamp
 
-        receive_timestamp_str = None
+        receive_timestamp_val = None
         if hasattr(entry, "receive_timestamp") and entry.receive_timestamp:
             if isinstance(entry.receive_timestamp, datetime):
-                receive_timestamp_str = entry.receive_timestamp.isoformat()
+                receive_timestamp_val = entry.receive_timestamp
             elif hasattr(entry.receive_timestamp, "isoformat"):
-                receive_timestamp_str = entry.receive_timestamp.isoformat()
+                # It's a protobuf timestamp, try to convert
+                receive_timestamp_val = entry.receive_timestamp
 
         # Helper to safely get string attribute from entry
-        def get_entry_str_attr(attr: str) -> Optional[str]:
+        def get_entry_str_attr(attr: str) -> str | None:
             if hasattr(entry, attr):
                 val = getattr(entry, attr)
                 return val if isinstance(val, str) else None
             return None
 
+        # Helper to safely get bool attribute from entry
+        def get_entry_bool_attr(attr: str) -> bool | None:
+            if hasattr(entry, attr):
+                val = getattr(entry, attr)
+                return val if isinstance(val, bool) else None
+            return None
+
         log_entry = LogEntry(
             log_name=entry.log_name if hasattr(entry, "log_name") else "",
             resource=resource,
-            timestamp=timestamp_str,
-            receive_timestamp=receive_timestamp_str,
+            timestamp=timestamp_val,
+            receive_timestamp=receive_timestamp_val,
             severity=severity,
             insert_id=get_entry_str_attr("insert_id"),
             labels=dict(entry.labels) if hasattr(entry, "labels") else {},
@@ -955,8 +981,13 @@ class CloudLoggingController:
             proto_payload=proto_payload,
             http_request=http_request,
             source_location=source_location,
+            operation_id=get_entry_str_attr("operation_id"),
+            operation_producer=get_entry_str_attr("operation_producer"),
+            operation_first=get_entry_bool_attr("operation_first"),
+            operation_last=get_entry_bool_attr("operation_last"),
             trace=get_entry_str_attr("trace"),
             span_id=get_entry_str_attr("span_id"),
+            trace_sampled=get_entry_bool_attr("trace_sampled"),
         )
 
         # Bind the native object
@@ -966,8 +997,9 @@ class CloudLoggingController:
 
     def _convert_metric(self, metric: Any) -> LogMetric:
         """Convert a GCP log metric to LogMetric model."""
+
         # Helper to safely get string attribute
-        def get_str_attr(obj: Any, attr: str) -> Optional[str]:
+        def get_str_attr(obj: Any, attr: str) -> str | None:
             if hasattr(obj, attr):
                 val = getattr(obj, attr)
                 return val if isinstance(val, str) else None
@@ -977,26 +1009,47 @@ class CloudLoggingController:
             name=metric.name.split("/")[-1] if "/" in metric.name else metric.name,
             description=get_str_attr(metric, "description"),
             filter=metric.filter,
-            metric_kind=str(metric.metric_descriptor.metric_kind)
-            if hasattr(metric, "metric_descriptor")
-            and hasattr(metric.metric_descriptor, "metric_kind")
-            else None,
-            value_type=str(metric.metric_descriptor.value_type)
-            if hasattr(metric, "metric_descriptor")
-            and hasattr(metric.metric_descriptor, "value_type")
-            else None,
-            label_extractors=dict(metric.label_extractors)
-            if hasattr(metric, "label_extractors") and isinstance(metric.label_extractors, dict)
-            else {},
+            metric_kind=(
+                str(metric.metric_descriptor.metric_kind)
+                if hasattr(metric, "metric_descriptor")
+                and hasattr(metric.metric_descriptor, "metric_kind")
+                else None
+            ),
+            value_type=(
+                str(metric.metric_descriptor.value_type)
+                if hasattr(metric, "metric_descriptor")
+                and hasattr(metric.metric_descriptor, "value_type")
+                else None
+            ),
+            label_extractors=(
+                dict(metric.label_extractors)
+                if hasattr(metric, "label_extractors")
+                and isinstance(metric.label_extractors, dict)
+                else {}
+            ),
+            bucket_options=(
+                dict(metric.bucket_options)
+                if hasattr(metric, "bucket_options") and metric.bucket_options
+                else None
+            ),
         )
 
     def _convert_sink(self, sink: Any) -> LogSink:
         """Convert a GCP log sink to LogSink model."""
+
         # Helper to safely get string attribute
-        def get_str_attr(obj: Any, attr: str) -> Optional[str]:
+        def get_str_attr(obj: Any, attr: str) -> str | None:
             if hasattr(obj, attr):
                 val = getattr(obj, attr)
                 return val if isinstance(val, str) else None
+            return None
+
+        # Helper to safely get datetime attribute
+        def get_datetime_attr(obj: Any, attr: str) -> datetime | None:
+            if hasattr(obj, attr):
+                val = getattr(obj, attr)
+                if isinstance(val, datetime):
+                    return val
             return None
 
         return LogSink(
@@ -1004,9 +1057,18 @@ class CloudLoggingController:
             destination=sink.destination,
             filter=get_str_attr(sink, "filter"),
             description=get_str_attr(sink, "description"),
-            disabled=sink.disabled if hasattr(sink, "disabled") and isinstance(sink.disabled, bool) else False,
-            include_children=sink.include_children
-            if hasattr(sink, "include_children") and isinstance(sink.include_children, bool)
-            else False,
+            disabled=(
+                sink.disabled
+                if hasattr(sink, "disabled") and isinstance(sink.disabled, bool)
+                else False
+            ),
+            include_children=(
+                sink.include_children
+                if hasattr(sink, "include_children")
+                and isinstance(sink.include_children, bool)
+                else False
+            ),
             writer_identity=get_str_attr(sink, "writer_identity"),
+            create_time=get_datetime_attr(sink, "create_time"),
+            update_time=get_datetime_attr(sink, "update_time"),
         )

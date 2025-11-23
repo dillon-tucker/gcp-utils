@@ -5,24 +5,21 @@ This module provides a high-level interface for Firebase Hosting operations
 including site management, deployments, and custom domain configuration.
 """
 
-from typing import Any, Optional
-import json
-import time
 import hashlib
 from pathlib import Path
+from typing import Any
 
 import firebase_admin
-from firebase_admin import credentials
-from google.auth.credentials import Credentials
-from google.auth import default
 import httpx
+from firebase_admin import credentials
+from google.auth import default
+from google.auth.credentials import Credentials
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import (
     FirebaseHostingError,
     ResourceNotFoundError,
     ValidationError,
-    OperationTimeoutError,
 )
 
 
@@ -51,8 +48,8 @@ class FirebaseHostingController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials_obj: Optional[Credentials] = None,
+        settings: GCPSettings | None = None,
+        credentials_obj: Credentials | None = None,
     ) -> None:
         """
         Initialize the Firebase Hosting controller.
@@ -68,7 +65,7 @@ class FirebaseHostingController:
         self._settings = settings or get_settings()
         self._credentials = credentials_obj
         self._api_base_url = "https://firebasehosting.googleapis.com/v1beta1"
-        self._client: Optional[httpx.Client] = None
+        self._client: httpx.Client | None = None
 
         try:
             # Check if Firebase is already initialized
@@ -77,7 +74,9 @@ class FirebaseHostingController:
             except ValueError:
                 # Firebase not initialized yet
                 cred_path = (
-                    str(self._settings.credentials_path) if self._settings.credentials_path else None
+                    str(self._settings.credentials_path)
+                    if self._settings.credentials_path
+                    else None
                 )
 
                 if cred_path:
@@ -118,6 +117,7 @@ class FirebaseHostingController:
                 # Refresh credentials if needed
                 if not creds.valid:
                     from google.auth.transport.requests import Request
+
                     creds.refresh(Request())
 
                 self._client = httpx.Client(
@@ -139,8 +139,8 @@ class FirebaseHostingController:
         self,
         method: str,
         endpoint: str,
-        json_data: Optional[dict[str, Any]] = None,
-        params: Optional[dict[str, str]] = None,
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         """
         Make an authenticated request to Firebase Hosting API.
@@ -200,7 +200,7 @@ class FirebaseHostingController:
     def create_site(
         self,
         site_id: str,
-        app_id: Optional[str] = None,
+        app_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Create a new Firebase Hosting site.
@@ -297,7 +297,7 @@ class FirebaseHostingController:
             params = {"pageSize": str(page_size)}
 
             all_sites: list[dict[str, Any]] = []
-            next_page_token: Optional[str] = None
+            next_page_token: str | None = None
 
             while True:
                 if next_page_token:
@@ -459,7 +459,7 @@ class FirebaseHostingController:
             endpoint = f"projects/{self._settings.project_id}/sites/{site_id}/domains"
 
             all_domains: list[dict[str, Any]] = []
-            next_page_token: Optional[str] = None
+            next_page_token: str | None = None
             params: dict[str, str] = {}
 
             while True:
@@ -522,7 +522,7 @@ class FirebaseHostingController:
     def create_version(
         self,
         site_id: str,
-        config: Optional[dict[str, Any]] = None,
+        config: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Create a new version for deployment.
@@ -602,7 +602,7 @@ class FirebaseHostingController:
         self,
         site_id: str,
         version_name: str,
-        message: Optional[str] = None,
+        message: str | None = None,
     ) -> dict[str, Any]:
         """
         Create a release to deploy a version to the live site.
@@ -633,7 +633,9 @@ class FirebaseHostingController:
             if message:
                 payload["message"] = message
 
-            result = self._make_request("POST", endpoint, json_data=payload, params=params)
+            result = self._make_request(
+                "POST", endpoint, json_data=payload, params=params
+            )
             return result
 
         except Exception as e:
@@ -676,7 +678,7 @@ class FirebaseHostingController:
             params = {"pageSize": str(page_size)}
 
             all_releases: list[dict[str, Any]] = []
-            next_page_token: Optional[str] = None
+            next_page_token: str | None = None
 
             while True:
                 if next_page_token:
@@ -791,11 +793,7 @@ class FirebaseHostingController:
 
             # Step 2: Populate files endpoint - tell API about all files
             endpoint = f"{version_name}:populateFiles"
-            payload = {
-                "files": {
-                    path: hash_val for path, hash_val in file_hashes.items()
-                }
-            }
+            payload = {"files": dict(file_hashes.items())}
 
             response = self._make_request("POST", endpoint, json_data=payload)
 
@@ -892,8 +890,8 @@ class FirebaseHostingController:
         self,
         site_id: str,
         files: dict[str, str],
-        config: Optional[dict[str, Any]] = None,
-        message: Optional[str] = None,
+        config: dict[str, Any] | None = None,
+        message: str | None = None,
     ) -> dict[str, Any]:
         """
         Complete deployment workflow: create version, upload files, and release.
@@ -960,7 +958,9 @@ class FirebaseHostingController:
             # Step 3: Finalize version
             print("Finalizing version...")
             finalized_version = self.finalize_version(version_name)
-            print(f"✓ Version finalized: {finalized_version.get('status', 'FINALIZED')}")
+            print(
+                f"✓ Version finalized: {finalized_version.get('status', 'FINALIZED')}"
+            )
 
             # Step 4: Create release
             print("Creating release...")

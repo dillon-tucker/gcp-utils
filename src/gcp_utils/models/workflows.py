@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Any, Optional
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_serializer
 
 if TYPE_CHECKING:
-    from google.cloud.workflows_v1 import Workflow
     from google.cloud.workflows.executions_v1 import Execution
+    from google.cloud.workflows_v1 import Workflow
 
 
 class ExecutionState(str, Enum):
@@ -41,11 +41,11 @@ class WorkflowInfo(BaseModel):
     """
 
     name: str = Field(..., description="Workflow name")
-    description: Optional[str] = Field(None, description="Workflow description")
+    description: str | None = Field(None, description="Workflow description")
     state: str = Field(..., description="Workflow state (ACTIVE, etc.)")
-    created: Optional[datetime] = Field(None, description="Creation timestamp")
-    updated: Optional[datetime] = Field(None, description="Last update timestamp")
-    revision_id: Optional[str] = Field(None, description="Current revision ID")
+    created: datetime | None = Field(None, description="Creation timestamp")
+    updated: datetime | None = Field(None, description="Last update timestamp")
+    revision_id: str | None = Field(None, description="Current revision ID")
     labels: dict[str, str] = Field(default_factory=dict, description="Workflow labels")
 
     # The actual Workflow object (private attribute, not serialized)
@@ -54,12 +54,12 @@ class WorkflowInfo(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("created", "updated")
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
         return dt.isoformat() if dt else None
 
     # Convenience methods that delegate to controller operations
 
-    def execute(self, argument: Optional[dict[str, Any]] = None) -> "WorkflowExecution":
+    def execute(self, argument: dict[str, Any] | None = None) -> "WorkflowExecution":
         """
         Execute this workflow.
 
@@ -82,7 +82,9 @@ class WorkflowInfo(BaseModel):
             "Workflow execution must be performed via WorkflowsController.execute_workflow()"
         )
 
-    def update(self, source_contents: Optional[str] = None, description: Optional[str] = None) -> None:
+    def update(
+        self, source_contents: str | None = None, description: str | None = None
+    ) -> None:
         """
         Update this workflow's source or description.
 
@@ -126,13 +128,13 @@ class WorkflowExecution(BaseModel):
     name: str = Field(..., description="Execution name")
     workflow_name: str = Field(..., description="Workflow name")
     state: ExecutionState = Field(..., description="Execution state")
-    argument: Optional[dict[str, Any]] = Field(
+    argument: dict[str, Any] | None = Field(
         None, description="Input arguments to the execution"
     )
-    result: Optional[dict[str, Any]] = Field(None, description="Execution result")
-    error: Optional[str] = Field(None, description="Error message if failed")
-    start_time: Optional[datetime] = Field(None, description="Execution start time")
-    end_time: Optional[datetime] = Field(None, description="Execution end time")
+    result: dict[str, Any] | None = Field(None, description="Execution result")
+    error: str | None = Field(None, description="Error message if failed")
+    start_time: datetime | None = Field(None, description="Execution start time")
+    end_time: datetime | None = Field(None, description="Execution end time")
 
     # The actual Execution object (private attribute, not serialized)
     _execution_object: Optional["Execution"] = PrivateAttr(default=None)
@@ -140,7 +142,7 @@ class WorkflowExecution(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("start_time", "end_time")
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
         return dt.isoformat() if dt else None
 
     # Convenience methods that delegate to controller operations

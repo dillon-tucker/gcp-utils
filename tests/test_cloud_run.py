@@ -1,11 +1,14 @@
 """
 Tests for CloudRunController.
 """
-import pytest
-from unittest.mock import MagicMock, patch, Mock
+
 from datetime import datetime
-from gcp_utils.controllers.cloud_run import CloudRunController
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from gcp_utils.config import GCPSettings
+from gcp_utils.controllers.cloud_run import CloudRunController
 from gcp_utils.exceptions import CloudRunError, ResourceNotFoundError, ValidationError
 from gcp_utils.models.cloud_run import TrafficTarget
 
@@ -13,7 +16,7 @@ from gcp_utils.models.cloud_run import TrafficTarget
 def create_mock_service(
     name="test-service",
     image="gcr.io/test/image:latest",
-    url="https://test-service-abc123.run.app"
+    url="https://test-service-abc123.run.app",
 ):
     """Helper function to create a properly configured mock service."""
     mock_service = MagicMock()
@@ -37,7 +40,7 @@ def settings():
 @pytest.fixture
 def cloud_run_controller(settings):
     """Fixture for CloudRunController with a mocked client."""
-    with patch('google.cloud.run_v2.ServicesClient') as mock_client:
+    with patch("google.cloud.run_v2.ServicesClient") as mock_client:
         controller = CloudRunController(settings)
         controller.client = mock_client.return_value
         yield controller
@@ -45,7 +48,7 @@ def cloud_run_controller(settings):
 
 def test_init_success(settings):
     """Test successful initialization of CloudRunController."""
-    with patch('google.cloud.run_v2.ServicesClient'):
+    with patch("google.cloud.run_v2.ServicesClient"):
         controller = CloudRunController(settings)
         assert controller.settings == settings
         assert controller.region == settings.cloud_run_region
@@ -53,7 +56,9 @@ def test_init_success(settings):
 
 def test_init_failure():
     """Test initialization failure handling."""
-    with patch('google.cloud.run_v2.ServicesClient', side_effect=Exception("Init failed")):
+    with patch(
+        "google.cloud.run_v2.ServicesClient", side_effect=Exception("Init failed")
+    ):
         with pytest.raises(CloudRunError) as exc_info:
             CloudRunController()
         assert "Failed to initialize Cloud Run client" in str(exc_info.value)
@@ -111,10 +116,7 @@ def test_create_service_success(cloud_run_controller):
     cloud_run_controller.client.create_service.return_value = mock_operation
 
     service = cloud_run_controller.create_service(
-        "test-service",
-        "gcr.io/test/image:latest",
-        port=8080,
-        env_vars={"KEY": "value"}
+        "test-service", "gcr.io/test/image:latest", port=8080, env_vars={"KEY": "value"}
     )
 
     assert service.name == "test-service"
@@ -132,14 +134,15 @@ def test_update_service_success(cloud_run_controller):
     cloud_run_controller.client.update_service.return_value = mock_operation
 
     # Patch the protobuf classes to avoid validation issues
-    with patch('gcp_utils.controllers.cloud_run.run_v2.UpdateServiceRequest') as mock_request, \
-         patch('gcp_utils.controllers.cloud_run.run_v2.ResourceRequirements'), \
-         patch('gcp_utils.controllers.cloud_run.run_v2.EnvVar'), \
-         patch('gcp_utils.controllers.cloud_run.run_v2.RevisionScaling'):
+    with (
+        patch("gcp_utils.controllers.cloud_run.run_v2.UpdateServiceRequest"),
+        patch("gcp_utils.controllers.cloud_run.run_v2.ResourceRequirements"),
+        patch("gcp_utils.controllers.cloud_run.run_v2.EnvVar"),
+        patch("gcp_utils.controllers.cloud_run.run_v2.RevisionScaling"),
+    ):
 
         service = cloud_run_controller.update_service(
-            "test-service",
-            image="gcr.io/test/new-image:latest"
+            "test-service", image="gcr.io/test/new-image:latest"
         )
 
         assert service.image == "gcr.io/test/new-image:latest"
@@ -186,9 +189,11 @@ def test_update_traffic_success(cloud_run_controller):
     ]
 
     # Patch the protobuf classes to avoid validation issues
-    with patch('gcp_utils.controllers.cloud_run.run_v2.UpdateServiceRequest'), \
-         patch('gcp_utils.controllers.cloud_run.run_v2.TrafficTarget') as mock_traffic, \
-         patch('gcp_utils.controllers.cloud_run.run_v2.TrafficTargetAllocationType'):
+    with (
+        patch("gcp_utils.controllers.cloud_run.run_v2.UpdateServiceRequest"),
+        patch("gcp_utils.controllers.cloud_run.run_v2.TrafficTarget"),
+        patch("gcp_utils.controllers.cloud_run.run_v2.TrafficTargetAllocationType"),
+    ):
 
         service = cloud_run_controller.update_traffic("test-service", traffic_targets)
 
@@ -210,8 +215,10 @@ def test_invoke_service_success(cloud_run_controller):
     mock_service = create_mock_service()
     cloud_run_controller.client.get_service.return_value = mock_service
 
-    with patch('gcp_utils.controllers.cloud_run.default') as mock_default, \
-         patch('gcp_utils.controllers.cloud_run.httpx.Client') as mock_httpx:
+    with (
+        patch("gcp_utils.controllers.cloud_run.default") as mock_default,
+        patch("gcp_utils.controllers.cloud_run.httpx.Client") as mock_httpx,
+    ):
 
         mock_credentials = MagicMock()
         mock_credentials.valid = True
@@ -239,8 +246,10 @@ def test_invoke_service_post(cloud_run_controller):
     mock_service = create_mock_service()
     cloud_run_controller.client.get_service.return_value = mock_service
 
-    with patch('gcp_utils.controllers.cloud_run.default') as mock_default, \
-         patch('gcp_utils.controllers.cloud_run.httpx.Client') as mock_httpx:
+    with (
+        patch("gcp_utils.controllers.cloud_run.default") as mock_default,
+        patch("gcp_utils.controllers.cloud_run.httpx.Client") as mock_httpx,
+    ):
 
         mock_credentials = MagicMock()
         mock_credentials.valid = True
@@ -258,10 +267,7 @@ def test_invoke_service_post(cloud_run_controller):
         mock_httpx.return_value = mock_client_instance
 
         result = cloud_run_controller.invoke_service(
-            "test-service",
-            "/api/create",
-            method="POST",
-            data={"name": "test"}
+            "test-service", "/api/create", method="POST", data={"name": "test"}
         )
 
         assert result["status_code"] == 201
@@ -273,8 +279,10 @@ def test_invoke_service_invalid_method(cloud_run_controller):
     mock_service = create_mock_service()
     cloud_run_controller.client.get_service.return_value = mock_service
 
-    with patch('gcp_utils.controllers.cloud_run.default') as mock_default, \
-         patch('gcp_utils.controllers.cloud_run.httpx.Client'):
+    with (
+        patch("gcp_utils.controllers.cloud_run.default") as mock_default,
+        patch("gcp_utils.controllers.cloud_run.httpx.Client"),
+    ):
 
         mock_credentials = MagicMock()
         mock_credentials.valid = True
@@ -283,8 +291,6 @@ def test_invoke_service_invalid_method(cloud_run_controller):
 
         with pytest.raises(ValidationError) as exc_info:
             cloud_run_controller.invoke_service(
-                "test-service",
-                "/api/test",
-                method="INVALID"
+                "test-service", "/api/test", method="INVALID"
             )
         assert "Unsupported HTTP method" in str(exc_info.value)

@@ -8,15 +8,13 @@ including bucket management, file uploads/downloads, and blob operations.
 import mimetypes
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, BinaryIO, Optional
 
-import aiofiles
+from google.auth.credentials import Credentials
 from google.cloud import storage
 from google.cloud.storage import Blob, Bucket
-from google.auth.credentials import Credentials
 
 from ..config import GCPSettings, get_settings
-from ..exceptions import StorageError, ResourceNotFoundError, ValidationError
+from ..exceptions import ResourceNotFoundError, StorageError, ValidationError
 from ..models.storage import BlobMetadata, BucketInfo, UploadResult
 
 
@@ -48,8 +46,8 @@ class CloudStorageController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
     ) -> None:
         """
         Initialize the Cloud Storage controller.
@@ -76,9 +74,9 @@ class CloudStorageController:
     def create_bucket(
         self,
         bucket_name: str,
-        location: Optional[str] = None,
+        location: str | None = None,
         storage_class: str = "STANDARD",
-        labels: Optional[dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
         uniform_bucket_level_access: bool = True,
     ) -> BucketInfo:
         """
@@ -120,7 +118,9 @@ class CloudStorageController:
                 bucket.labels = labels
 
             # Set uniform bucket-level access
-            bucket.iam_configuration.uniform_bucket_level_access_enabled = uniform_bucket_level_access
+            bucket.iam_configuration.uniform_bucket_level_access_enabled = (
+                uniform_bucket_level_access
+            )
 
             created_bucket = self.client.create_bucket(
                 bucket,
@@ -163,7 +163,7 @@ class CloudStorageController:
                 details={"bucket": bucket_name, "error": str(e)},
             )
 
-    def list_buckets(self, prefix: Optional[str] = None) -> list[BucketInfo]:
+    def list_buckets(self, prefix: str | None = None) -> list[BucketInfo]:
         """
         List all buckets in the project.
 
@@ -218,8 +218,8 @@ class CloudStorageController:
         bucket_name: str,
         source_path: str | Path,
         destination_blob_name: str,
-        content_type: Optional[str] = None,
-        metadata: Optional[dict[str, str]] = None,
+        content_type: str | None = None,
+        metadata: dict[str, str] | None = None,
         public: bool = False,
     ) -> UploadResult:
         """
@@ -298,8 +298,8 @@ class CloudStorageController:
         bucket_name: str,
         destination_blob_name: str,
         content: str | bytes,
-        content_type: Optional[str] = None,
-        metadata: Optional[dict[str, str]] = None,
+        content_type: str | None = None,
+        metadata: dict[str, str] | None = None,
         public: bool = False,
     ) -> UploadResult:
         """
@@ -499,9 +499,9 @@ class CloudStorageController:
     def list_blobs(
         self,
         bucket_name: str,
-        prefix: Optional[str] = None,
-        delimiter: Optional[str] = None,
-        max_results: Optional[int] = None,
+        prefix: str | None = None,
+        delimiter: str | None = None,
+        max_results: int | None = None,
     ) -> list[BlobMetadata]:
         """
         List blobs in a bucket.

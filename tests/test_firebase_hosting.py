@@ -1,12 +1,15 @@
 """
 Tests for FirebaseHostingController.
 """
-import pytest
-from unittest.mock import MagicMock, patch, Mock
+
 from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
 import httpx
-from gcp_utils.controllers.firebase_hosting import FirebaseHostingController
+import pytest
+
 from gcp_utils.config import GCPSettings
+from gcp_utils.controllers.firebase_hosting import FirebaseHostingController
 from gcp_utils.exceptions import (
     FirebaseHostingError,
     ResourceNotFoundError,
@@ -23,9 +26,11 @@ def settings():
 @pytest.fixture
 def firebase_hosting_controller(settings):
     """Fixture for FirebaseHostingController with mocked HTTP client."""
-    with patch('firebase_admin.get_app') as mock_get_app, \
-         patch('firebase_admin.initialize_app') as mock_init_app, \
-         patch('google.auth.default') as mock_default:
+    with (
+        patch("firebase_admin.get_app") as mock_get_app,
+        patch("firebase_admin.initialize_app"),
+        patch("google.auth.default") as mock_default,
+    ):
 
         # Simulate Firebase already initialized
         mock_get_app.return_value = Mock()
@@ -54,7 +59,7 @@ def test_create_site_success(firebase_hosting_controller):
     mock_response.json.return_value = {
         "name": "projects/test-project/sites/my-site",
         "siteId": "my-site",
-        "type": "DEFAULT_SITE"
+        "type": "DEFAULT_SITE",
     }
     mock_response.content = b'{"name": "..."}'
 
@@ -75,7 +80,7 @@ def test_get_site_success(firebase_hosting_controller):
     mock_response.json.return_value = {
         "name": "projects/test-project/sites/my-site",
         "siteId": "my-site",
-        "defaultUrl": "https://my-site.web.app"
+        "defaultUrl": "https://my-site.web.app",
     }
     mock_response.content = b'{"name": "..."}'
 
@@ -109,7 +114,7 @@ def test_list_sites_success(firebase_hosting_controller):
     mock_response.json.return_value = {
         "sites": [
             {"siteId": "site1", "name": "projects/test-project/sites/site1"},
-            {"siteId": "site2", "name": "projects/test-project/sites/site2"}
+            {"siteId": "site2", "name": "projects/test-project/sites/site2"},
         ]
     }
     mock_response.content = b'{"sites": [...]}'
@@ -129,7 +134,7 @@ def test_delete_site_success(firebase_hosting_controller):
 
     mock_response = MagicMock()
     mock_response.status_code = 200
-    mock_response.content = b''
+    mock_response.content = b""
 
     mock_client.request.return_value = mock_response
 
@@ -149,7 +154,7 @@ def test_add_custom_domain_success(firebase_hosting_controller):
     mock_response.json.return_value = {
         "domainName": "example.com",
         "status": "PENDING",
-        "updateTime": "2025-01-01T00:00:00Z"
+        "updateTime": "2025-01-01T00:00:00Z",
     }
     mock_response.content = b'{"domainName": "..."}'
 
@@ -170,7 +175,7 @@ def test_get_domain_success(firebase_hosting_controller):
     mock_response.json.return_value = {
         "domainName": "example.com",
         "status": "ACTIVE",
-        "updateTime": "2025-01-01T00:00:00Z"
+        "updateTime": "2025-01-01T00:00:00Z",
     }
     mock_response.content = b'{"domainName": "..."}'
 
@@ -191,7 +196,7 @@ def test_list_domains_success(firebase_hosting_controller):
     mock_response.json.return_value = {
         "domains": [
             {"domainName": "example.com", "status": "ACTIVE"},
-            {"domainName": "test.com", "status": "PENDING"}
+            {"domainName": "test.com", "status": "PENDING"},
         ]
     }
     mock_response.content = b'{"domains": [...]}'
@@ -211,7 +216,7 @@ def test_delete_domain_success(firebase_hosting_controller):
 
     mock_response = MagicMock()
     mock_response.status_code = 200
-    mock_response.content = b''
+    mock_response.content = b""
 
     mock_client.request.return_value = mock_response
 
@@ -229,7 +234,7 @@ def test_create_version_success(firebase_hosting_controller):
     mock_response.json.return_value = {
         "name": "projects/test-project/sites/my-site/versions/version123",
         "status": "CREATED",
-        "config": {}
+        "config": {},
     }
     mock_response.content = b'{"name": "..."}'
 
@@ -252,15 +257,13 @@ def test_create_version_with_config(firebase_hosting_controller):
         "status": "CREATED",
         "config": {
             "redirects": [{"source": "/old", "destination": "/new", "type": 301}]
-        }
+        },
     }
     mock_response.content = b'{"name": "..."}'
 
     mock_client.request.return_value = mock_response
 
-    config = {
-        "redirects": [{"source": "/old", "destination": "/new", "type": 301}]
-    }
+    config = {"redirects": [{"source": "/old", "destination": "/new", "type": 301}]}
 
     version = controller.create_version("my-site", config=config)
 
@@ -276,7 +279,7 @@ def test_get_version_success(firebase_hosting_controller):
     mock_response.json.return_value = {
         "name": "projects/test-project/sites/my-site/versions/version123",
         "status": "FINALIZED",
-        "config": {}
+        "config": {},
     }
     mock_response.content = b'{"name": "..."}'
 
@@ -296,11 +299,9 @@ def test_create_release_success(firebase_hosting_controller):
     mock_response.status_code = 200
     mock_response.json.return_value = {
         "name": "projects/test-project/sites/my-site/releases/release123",
-        "version": {
-            "name": "projects/test-project/sites/my-site/versions/version123"
-        },
+        "version": {"name": "projects/test-project/sites/my-site/versions/version123"},
         "type": "DEPLOY",
-        "releaseTime": "2025-01-01T00:00:00Z"
+        "releaseTime": "2025-01-01T00:00:00Z",
     }
     mock_response.content = b'{"name": "..."}'
 
@@ -324,13 +325,13 @@ def test_list_releases_success(firebase_hosting_controller):
             {
                 "name": "projects/test-project/sites/my-site/releases/release1",
                 "type": "DEPLOY",
-                "releaseTime": "2025-01-01T00:00:00Z"
+                "releaseTime": "2025-01-01T00:00:00Z",
             },
             {
                 "name": "projects/test-project/sites/my-site/releases/release2",
                 "type": "DEPLOY",
-                "releaseTime": "2025-01-02T00:00:00Z"
-            }
+                "releaseTime": "2025-01-02T00:00:00Z",
+            },
         ]
     }
     mock_response.content = b'{"releases": [...]}'
@@ -351,7 +352,7 @@ def test_finalize_version_success(firebase_hosting_controller):
     mock_response.status_code = 200
     mock_response.json.return_value = {
         "name": "projects/test-project/sites/my-site/versions/version123",
-        "status": "FINALIZED"
+        "status": "FINALIZED",
     }
     mock_response.content = b'{"name": "..."}'
 
@@ -369,7 +370,8 @@ def test_calculate_file_hash(firebase_hosting_controller):
 
     # Create a temporary file
     import tempfile
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
+
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as f:
         f.write("test content")
         temp_path = Path(f.name)
 
@@ -388,9 +390,7 @@ def test_http_error_handling(firebase_hosting_controller):
     mock_response.status_code = 500
     mock_response.text = "Internal Server Error"
     mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-        "500 Server Error",
-        request=Mock(),
-        response=mock_response
+        "500 Server Error", request=Mock(), response=mock_response
     )
 
     mock_client.request.return_value = mock_response
@@ -419,6 +419,7 @@ def test_populate_files_success(firebase_hosting_controller):
 
     # Create temporary files
     import tempfile
+
     temp_dir = Path(tempfile.mkdtemp())
 
     try:
@@ -428,17 +429,14 @@ def test_populate_files_success(firebase_hosting_controller):
         css_file = temp_dir / "style.css"
         css_file.write_text("body { margin: 0; }")
 
-        files = {
-            "/index.html": str(index_file),
-            "/style.css": str(css_file)
-        }
+        files = {"/index.html": str(index_file), "/style.css": str(css_file)}
 
         # Mock the populate response
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
             "uploadRequiredHashes": [],
-            "uploadUrl": "https://upload.example.com"
+            "uploadUrl": "https://upload.example.com",
         }
         mock_response.content = b'{"uploadRequiredHashes": []}'
 
@@ -452,4 +450,5 @@ def test_populate_files_success(firebase_hosting_controller):
     finally:
         # Cleanup
         import shutil
+
         shutil.rmtree(temp_dir)
