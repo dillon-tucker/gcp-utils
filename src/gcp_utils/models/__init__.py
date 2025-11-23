@@ -11,11 +11,13 @@ from .bigquery import (
     Dataset,
     FieldType,
     Job,
+)
+from .bigquery import JobState as BigQueryJobState
+from .bigquery import (
     QueryResult,
     SchemaField,
     Table,
 )
-from .bigquery import JobState as BigQueryJobState
 from .cloud_build import (
     Build,
     BuildStatus,

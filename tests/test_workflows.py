@@ -2,6 +2,7 @@
 Tests for WorkflowsController.
 """
 
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -9,6 +10,32 @@ import pytest
 from gcp_utils.config import GCPSettings
 from gcp_utils.controllers.workflows import WorkflowsController
 from gcp_utils.exceptions import ResourceNotFoundError
+
+
+def create_mock_workflow(name: str = "test-workflow"):
+    """Helper function to create a properly configured mock workflow."""
+    mock = MagicMock()
+    mock.name = f"projects/test-project/locations/us-central1/workflows/{name}"
+    mock.description = "Test workflow description"
+    mock.state = "ACTIVE"
+    mock.create_time = datetime.now()
+    mock.update_time = datetime.now()
+    mock.revision_id = "000001-abc"
+    mock.labels = {"env": "test"}
+    return mock
+
+
+def create_mock_execution(name: str = "test-execution"):
+    """Helper function to create a properly configured mock execution."""
+    mock = MagicMock()
+    mock.name = f"projects/test-project/locations/us-central1/workflows/test-workflow/executions/{name}"
+    mock.state = "ACTIVE"
+    mock.start_time = datetime.now()
+    mock.end_time = None
+    mock.argument = "{}"
+    mock.result = None
+    mock.error = None
+    return mock
 
 
 @pytest.fixture
@@ -21,7 +48,7 @@ def settings():
 def workflows_controller(settings):
     """Fixture for WorkflowsController with a mocked client."""
     with (
-        patch("google.cloud.workflows.v1.WorkflowsClient") as mock_workflows_client,
+        patch("google.cloud.workflows_v1.WorkflowsClient") as mock_workflows_client,
         patch(
             "google.cloud.workflows.executions_v1.ExecutionsClient"
         ) as mock_executions_client,
@@ -35,10 +62,7 @@ def workflows_controller(settings):
 def test_create_workflow_success(workflows_controller):
     """Test creating a workflow successfully."""
     mock_operation = MagicMock()
-    mock_workflow = MagicMock()
-    mock_workflow.name = (
-        "projects/test-project/locations/us-central1/workflows/test-workflow"
-    )
+    mock_workflow = create_mock_workflow("test-workflow")
 
     mock_operation.result.return_value = mock_workflow
     workflows_controller._workflows_client.create_workflow.return_value = mock_operation
@@ -48,20 +72,20 @@ def test_create_workflow_success(workflows_controller):
     )
 
     assert "test-workflow" in workflow.name
+    assert workflow.description == "Test workflow description"
+    assert workflow.state == "ACTIVE"
 
 
 def test_get_workflow_success(workflows_controller):
     """Test getting a workflow successfully."""
-    mock_workflow = MagicMock()
-    mock_workflow.name = (
-        "projects/test-project/locations/us-central1/workflows/test-workflow"
-    )
+    mock_workflow = create_mock_workflow("test-workflow")
 
     workflows_controller._workflows_client.get_workflow.return_value = mock_workflow
 
     workflow = workflows_controller.get_workflow("test-workflow")
 
     assert "test-workflow" in workflow.name
+    assert workflow.description == "Test workflow description"
 
 
 def test_get_workflow_not_found(workflows_controller):
@@ -76,8 +100,7 @@ def test_get_workflow_not_found(workflows_controller):
 
 def test_execute_workflow_success(workflows_controller):
     """Test executing a workflow successfully."""
-    mock_execution = MagicMock()
-    mock_execution.name = "projects/test-project/locations/us-central1/workflows/test-workflow/executions/exec-123"
+    mock_execution = create_mock_execution("exec-123")
 
     workflows_controller._executions_client.create_execution.return_value = (
         mock_execution
@@ -88,6 +111,7 @@ def test_execute_workflow_success(workflows_controller):
     )
 
     assert "exec-" in execution.name
+    assert execution.state == "ACTIVE"
 
 
 def test_delete_workflow(workflows_controller):
@@ -103,13 +127,12 @@ def test_delete_workflow(workflows_controller):
 
 def test_list_workflows(workflows_controller):
     """Test listing workflows."""
-    mock_workflow = MagicMock()
-    mock_workflow.name = (
-        "projects/test-project/locations/us-central1/workflows/test-workflow"
-    )
+    mock_workflow = create_mock_workflow("test-workflow")
 
     workflows_controller._workflows_client.list_workflows.return_value = [mock_workflow]
 
     workflows = workflows_controller.list_workflows()
 
-    assert len(workflows) >= 1
+    assert len(workflows) == 1
+    assert workflows[0].name == "test-workflow"
+    assert workflows[0].description == "Test workflow description"
