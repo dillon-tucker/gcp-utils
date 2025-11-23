@@ -107,7 +107,6 @@ def test_delete_service_account(iam_controller):
 
 def test_create_service_account_key(iam_controller):
     """Test creating a service account key."""
-    from datetime import datetime
 
     mock_key = MagicMock()
     mock_key.name = "projects/test-project/serviceAccounts/test-sa@test-project.iam.gserviceaccount.com/keys/key123"

@@ -47,8 +47,7 @@ jobs:
           --ignore=tests/test_firebase_auth.py \
           --ignore=tests/test_firebase_hosting.py \
           --ignore=tests/test_pubsub.py \
-          --ignore=tests/test_secret_manager.py \
-          --ignore=tests/test1.py
+          --ignore=tests/test_secret_manager.py
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
