@@ -20,9 +20,9 @@ from pathlib import Path
 # Add src to path for running without installation
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from gcp_utils.config import get_settings
 from gcp_utils.controllers import CloudFunctionsController, CloudStorageController
 from gcp_utils.utils import ZipUtility, zip_and_upload
-from gcp_utils.config import get_settings
 
 
 def create_sample_function_code(function_dir: Path) -> None:

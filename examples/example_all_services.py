@@ -10,9 +10,9 @@ from datetime import timedelta
 from gcp_utils.config import GCPSettings
 from gcp_utils.controllers import (
     CloudStorageController,
-    FirestoreController,
-    FirebaseAuthController,
     CloudTasksController,
+    FirebaseAuthController,
+    FirestoreController,
     PubSubController,
     SecretManagerController,
 )

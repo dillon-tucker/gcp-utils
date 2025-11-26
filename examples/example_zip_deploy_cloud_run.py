@@ -24,14 +24,14 @@ from pathlib import Path
 # Add src to path for running without installation
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from gcp_utils.config import get_settings
 from gcp_utils.controllers import (
+    ArtifactRegistryController,
     CloudBuildController,
     CloudRunController,
     CloudStorageController,
-    ArtifactRegistryController,
 )
 from gcp_utils.utils import ZipUtility
-from gcp_utils.config import get_settings
 
 
 def create_sample_app(app_dir: Path) -> None:

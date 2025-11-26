@@ -231,8 +231,8 @@ def main():
     )
 
     # Create sample files for deployment
-    import tempfile
     import os
+    import tempfile
 
     try:
         # Create temporary directory with sample website

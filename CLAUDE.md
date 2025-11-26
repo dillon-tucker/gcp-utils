@@ -129,16 +129,46 @@ For new GCP services, add them to the appropriate optional dependency group in `
 # Type checking (strict mode) - REQUIRED before commits
 ../.venv/bin/mypy src/
 
-# Linting (fast linter)
-../.venv/bin/ruff check src/
+# Linting (fast linter with auto-fix)
+../.venv/bin/ruff check src/ tests/ examples/ --fix
 
-# Code formatting
-../.venv/bin/black src/
-../.venv/bin/isort src/
+# Code formatting (auto-format)
+../.venv/bin/black src/ tests/ examples/
 
-# Run all checks
+# Import sorting (auto-sort)
+../.venv/bin/isort src/ tests/ examples/
+
+# Run all checks (for CI/verification)
 ../.venv/bin/mypy src/ && ../.venv/bin/ruff check src/ && ../.venv/bin/black --check src/ && ../.venv/bin/isort --check src/
 ```
+
+**CRITICAL - Before Committing:**
+
+ALWAYS run these quality checks before committing code:
+
+```bash
+# 1. Format code
+../.venv/bin/black src/ tests/ examples/
+../.venv/bin/isort src/ tests/ examples/
+
+# 2. Fix linting issues
+../.venv/bin/ruff check src/ tests/ examples/ --fix --unsafe-fixes
+
+# 3. Type check
+../.venv/bin/mypy src/
+
+# 4. Run tests
+../.venv/bin/pytest tests/
+
+# OR run all in one command:
+../.venv/bin/black src/ tests/ examples/ && \
+  ../.venv/bin/isort src/ tests/ examples/ && \
+  ../.venv/bin/ruff check src/ tests/ examples/ --fix --unsafe-fixes && \
+  ../.venv/bin/mypy src/ && \
+  ../.venv/bin/pytest tests/
+```
+
+If any of these checks fail, fix the issues before committing.
 
 ### Testing
 
@@ -192,15 +222,20 @@ The test suite includes comprehensive coverage for all controllers:
    - Custom domains
    - Version and release workflows
    - File upload and deployment
-7. **test_cloud_run.py** - Cloud Run controller (15 tests)
-8. **test_cloud_tasks.py** - Cloud Tasks controller (7 tests)
-9. **test_workflows.py** - Workflows controller (6 tests)
-10. **test_pubsub.py** - Pub/Sub controller (7 tests)
-11. **test_secret_manager.py** - Secret Manager controller (3 tests)
-12. **test_iam.py** - IAM controller (6 tests)
-13. **test_artifact_registry.py** - Artifact Registry controller (6 tests)
+7. **test_cloud_run.py** - Cloud Run Services controller (15 tests)
+8. **test_cloud_run_jobs.py** - Cloud Run Jobs controller (23 tests) ✨ NEW
+   - Job lifecycle (create, get, list, update, delete)
+   - Execution management (run, get, list, cancel)
+   - Status tracking and monitoring
+   - Resource path construction
+9. **test_cloud_tasks.py** - Cloud Tasks controller (7 tests)
+10. **test_workflows.py** - Workflows controller (6 tests)
+11. **test_pubsub.py** - Pub/Sub controller (7 tests)
+12. **test_secret_manager.py** - Secret Manager controller (3 tests)
+13. **test_iam.py** - IAM controller (6 tests)
+14. **test_artifact_registry.py** - Artifact Registry controller (6 tests)
 
-**Total: 110+ test cases across all controllers**
+**Total: 133+ test cases across all controllers**
 
 ### Running Examples
 

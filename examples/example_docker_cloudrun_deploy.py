@@ -15,11 +15,11 @@ from gcp_utils.controllers import (
     ArtifactRegistryController,
     CloudRunController,
 )
-from gcp_utils.utils import DockerBuilder
 from gcp_utils.exceptions import (
     ArtifactRegistryError,
     CloudRunError,
 )
+from gcp_utils.utils import DockerBuilder
 
 
 def main():
