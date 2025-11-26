@@ -34,11 +34,16 @@ class CloudLoggingController:
 
     Example:
         >>> from gcp_utils.controllers import CloudLoggingController
+        >>> import logging
         >>>
         >>> # Automatically loads from .env file
         >>> logging_ctrl = CloudLoggingController()
         >>>
-        >>> # Write a log entry
+        >>> # Recommended: Integrate with Python logging (Google's recommended pattern)
+        >>> logging_ctrl.setup_logging()
+        >>> logging.info("This goes to Cloud Logging")
+        >>>
+        >>> # Or write logs directly
         >>> logging_ctrl.write_log(
         ...     log_name="my-app-log",
         ...     message="Application started",
@@ -101,6 +106,54 @@ class CloudLoggingController:
             client = self._get_client()
             self._loggers[log_name] = client.logger(log_name)
         return self._loggers[log_name]
+
+    def setup_logging(
+        self,
+        log_level: int = 20,  # logging.INFO
+        excluded_loggers: Optional[tuple[str, ...]] = None,
+    ) -> None:
+        """
+        Integrate Google Cloud Logging with Python's standard logging module.
+
+        This is the recommended pattern from Google Cloud documentation. It attaches
+        a Cloud Logging handler to Python's root logger, allowing you to use standard
+        Python logging (logging.info(), logging.error(), etc.) and have logs appear
+        in Google Cloud Logging.
+
+        Args:
+            log_level: Minimum log level to capture (default: 20/INFO)
+            excluded_loggers: Tuple of logger names to exclude from Cloud Logging
+
+        Raises:
+            CloudLoggingError: If setup fails
+
+        Example:
+            >>> from gcp_utils.controllers import CloudLoggingController
+            >>> import logging
+            >>>
+            >>> # Setup integration
+            >>> logging_ctrl = CloudLoggingController()
+            >>> logging_ctrl.setup_logging()
+            >>>
+            >>> # Now use standard Python logging
+            >>> logging.info("This goes to Cloud Logging")
+            >>> logging.error("So does this")
+            >>>
+            >>> # With structured data
+            >>> logging.info("User action", extra={"json_fields": {"user_id": "123"}})
+
+        Note:
+            This integrates with the Python logging standard library. For direct
+            Cloud Logging writes without Python logging integration, use write_log().
+        """
+        try:
+            client = self._get_client()
+            client.setup_logging(log_level=log_level, excluded_loggers=excluded_loggers)
+        except Exception as e:
+            raise CloudLoggingError(
+                message=f"Failed to setup Python logging integration: {e}",
+                details={"error": str(e)},
+            ) from e
 
     def write_log(
         self,
