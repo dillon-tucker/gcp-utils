@@ -19,7 +19,6 @@ from gcp_utils.utils import DockerBuilder
 from gcp_utils.exceptions import (
     ArtifactRegistryError,
     CloudRunError,
-    ResourceNotFoundError,
 )
 
 
@@ -121,7 +120,7 @@ def main():
     print("Deploying to Cloud Run...")
     print("=" * 60)
     try:
-        service = cloud_run.create_service(
+        cloud_run.create_service(
             service_name=service_name,
             image=image_url,
             region=location,
@@ -137,7 +136,7 @@ def main():
         )
 
         service_url = cloud_run.get_service_url(service_name, location)
-        print(f"✓ Service deployed!")
+        print("✓ Service deployed!")
         print(f"  Service URL: {service_url}")
         print(f"  Image: {image_url}")
     except CloudRunError as e:
@@ -160,7 +159,8 @@ def main():
     print("\n" + "=" * 60)
     print("Alternative: One-step build and push...")
     print("=" * 60)
-    print("""
+    print(
+        """
     You can also use the build_and_push method for a simpler workflow:
 
     image_url = registry.get_docker_image_url(
@@ -184,13 +184,15 @@ def main():
         region="us-central1",
         allow_unauthenticated=True,
     )
-    """)
+    """
+    )
 
     # Example 8: Update existing Cloud Run service
     print("\n" + "=" * 60)
     print("Updating Cloud Run service with new image...")
     print("=" * 60)
-    print("""
+    print(
+        """
     To update an existing service with a new image:
 
     # Build and push new version
@@ -213,13 +215,15 @@ def main():
         region="us-central1",
         image=new_image_url,
     )
-    """)
+    """
+    )
 
     # Example 9: CI/CD Integration
     print("\n" + "=" * 60)
     print("CI/CD Integration Pattern...")
     print("=" * 60)
-    print("""
+    print(
+        """
     Typical CI/CD workflow:
 
     1. Developer pushes code to Git
@@ -255,7 +259,8 @@ def main():
 
     # Deploy to staging
     cloud_run.create_service("app-staging", image_url, "us-central1")
-    """)
+    """
+    )
 
     print("\n" + "=" * 60)
     print("Example completed!")

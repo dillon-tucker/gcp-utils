@@ -12,7 +12,6 @@ This example demonstrates:
 
 import sys
 from pathlib import Path
-import base64
 
 # Add src to path for running without installation
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -42,7 +41,10 @@ def main() -> None:
                 "service": "api",
                 "managed_by": "gcp-utils",
             },
-            replication_locations=["us-central1", "us-east1"],  # Multi-region replication
+            replication_locations=[
+                "us-central1",
+                "us-east1",
+            ],  # Multi-region replication
         )
         print(f"[OK] Created secret: {secret_id}")
         print(f"  Version: {version.name.split('/')[-1]}")
@@ -67,7 +69,7 @@ def main() -> None:
     try:
         value = secrets.access_secret_version(secret_id)
         print(f"[OK] Retrieved secret value (masked): {'*' * 10}{value[-6:]}")
-        print(f"  Full value available in application")
+        print("  Full value available in application")
     except Exception as e:
         print(f"[FAIL] Failed to access secret: {e}")
 
@@ -192,14 +194,18 @@ def main() -> None:
         # Disable old version after grace period
         # In production, you'd wait for services to update before disabling
         print("  In production: wait for services to update, then disable old versions")
-        print(f"  Example: secrets.disable_secret_version('{secret_id}', '{latest_version}')")
+        print(
+            f"  Example: secrets.disable_secret_version('{secret_id}', '{latest_version}')"
+        )
     except Exception as e:
         print(f"[FAIL] Failed to rotate secret: {e}")
 
     # 13. Cleanup - Destroy a version (IRREVERSIBLE)
     print("\n13. Destroying secret version (IRREVERSIBLE)...")
     print("  [SKIP] Skipping destruction - this permanently deletes the data")
-    print(f"  To destroy: secrets.destroy_secret_version('{secret_id}', '{latest_version}')")
+    print(
+        f"  To destroy: secrets.destroy_secret_version('{secret_id}', '{latest_version}')"
+    )
 
     # 14. Cleanup - Delete secrets
     print("\n14. Cleaning up secrets...")
@@ -225,7 +231,8 @@ def main() -> None:
     print("\n" + "=" * 80)
     print("Common Use Cases & Best Practices:")
     print("=" * 80)
-    print("""
+    print(
+        """
 1. API Keys and Tokens:
    - Store third-party API keys
    - Manage OAuth tokens and refresh tokens
@@ -270,7 +277,8 @@ def main() -> None:
    - Pin to specific versions for stability
    - Keep version history for audit trail
    - Disable versions instead of destroying
-""")
+"""
+    )
 
     print("=" * 80)
     print("Example completed!")

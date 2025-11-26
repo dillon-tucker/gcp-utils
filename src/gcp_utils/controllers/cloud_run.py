@@ -2,7 +2,7 @@
 Cloud Run controller for deploying and managing containerized applications.
 
 This module provides a high-level interface for Cloud Run operations including
-service deployment, management, and traffic splitting.
+service deployment, management, traffic splitting, and job execution.
 """
 
 from typing import Any
@@ -12,10 +12,19 @@ from google.auth import default
 from google.auth.credentials import Credentials
 from google.auth.transport.requests import Request
 from google.cloud import run_v2
+from google.cloud.run_v2.services.jobs import JobsClient
 
 from ..config import GCPSettings, get_settings
 from ..exceptions import CloudRunError, ResourceNotFoundError, ValidationError
-from ..models.cloud_run import CloudRunService, TrafficTarget
+from ..models.cloud_run import (
+    CloudRunJob,
+    CloudRunService,
+    ExecutionEnvironment,
+    ExecutionStatus,
+    JobExecution,
+    LaunchStage,
+    TrafficTarget,
+)
 
 
 class CloudRunController:
@@ -57,6 +66,7 @@ class CloudRunController:
 
         try:
             self.client = run_v2.ServicesClient(credentials=credentials)
+            self.jobs_client = JobsClient(credentials=credentials)
         except Exception as e:
             raise CloudRunError(
                 f"Failed to initialize Cloud Run client: {e}",
@@ -603,4 +613,690 @@ class CloudRunController:
         )
         # Bind the native object
         model._service_object = service
+        return model
+
+    # Cloud Run Jobs methods
+
+    def create_job(
+        self,
+        job_name: str,
+        image: str,
+        task_count: int = 1,
+        parallelism: int = 1,
+        max_retries: int = 3,
+        timeout: int | None = None,
+        cpu: str = "1000m",
+        memory: str = "512Mi",
+        env_vars: dict[str, str] | None = None,
+        service_account: str | None = None,
+        labels: dict[str, str] | None = None,
+        execution_environment: ExecutionEnvironment = ExecutionEnvironment.EXECUTION_ENVIRONMENT_GEN2,
+    ) -> CloudRunJob:
+        """
+        Create a new Cloud Run job.
+
+        Args:
+            job_name: Name of the job to create
+            image: Container image URL (e.g., gcr.io/project/image:tag)
+            task_count: Number of tasks to create per execution (default: 1)
+            parallelism: Maximum number of tasks to run in parallel (default: 1)
+            max_retries: Maximum number of retries per task (default: 3)
+            timeout: Task timeout in seconds (default: 600)
+            cpu: CPU allocation per task (e.g., '1000m' for 1 CPU)
+            memory: Memory allocation per task (e.g., '512Mi')
+            env_vars: Environment variables for tasks
+            service_account: Service account email for tasks
+            labels: Job labels
+            execution_environment: Execution environment (GEN1 or GEN2)
+
+        Returns:
+            CloudRunJob object
+
+        Raises:
+            ValidationError: If parameters are invalid
+            CloudRunError: If creation fails
+
+        Example:
+            >>> job = run_ctrl.create_job(
+            ...     job_name="batch-processor",
+            ...     image="gcr.io/my-project/batch-job:latest",
+            ...     task_count=10,
+            ...     parallelism=3,
+            ...     env_vars={"BATCH_SIZE": "100"}
+            ... )
+        """
+        if not job_name:
+            raise ValidationError("Job name cannot be empty")
+        if not image:
+            raise ValidationError("Container image cannot be empty")
+
+        try:
+            parent = f"projects/{self.settings.project_id}/locations/{self.region}"
+
+            # Build container spec
+            container = run_v2.Container(
+                image=image,
+                resources=run_v2.ResourceRequirements(
+                    limits={"cpu": cpu, "memory": memory}
+                ),
+            )
+
+            # Add environment variables
+            if env_vars:
+                container.env = [
+                    run_v2.EnvVar(name=k, value=v) for k, v in env_vars.items()
+                ]
+
+            # Build task template
+            task_template = run_v2.TaskTemplate(
+                containers=[container],
+                max_retries=max_retries,
+            )
+
+            if timeout:
+                task_template.timeout = f"{timeout}s"
+
+            if service_account:
+                task_template.service_account = service_account
+
+            task_template.execution_environment = execution_environment.value  # type: ignore[assignment]
+
+            # Build job template
+            template = run_v2.ExecutionTemplate(
+                template=task_template,
+                task_count=task_count,
+                parallelism=parallelism,
+            )
+
+            # Build job spec
+            job = run_v2.Job(
+                template=template,
+                labels=labels or {},
+                launch_stage=LaunchStage.GA.value,
+            )
+
+            # Create the job
+            request = run_v2.CreateJobRequest(
+                parent=parent,
+                job=job,
+                job_id=job_name,
+            )
+
+            operation_result = self.jobs_client.create_job(request=request)
+            created_job = operation_result.result()
+
+            return self._job_to_model(created_job)
+
+        except ValidationError:
+            raise
+        except Exception as e:
+            raise CloudRunError(
+                f"Failed to create job '{job_name}': {e}",
+                details={"job": job_name, "error": str(e)},
+            ) from e
+
+    def get_job(self, job_name: str) -> CloudRunJob:
+        """
+        Get information about a Cloud Run job.
+
+        Args:
+            job_name: Name of the job
+
+        Returns:
+            CloudRunJob object with job details
+
+        Raises:
+            ResourceNotFoundError: If job doesn't exist
+            CloudRunError: If operation fails
+
+        Example:
+            >>> job = run_ctrl.get_job("my-batch-job")
+            >>> print(f"Parallelism: {job.parallelism}")
+        """
+        try:
+            job_path = self._get_job_path(job_name)
+            job = self.jobs_client.get_job(name=job_path)
+
+            return self._job_to_model(job)
+
+        except Exception as e:
+            if "404" in str(e) or "not found" in str(e).lower():
+                raise ResourceNotFoundError(
+                    f"Job '{job_name}' not found",
+                    details={"job": job_name, "region": self.region},
+                ) from e
+            raise CloudRunError(
+                f"Failed to get job '{job_name}': {e}",
+                details={"job": job_name, "error": str(e)},
+            ) from e
+
+    def list_jobs(self) -> list[CloudRunJob]:
+        """
+        List all Cloud Run jobs in the region.
+
+        Returns:
+            List of CloudRunJob objects
+
+        Raises:
+            CloudRunError: If listing fails
+
+        Example:
+            >>> jobs = run_ctrl.list_jobs()
+            >>> for job in jobs:
+            ...     print(f"{job.name}: {job.task_count} tasks")
+        """
+        try:
+            parent = f"projects/{self.settings.project_id}/locations/{self.region}"
+            jobs = self.jobs_client.list_jobs(parent=parent)
+
+            return [self._job_to_model(job) for job in jobs]
+
+        except Exception as e:
+            raise CloudRunError(
+                f"Failed to list jobs: {e}",
+                details={"error": str(e)},
+            ) from e
+
+    def update_job(
+        self,
+        job_name: str,
+        image: str | None = None,
+        task_count: int | None = None,
+        parallelism: int | None = None,
+        max_retries: int | None = None,
+        timeout: int | None = None,
+        cpu: str | None = None,
+        memory: str | None = None,
+        env_vars: dict[str, str] | None = None,
+        labels: dict[str, str] | None = None,
+    ) -> CloudRunJob:
+        """
+        Update an existing Cloud Run job.
+
+        Args:
+            job_name: Name of the job to update
+            image: New container image URL
+            task_count: New task count per execution
+            parallelism: New parallelism setting
+            max_retries: New max retries setting
+            timeout: New timeout in seconds
+            cpu: New CPU allocation
+            memory: New memory allocation
+            env_vars: New environment variables (replaces existing)
+            labels: New labels (merges with existing)
+
+        Returns:
+            Updated CloudRunJob object
+
+        Raises:
+            ResourceNotFoundError: If job doesn't exist
+            CloudRunError: If update fails
+
+        Example:
+            >>> job = run_ctrl.update_job(
+            ...     "my-job",
+            ...     parallelism=5,
+            ...     env_vars={"BATCH_SIZE": "200"}
+            ... )
+        """
+        try:
+            job_path = self._get_job_path(job_name)
+            job = self.jobs_client.get_job(name=job_path)
+
+            # Update template configuration
+            if task_count is not None:
+                job.template.task_count = task_count
+
+            if parallelism is not None:
+                job.template.parallelism = parallelism
+
+            # Update task template
+            if image:
+                job.template.template.containers[0].image = image
+
+            if max_retries is not None:
+                job.template.template.max_retries = max_retries
+
+            if timeout is not None:
+                job.template.template.timeout = f"{timeout}s"
+
+            if cpu or memory:
+                limits = {}
+                if cpu:
+                    limits["cpu"] = cpu
+                if memory:
+                    limits["memory"] = memory
+                job.template.template.containers[0].resources = (
+                    run_v2.ResourceRequirements(limits=limits)
+                )
+
+            if env_vars is not None:
+                job.template.template.containers[0].env = [
+                    run_v2.EnvVar(name=k, value=v) for k, v in env_vars.items()
+                ]
+
+            # Update labels
+            if labels:
+                job.labels.update(labels)
+
+            # Update the job
+            request = run_v2.UpdateJobRequest(job=job)
+            operation_result = self.jobs_client.update_job(request=request)
+            updated_job = operation_result.result()
+
+            return self._job_to_model(updated_job)
+
+        except ResourceNotFoundError:
+            raise
+        except Exception as e:
+            if "404" in str(e) or "not found" in str(e).lower():
+                raise ResourceNotFoundError(
+                    f"Job '{job_name}' not found",
+                    details={"job": job_name},
+                ) from e
+            raise CloudRunError(
+                f"Failed to update job '{job_name}': {e}",
+                details={"job": job_name, "error": str(e)},
+            ) from e
+
+    def delete_job(self, job_name: str) -> None:
+        """
+        Delete a Cloud Run job.
+
+        Args:
+            job_name: Name of the job to delete
+
+        Raises:
+            CloudRunError: If deletion fails
+
+        Example:
+            >>> run_ctrl.delete_job("old-batch-job")
+        """
+        try:
+            job_path = self._get_job_path(job_name)
+
+            request = run_v2.DeleteJobRequest(name=job_path)
+            operation_result = self.jobs_client.delete_job(request=request)
+            operation_result.result()
+
+        except Exception as e:
+            raise CloudRunError(
+                f"Failed to delete job '{job_name}': {e}",
+                details={"job": job_name, "error": str(e)},
+            ) from e
+
+    def run_job(self, job_name: str) -> JobExecution:
+        """
+        Execute a Cloud Run job immediately.
+
+        This method triggers a new execution of the specified job.
+        The execution runs asynchronously - use get_execution() to monitor progress.
+
+        Args:
+            job_name: Name of the job to execute
+
+        Returns:
+            JobExecution object with execution details
+
+        Raises:
+            ResourceNotFoundError: If job doesn't exist
+            CloudRunError: If execution fails to start
+
+        Example:
+            >>> execution = run_ctrl.run_job("my-batch-job")
+            >>> print(f"Started execution: {execution.execution_id}")
+            >>>
+            >>> # Monitor execution status
+            >>> import time
+            >>> while execution.status == ExecutionStatus.RUNNING:
+            ...     time.sleep(5)
+            ...     execution = run_ctrl.get_execution(job_name, execution.execution_id)
+            >>> print(f"Final status: {execution.status}")
+        """
+        try:
+            job_path = self._get_job_path(job_name)
+
+            request = run_v2.RunJobRequest(name=job_path)
+            operation_result = self.jobs_client.run_job(request=request)
+            execution = operation_result.result()
+
+            return self._execution_to_model(execution, job_name)
+
+        except Exception as e:
+            if "404" in str(e) or "not found" in str(e).lower():
+                raise ResourceNotFoundError(
+                    f"Job '{job_name}' not found",
+                    details={"job": job_name},
+                ) from e
+            raise CloudRunError(
+                f"Failed to run job '{job_name}': {e}",
+                details={"job": job_name, "error": str(e)},
+            ) from e
+
+    def get_execution(self, job_name: str, execution_id: str) -> JobExecution:
+        """
+        Get information about a job execution.
+
+        Args:
+            job_name: Name of the job
+            execution_id: Execution ID (short ID or full resource path)
+
+        Returns:
+            JobExecution object with execution details
+
+        Raises:
+            ResourceNotFoundError: If execution doesn't exist
+            CloudRunError: If operation fails
+
+        Example:
+            >>> execution = run_ctrl.get_execution("my-job", "my-execution-abc123")
+            >>> print(f"Status: {execution.status}")
+            >>> print(f"Succeeded tasks: {execution.succeeded_count}")
+        """
+        try:
+            # If execution_id is not a full path, construct it
+            if not execution_id.startswith("projects/"):
+                execution_path = self._get_execution_path(job_name, execution_id)
+            else:
+                execution_path = execution_id
+
+            execution = self.jobs_client.get_execution(name=execution_path)  # type: ignore[attr-defined]
+
+            return self._execution_to_model(execution, job_name)
+
+        except Exception as e:
+            if "404" in str(e) or "not found" in str(e).lower():
+                raise ResourceNotFoundError(
+                    f"Execution '{execution_id}' not found for job '{job_name}'",
+                    details={"job": job_name, "execution": execution_id},
+                ) from e
+            raise CloudRunError(
+                f"Failed to get execution '{execution_id}': {e}",
+                details={"job": job_name, "execution": execution_id, "error": str(e)},
+            ) from e
+
+    def list_executions(self, job_name: str) -> list[JobExecution]:
+        """
+        List all executions for a job.
+
+        Args:
+            job_name: Name of the job
+
+        Returns:
+            List of JobExecution objects, ordered by creation time (newest first)
+
+        Raises:
+            CloudRunError: If listing fails
+
+        Example:
+            >>> executions = run_ctrl.list_executions("my-job")
+            >>> for exec in executions:
+            ...     print(f"{exec.execution_id}: {exec.status} ({exec.succeeded_count}/{exec.task_count} tasks)")
+        """
+        try:
+            job_path = self._get_job_path(job_name)
+            executions = self.jobs_client.list_executions(parent=job_path)  # type: ignore[attr-defined]
+
+            return [self._execution_to_model(exec, job_name) for exec in executions]
+
+        except Exception as e:
+            raise CloudRunError(
+                f"Failed to list executions for job '{job_name}': {e}",
+                details={"job": job_name, "error": str(e)},
+            ) from e
+
+    def cancel_execution(self, job_name: str, execution_id: str) -> JobExecution:
+        """
+        Cancel a running job execution.
+
+        Args:
+            job_name: Name of the job
+            execution_id: Execution ID to cancel
+
+        Returns:
+            Updated JobExecution object
+
+        Raises:
+            ResourceNotFoundError: If execution doesn't exist
+            CloudRunError: If cancellation fails
+
+        Example:
+            >>> execution = run_ctrl.cancel_execution("my-job", "execution-abc123")
+            >>> print(f"Cancelled: {execution.status}")
+        """
+        try:
+            # If execution_id is not a full path, construct it
+            if not execution_id.startswith("projects/"):
+                execution_path = self._get_execution_path(job_name, execution_id)
+            else:
+                execution_path = execution_id
+
+            request = run_v2.CancelExecutionRequest(name=execution_path)
+            operation_result = self.jobs_client.cancel_execution(request=request)  # type: ignore[attr-defined]
+            execution = operation_result.result()
+
+            return self._execution_to_model(execution, job_name)
+
+        except Exception as e:
+            if "404" in str(e) or "not found" in str(e).lower():
+                raise ResourceNotFoundError(
+                    f"Execution '{execution_id}' not found for job '{job_name}'",
+                    details={"job": job_name, "execution": execution_id},
+                ) from e
+            raise CloudRunError(
+                f"Failed to cancel execution '{execution_id}': {e}",
+                details={"job": job_name, "execution": execution_id, "error": str(e)},
+            ) from e
+
+    def _get_job_path(self, job_name: str) -> str:
+        """Get the full resource path for a job."""
+        return f"projects/{self.settings.project_id}/locations/{self.region}/jobs/{job_name}"
+
+    def _get_execution_path(self, job_name: str, execution_id: str) -> str:
+        """Get the full resource path for a job execution."""
+        return f"projects/{self.settings.project_id}/locations/{self.region}/jobs/{job_name}/executions/{execution_id}"
+
+    def _job_to_model(self, job: Any) -> CloudRunJob:
+        """Convert Cloud Run Job to CloudRunJob model with native object binding."""
+        # Extract basic info
+        name = job.name.split("/")[-1]
+
+        # Extract container image
+        image = ""
+        if (
+            hasattr(job, "template")
+            and hasattr(job.template, "template")
+            and job.template.template.containers
+        ):
+            image = job.template.template.containers[0].image
+
+        # Extract execution configuration
+        task_count = (
+            job.template.task_count if hasattr(job.template, "task_count") else 1
+        )
+        parallelism = (
+            job.template.parallelism if hasattr(job.template, "parallelism") else 1
+        )
+        max_retries = (
+            job.template.template.max_retries
+            if hasattr(job.template.template, "max_retries")
+            else 3
+        )
+
+        # Extract timeout
+        timeout = None
+        if hasattr(job.template.template, "timeout"):
+            timeout_str = job.template.template.timeout
+            if timeout_str:
+                timeout = int(timeout_str.rstrip("s"))
+
+        # Extract resources
+        cpu = None
+        memory = None
+        if (
+            hasattr(job.template.template.containers[0], "resources")
+            and job.template.template.containers[0].resources
+        ):
+            resources = job.template.template.containers[0].resources
+            if hasattr(resources, "limits") and resources.limits:
+                cpu = resources.limits.get("cpu")
+                memory = resources.limits.get("memory")
+
+        # Extract environment variables
+        env_vars = {}
+        if hasattr(job.template.template.containers[0], "env"):
+            for env in job.template.template.containers[0].env:
+                if hasattr(env, "name") and hasattr(env, "value"):
+                    env_vars[env.name] = env.value
+
+        # Extract service account
+        service_account = (
+            job.template.template.service_account
+            if hasattr(job.template.template, "service_account")
+            else None
+        )
+
+        # Extract execution environment
+        execution_env = ExecutionEnvironment.EXECUTION_ENVIRONMENT_GEN2
+        if hasattr(job.template.template, "execution_environment"):
+            env_val = job.template.template.execution_environment
+            if env_val:
+                try:
+                    execution_env = ExecutionEnvironment(str(env_val))
+                except ValueError:
+                    pass
+
+        # Extract latest execution
+        latest_execution = None
+        if hasattr(job, "latest_created_execution") and job.latest_created_execution:
+            if hasattr(job.latest_created_execution, "name"):
+                latest_execution = job.latest_created_execution.name.split("/")[-1]
+
+        # Extract execution count
+        execution_count = job.execution_count if hasattr(job, "execution_count") else 0
+
+        # Extract launch stage
+        launch_stage = LaunchStage.GA
+        if hasattr(job, "launch_stage"):
+            try:
+                launch_stage = LaunchStage(str(job.launch_stage))
+            except ValueError:
+                pass
+
+        model = CloudRunJob(
+            name=name,
+            region=self.region,
+            image=image,
+            created=job.create_time if hasattr(job, "create_time") else None,
+            updated=job.update_time if hasattr(job, "update_time") else None,
+            labels=dict(job.labels) if hasattr(job, "labels") else {},
+            task_count=task_count,
+            parallelism=parallelism,
+            max_retries=max_retries,
+            timeout=timeout,
+            cpu=cpu,
+            memory=memory,
+            env_vars=env_vars,
+            service_account=service_account,
+            execution_environment=execution_env,
+            latest_execution=latest_execution,
+            execution_count=execution_count,
+            launch_stage=launch_stage,
+        )
+        # Bind the native object
+        model._job_object = job
+        return model
+
+    def _execution_to_model(self, execution: Any, job_name: str) -> JobExecution:
+        """Convert Cloud Run Execution to JobExecution model with native object binding."""
+        # Extract basic info
+        name = execution.name
+        execution_id = name.split("/")[-1]
+
+        # Extract status - check in priority order
+        status = ExecutionStatus.STATUS_UNSPECIFIED
+        if hasattr(execution, "task_count"):
+            # Check cancelled first
+            if hasattr(execution, "cancelled_count") and execution.cancelled_count > 0:
+                status = ExecutionStatus.CANCELLED
+            # Then check failed
+            elif hasattr(execution, "failed_count") and execution.failed_count > 0:
+                status = ExecutionStatus.FAILED
+            # Then check succeeded
+            elif (
+                hasattr(execution, "succeeded_count")
+                and execution.succeeded_count == execution.task_count
+            ):
+                status = ExecutionStatus.SUCCEEDED
+            # Then check running
+            elif hasattr(execution, "running_count") and execution.running_count > 0:
+                status = ExecutionStatus.RUNNING
+            # Otherwise pending
+            else:
+                status = ExecutionStatus.PENDING
+
+        # Extract timing
+        created = execution.create_time if hasattr(execution, "create_time") else None
+        started = execution.start_time if hasattr(execution, "start_time") else None
+        completed = (
+            execution.completion_time if hasattr(execution, "completion_time") else None
+        )
+
+        # Calculate duration
+        duration_seconds = None
+        if started and completed:
+            duration_seconds = int((completed - started).total_seconds())
+
+        # Extract task counts
+        task_count = execution.task_count if hasattr(execution, "task_count") else 1
+        succeeded_count = (
+            execution.succeeded_count if hasattr(execution, "succeeded_count") else 0
+        )
+        failed_count = (
+            execution.failed_count if hasattr(execution, "failed_count") else 0
+        )
+        cancelled_count = (
+            execution.cancelled_count if hasattr(execution, "cancelled_count") else 0
+        )
+        running_count = (
+            execution.running_count if hasattr(execution, "running_count") else 0
+        )
+        pending_count = (
+            task_count
+            - succeeded_count
+            - failed_count
+            - cancelled_count
+            - running_count
+        )
+
+        # Extract parallelism
+        parallelism = execution.parallelism if hasattr(execution, "parallelism") else 1
+
+        # Extract error message
+        error_message = None
+        if hasattr(execution, "log_uri") and failed_count > 0:
+            error_message = f"Execution failed with {failed_count} failed task(s)"
+
+        model = JobExecution(
+            name=name,
+            execution_id=execution_id,
+            job_name=job_name,
+            region=self.region,
+            status=status,
+            created=created,
+            started=started,
+            completed=completed,
+            duration_seconds=duration_seconds,
+            task_count=task_count,
+            succeeded_count=succeeded_count,
+            failed_count=failed_count,
+            cancelled_count=cancelled_count,
+            running_count=running_count,
+            pending_count=pending_count,
+            parallelism=parallelism,
+            labels=dict(execution.labels) if hasattr(execution, "labels") else {},
+            error_message=error_message,
+        )
+        # Bind the native object
+        model._execution_object = execution
         return model

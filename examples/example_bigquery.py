@@ -103,8 +103,8 @@ def example_create_table_with_schema() -> None:
         )
 
         print(f"✓ Table created: {table.dataset_id}.{table.table_id}")
-        print(f"  Partitioned by: event_timestamp")
-        print(f"  Clustered by: user_id, event_type")
+        print("  Partitioned by: event_timestamp")
+        print("  Clustered by: user_id, event_type")
 
     except Exception as e:
         print(f"✗ Error creating table: {e}")
@@ -132,18 +132,20 @@ def example_run_query() -> None:
     try:
         result = bq.query(sql, location="US")
 
-        print(f"✓ Query completed")
+        print("✓ Query completed")
         print(f"  Total rows: {result.total_rows}")
         print(f"  Bytes processed: {result.total_bytes_processed:,}")
         print(f"  Bytes billed: {result.total_bytes_billed:,}")
         print(f"  Cache hit: {result.cache_hit}")
 
-        print(f"\nResults:")
+        print("\nResults:")
         for row in result.rows:
             event_type = row.values.get("event_type")
             event_count = row.values.get("event_count")
             total_revenue = row.values.get("total_revenue")
-            print(f"  {event_type:15} | Count: {event_count:6} | Revenue: ${total_revenue or 0:.2f}")
+            print(
+                f"  {event_type:15} | Count: {event_count:6} | Revenue: ${total_revenue or 0:.2f}"
+            )
 
     except Exception as e:
         print(f"✗ Error running query: {e}")
@@ -177,7 +179,7 @@ def example_load_data_from_gcs() -> None:
             skip_leading_rows=1,  # Skip header row
         )
 
-        print(f"✓ Data loaded successfully")
+        print("✓ Data loaded successfully")
         print(f"  Job ID: {job.job_id}")
         print(f"  Location: {job.location}")
 
@@ -221,7 +223,7 @@ def example_streaming_inserts() -> None:
         bq.insert_rows("analytics", "user_events", rows)
 
         print(f"✓ {len(rows)} rows inserted successfully")
-        print(f"  Note: Streaming inserts may take a few seconds to appear in queries")
+        print("  Note: Streaming inserts may take a few seconds to appear in queries")
 
     except Exception as e:
         print(f"✗ Error inserting rows: {e}")
@@ -273,7 +275,9 @@ def example_get_table_info() -> None:
         print(f"Table: {table.dataset_id}.{table.table_id}")
         print(f"  Description: {table.description}")
         print(f"  Rows: {table.num_rows:,}" if table.num_rows else "  Rows: N/A")
-        print(f"  Size: {table.num_bytes:,} bytes" if table.num_bytes else "  Size: N/A")
+        print(
+            f"  Size: {table.num_bytes:,} bytes" if table.num_bytes else "  Size: N/A"
+        )
         print(f"  Created: {table.created}")
         print(f"  Modified: {table.modified}")
 
@@ -324,14 +328,16 @@ def example_complex_analytics_query() -> None:
     try:
         result = bq.query(sql, location="US")
 
-        print(f"✓ Analytics query completed")
-        print(f"\nCustomer Segmentation:")
+        print("✓ Analytics query completed")
+        print("\nCustomer Segmentation:")
         for row in result.rows:
             segment = row.values.get("customer_segment")
             count = row.values.get("customer_count")
             revenue = row.values.get("avg_revenue")
             days = row.values.get("avg_active_days")
-            print(f"  {segment:15} | Customers: {count:4} | Avg Revenue: ${revenue:.2f} | Avg Active Days: {days:.1f}")
+            print(
+                f"  {segment:15} | Customers: {count:4} | Avg Revenue: ${revenue:.2f} | Avg Active Days: {days:.1f}"
+            )
 
     except Exception as e:
         print(f"✗ Error running analytics query: {e}")

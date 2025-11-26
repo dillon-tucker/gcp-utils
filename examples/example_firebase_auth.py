@@ -124,7 +124,7 @@ def main() -> None:
         verification_link = auth.generate_email_verification_link(
             email="example-user@example.com"
         )
-        print(f"[OK] Generated email verification link")
+        print("[OK] Generated email verification link")
         print(f"  Link: {verification_link[:80]}...")
     except Exception as e:
         print(f"[FAIL] Failed to generate verification link: {e}")
@@ -132,10 +132,8 @@ def main() -> None:
     # 8. Generate password reset link
     print("\n8. Generating password reset link...")
     try:
-        reset_link = auth.generate_password_reset_link(
-            email="example-user@example.com"
-        )
-        print(f"[OK] Generated password reset link")
+        reset_link = auth.generate_password_reset_link(email="example-user@example.com")
+        print("[OK] Generated password reset link")
         print(f"  Link: {reset_link[:80]}...")
     except Exception as e:
         print(f"[FAIL] Failed to generate reset link: {e}")
@@ -152,7 +150,7 @@ def main() -> None:
             print(f"  ... and {len(users) - 5} more")
 
         if result["next_page_token"]:
-            print(f"  Next page token available for pagination")
+            print("  Next page token available for pagination")
     except Exception as e:
         print(f"[FAIL] Failed to list users: {e}")
 
@@ -172,7 +170,7 @@ def main() -> None:
             phone_number="+15555551234",
             display_name="Phone User",
         )
-        print(f"[OK] Created user with phone number")
+        print("[OK] Created user with phone number")
         print(f"  UID: {phone_user['uid']}")
         print(f"  Phone: {phone_user['phone_number']}")
         phone_user_uid = phone_user["uid"]
@@ -196,7 +194,9 @@ def main() -> None:
 
     # 13. Batch delete (if you have multiple users to delete)
     print("\n13. Batch delete users (example)...")
-    print("  [INFO] Skipped - use auth.delete_users(['uid1', 'uid2', ...]) for batch deletion")
+    print(
+        "  [INFO] Skipped - use auth.delete_users(['uid1', 'uid2', ...]) for batch deletion"
+    )
 
     print("\n" + "=" * 80)
     print("Example completed!")
