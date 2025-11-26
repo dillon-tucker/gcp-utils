@@ -6,7 +6,7 @@ creating log-based metrics, and managing log sinks for export.
 """
 
 from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 from google.auth.credentials import Credentials
 from google.cloud import logging as cloud_logging
@@ -108,7 +108,7 @@ class CloudLoggingController:
     def setup_logging(
         self,
         log_level: int = 20,  # logging.INFO
-        excluded_loggers: Optional[tuple[str, ...]] = None,
+        excluded_loggers: tuple[str, ...] | None = None,
     ) -> None:
         """
         Integrate Google Cloud Logging with Python's standard logging module.
