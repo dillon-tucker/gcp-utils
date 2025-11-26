@@ -12,7 +12,9 @@ from gcp_utils.controllers.iam import IAMController
 from gcp_utils.exceptions import ResourceNotFoundError
 
 
-def create_mock_service_account(account_id: str = "test-sa", project_id: str = "test-project"):
+def create_mock_service_account(
+    account_id: str = "test-sa", project_id: str = "test-project"
+):
     """Helper function to create a properly configured mock service account."""
     mock = MagicMock()
     mock.name = f"projects/{project_id}/serviceAccounts/{account_id}@{project_id}.iam.gserviceaccount.com"
