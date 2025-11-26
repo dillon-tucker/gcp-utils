@@ -40,12 +40,20 @@ jobs:
       run: |
         echo "GCP_PROJECT_ID=test-project" > .env
         echo "GCP_LOCATION=us-central1" >> .env
+        
         # Write credentials JSON to a file (no extra newline) and make it private
         printf '%s' "${{ secrets.GCP_CREDENTIALS }}" > "${HOME}/gcp-key.json"
         chmod 600 "${HOME}/gcp-key.json"
+
         # Ensure Google client libraries find ADC during the rest of the job
         echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/gcp-key.json" >> .env
         echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/gcp-key.json" >> $GITHUB_ENV
+
+        # Fail early if the credentials file is empty
+        if [ ! -s "${HOME}/gcp-key.json" ]; then
+          echo "ERROR: GCP credentials file is empty. Ensure repository secret GCP_CREDENTIALS contains the full service account JSON." >&2
+          exit 1
+        fi
 
     - name: Run tests with coverage
       run: |
