@@ -7,7 +7,7 @@ functions, event triggers, build configurations, and runtime settings.
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -123,56 +123,55 @@ class SecretVolume(BaseModel):
 class ServiceConfig(BaseModel):
     """Configuration for the function service."""
 
-    available_memory: Optional[str] = Field(
-        default="256M", description="Memory allocated to the function (e.g., '256M', '1G')"
+    available_memory: str | None = Field(
+        default="256M",
+        description="Memory allocated to the function (e.g., '256M', '1G')",
     )
-    timeout_seconds: Optional[int] = Field(
+    timeout_seconds: int | None = Field(
         default=60,
         description="Maximum execution time in seconds",
         ge=1,
         le=3600,
     )
-    max_instance_count: Optional[int] = Field(
+    max_instance_count: int | None = Field(
         default=None,
         description="Maximum number of instances",
         ge=0,
         le=3000,
     )
-    min_instance_count: Optional[int] = Field(
+    min_instance_count: int | None = Field(
         default=None,
         description="Minimum number of instances (for warm starts)",
         ge=0,
         le=3000,
     )
-    max_instance_request_concurrency: Optional[int] = Field(
+    max_instance_request_concurrency: int | None = Field(
         default=1,
         description="Maximum concurrent requests per instance",
         ge=1,
         le=1000,
     )
-    available_cpu: Optional[str] = Field(
+    available_cpu: str | None = Field(
         default=None,
         description="CPU allocated to the function (e.g., '1', '2')",
     )
-    environment_variables: Optional[dict[str, str]] = Field(
+    environment_variables: dict[str, str] | None = Field(
         default=None, description="Environment variables for the function"
     )
-    secret_environment_variables: Optional[list[SecretEnvVar]] = Field(
+    secret_environment_variables: list[SecretEnvVar] | None = Field(
         default=None, description="Secret environment variables from Secret Manager"
     )
-    secret_volumes: Optional[list[SecretVolume]] = Field(
+    secret_volumes: list[SecretVolume] | None = Field(
         default=None, description="Secrets mounted as volumes"
     )
-    service_account_email: Optional[str] = Field(
+    service_account_email: str | None = Field(
         default=None, description="Service account email for the function"
     )
-    ingress_settings: Optional[IngressSettings] = Field(
+    ingress_settings: IngressSettings | None = Field(
         default=IngressSettings.ALLOW_ALL, description="Ingress settings"
     )
-    vpc_connector: Optional[str] = Field(
-        default=None, description="VPC connector name"
-    )
-    vpc_connector_egress_settings: Optional[VpcConnectorEgressSettings] = Field(
+    vpc_connector: str | None = Field(default=None, description="VPC connector name")
+    vpc_connector_egress_settings: VpcConnectorEgressSettings | None = Field(
         default=None, description="VPC connector egress settings"
     )
     all_traffic_on_latest_revision: bool = Field(
@@ -185,21 +184,19 @@ class BuildConfig(BaseModel):
 
     runtime: Runtime = Field(..., description="Runtime for the function")
     entry_point: str = Field(..., description="Function entry point name")
-    source_archive_url: Optional[str] = Field(
+    source_archive_url: str | None = Field(
         default=None, description="GCS URL to source archive (gs://bucket/path)"
     )
-    source_repository_url: Optional[str] = Field(
+    source_repository_url: str | None = Field(
         default=None, description="Cloud Source Repositories URL"
     )
-    build_environment_variables: Optional[dict[str, str]] = Field(
+    build_environment_variables: dict[str, str] | None = Field(
         default=None, description="Build-time environment variables"
     )
-    docker_repository: Optional[str] = Field(
+    docker_repository: str | None = Field(
         default=None, description="Docker repository for storing function images"
     )
-    worker_pool: Optional[str] = Field(
-        default=None, description="Cloud Build worker pool"
-    )
+    worker_pool: str | None = Field(default=None, description="Cloud Build worker pool")
 
 
 class EventFilter(BaseModel):
@@ -207,7 +204,7 @@ class EventFilter(BaseModel):
 
     attribute: str = Field(..., description="Filter attribute name")
     value: str = Field(..., description="Filter value")
-    operator: Optional[str] = Field(
+    operator: str | None = Field(
         default=None, description="Filter operator (e.g., 'match-path-pattern')"
     )
 
@@ -215,53 +212,49 @@ class EventFilter(BaseModel):
 class EventTrigger(BaseModel):
     """Event trigger configuration."""
 
-    trigger_region: Optional[str] = Field(
+    trigger_region: str | None = Field(
         default=None, description="Region where events are received"
     )
     event_type: str = Field(..., description="Event type that triggers the function")
-    event_filters: Optional[list[EventFilter]] = Field(
+    event_filters: list[EventFilter] | None = Field(
         default=None, description="Event filters for selective triggering"
     )
-    pubsub_topic: Optional[str] = Field(
+    pubsub_topic: str | None = Field(
         default=None, description="Pub/Sub topic name for Pub/Sub triggers"
     )
-    service_account_email: Optional[str] = Field(
+    service_account_email: str | None = Field(
         default=None, description="Service account for invoking the function"
     )
-    retry_policy: Optional[str] = Field(
+    retry_policy: str | None = Field(
         default=None,
         description="Retry policy: 'RETRY_POLICY_UNSPECIFIED', 'RETRY_POLICY_DO_NOT_RETRY', 'RETRY_POLICY_RETRY'",
     )
-    channel: Optional[str] = Field(
-        default=None, description="Eventarc channel name"
-    )
+    channel: str | None = Field(default=None, description="Eventarc channel name")
 
 
 class CloudFunction(BaseModel):
     """Cloud Function resource model."""
 
     name: str = Field(..., description="Function resource name")
-    description: Optional[str] = Field(default=None, description="Function description")
-    build_config: Optional[BuildConfig] = Field(
+    description: str | None = Field(default=None, description="Function description")
+    build_config: BuildConfig | None = Field(
         default=None, description="Build configuration"
     )
-    service_config: Optional[ServiceConfig] = Field(
+    service_config: ServiceConfig | None = Field(
         default=None, description="Service configuration"
     )
-    event_trigger: Optional[EventTrigger] = Field(
+    event_trigger: EventTrigger | None = Field(
         default=None, description="Event trigger configuration"
     )
-    state: Optional[FunctionState] = Field(
+    state: FunctionState | None = Field(
         default=None, description="Function lifecycle state"
     )
-    update_time: Optional[datetime] = Field(
+    update_time: datetime | None = Field(
         default=None, description="Last update timestamp"
     )
-    labels: Optional[dict[str, str]] = Field(
-        default=None, description="Resource labels"
-    )
-    url: Optional[str] = Field(default=None, description="HTTP trigger URL")
-    kms_key_name: Optional[str] = Field(
+    labels: dict[str, str] | None = Field(default=None, description="Resource labels")
+    url: str | None = Field(default=None, description="HTTP trigger URL")
+    kms_key_name: str | None = Field(
         default=None, description="Cloud KMS key for encryption"
     )
 
@@ -272,10 +265,10 @@ class FunctionListResponse(BaseModel):
     functions: list[CloudFunction] = Field(
         default_factory=list, description="List of functions"
     )
-    next_page_token: Optional[str] = Field(
+    next_page_token: str | None = Field(
         default=None, description="Token for fetching the next page"
     )
-    unreachable: Optional[list[str]] = Field(
+    unreachable: list[str] | None = Field(
         default_factory=list, description="Locations that could not be reached"
     )
 

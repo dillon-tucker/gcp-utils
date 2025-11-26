@@ -4,7 +4,7 @@ Tests for Cloud Functions controller.
 This module tests the CloudFunctionsController class with mocked GCP clients.
 """
 
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from google.api_core.exceptions import NotFound
@@ -12,7 +12,7 @@ from google.cloud.functions_v2.types import Function
 
 from gcp_utils.config import GCPSettings
 from gcp_utils.controllers.cloud_functions import CloudFunctionsController
-from gcp_utils.exceptions import CloudFunctionsError, ResourceNotFoundError
+from gcp_utils.exceptions import ResourceNotFoundError
 
 
 @pytest.fixture
@@ -35,7 +35,9 @@ def controller(settings: GCPSettings, mock_client: Mock) -> CloudFunctionsContro
     return controller
 
 
-def test_create_function(controller: CloudFunctionsController, mock_client: Mock) -> None:
+def test_create_function(
+    controller: CloudFunctionsController, mock_client: Mock
+) -> None:
     """Test creating a Cloud Function."""
     # Setup mock
     mock_operation = MagicMock()
@@ -55,7 +57,10 @@ def test_create_function(controller: CloudFunctionsController, mock_client: Mock
     )
 
     # Assert
-    assert result.name == "projects/test-project/locations/us-central1/functions/my-function"
+    assert (
+        result.name
+        == "projects/test-project/locations/us-central1/functions/my-function"
+    )
     mock_client.create_function.assert_called_once()
 
 
@@ -72,7 +77,10 @@ def test_get_function(controller: CloudFunctionsController, mock_client: Mock) -
     result = controller.get_function("my-function")
 
     # Assert
-    assert result.name == "projects/test-project/locations/us-central1/functions/my-function"
+    assert (
+        result.name
+        == "projects/test-project/locations/us-central1/functions/my-function"
+    )
     mock_client.get_function.assert_called_once()
 
 
@@ -88,7 +96,9 @@ def test_get_function_not_found(
         controller.get_function("nonexistent")
 
 
-def test_list_functions(controller: CloudFunctionsController, mock_client: Mock) -> None:
+def test_list_functions(
+    controller: CloudFunctionsController, mock_client: Mock
+) -> None:
     """Test listing Cloud Functions."""
     # Setup mock
     mock_response = MagicMock()
@@ -108,7 +118,9 @@ def test_list_functions(controller: CloudFunctionsController, mock_client: Mock)
     mock_client.list_functions.assert_called_once()
 
 
-def test_update_function(controller: CloudFunctionsController, mock_client: Mock) -> None:
+def test_update_function(
+    controller: CloudFunctionsController, mock_client: Mock
+) -> None:
     """Test updating a Cloud Function."""
     # Setup mock
     mock_operation = MagicMock()
@@ -131,7 +143,9 @@ def test_update_function(controller: CloudFunctionsController, mock_client: Mock
     mock_client.update_function.assert_called_once()
 
 
-def test_delete_function(controller: CloudFunctionsController, mock_client: Mock) -> None:
+def test_delete_function(
+    controller: CloudFunctionsController, mock_client: Mock
+) -> None:
     """Test deleting a Cloud Function."""
     # Setup mock
     mock_operation = MagicMock()
@@ -178,13 +192,17 @@ def test_generate_upload_url(
     mock_client.generate_upload_url.assert_called_once()
 
 
-def test_get_function_url(controller: CloudFunctionsController, mock_client: Mock) -> None:
+def test_get_function_url(
+    controller: CloudFunctionsController, mock_client: Mock
+) -> None:
     """Test getting a function's HTTP URL."""
     # Setup mock
     mock_function = Function(
         name="projects/test-project/locations/us-central1/functions/my-function",
     )
-    mock_function.service_config.uri = "https://us-central1-test-project.cloudfunctions.net/my-function"
+    mock_function.service_config.uri = (
+        "https://us-central1-test-project.cloudfunctions.net/my-function"
+    )
     mock_client.get_function.return_value = mock_function
 
     # Execute

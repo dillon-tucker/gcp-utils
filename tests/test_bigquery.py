@@ -228,10 +228,12 @@ def test_query(controller: BigQueryController, mock_client: Mock) -> None:
         bigquery.SchemaField("count", "INTEGER"),
     ]
     mock_result.__iter__ = Mock(
-        return_value=iter([
-            {"name": "Alice", "count": 10},
-            {"name": "Bob", "count": 20},
-        ])
+        return_value=iter(
+            [
+                {"name": "Alice", "count": 10},
+                {"name": "Bob", "count": 20},
+            ]
+        )
     )
 
     mock_job.result.return_value = mock_result

@@ -44,8 +44,8 @@ class FirestoreDocument(BaseModel):
     id: str = Field(..., description="Document ID")
     collection: str = Field(..., description="Collection path")
     data: dict[str, Any] = Field(..., description="Document data")
-    create_time: Optional[datetime] = Field(None, description="Document creation time")
-    update_time: Optional[datetime] = Field(None, description="Last update time")
+    create_time: datetime | None = Field(None, description="Document creation time")
+    update_time: datetime | None = Field(None, description="Last update time")
 
     # Private attribute for native Firestore DocumentReference
     _firestore_ref: Optional["DocumentReference"] = PrivateAttr(default=None)
@@ -53,7 +53,7 @@ class FirestoreDocument(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("create_time", "update_time")
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
         return dt.isoformat() if dt else None
 
     def update(self, updates: dict[str, Any]) -> None:
@@ -149,7 +149,7 @@ class FirestoreDocument(BaseModel):
         return f"{self.collection}/{self.id}"
 
     @property
-    def parent(self) -> Optional[Any]:
+    def parent(self) -> Any | None:
         """Get the parent collection reference."""
         if self._firestore_ref:
             return self._firestore_ref.parent

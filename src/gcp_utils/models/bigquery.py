@@ -7,7 +7,7 @@ datasets, tables, schemas, query results, and job configurations.
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -15,15 +15,17 @@ from pydantic import BaseModel, Field
 class DatasetAccess(BaseModel):
     """Access control configuration for a dataset."""
 
-    role: Optional[str] = Field(default=None, description="IAM role (e.g., 'READER', 'WRITER', 'OWNER')")
-    user_by_email: Optional[str] = Field(default=None, description="User email")
-    group_by_email: Optional[str] = Field(default=None, description="Group email")
-    domain: Optional[str] = Field(default=None, description="Domain")
-    special_group: Optional[str] = Field(
+    role: str | None = Field(
+        default=None, description="IAM role (e.g., 'READER', 'WRITER', 'OWNER')"
+    )
+    user_by_email: str | None = Field(default=None, description="User email")
+    group_by_email: str | None = Field(default=None, description="Group email")
+    domain: str | None = Field(default=None, description="Domain")
+    special_group: str | None = Field(
         default=None,
         description="Special group (e.g., 'projectReaders', 'projectWriters', 'projectOwners')",
     )
-    view: Optional[dict[str, str]] = Field(
+    view: dict[str, str] | None = Field(
         default=None, description="Authorized view reference"
     )
 
@@ -34,17 +36,19 @@ class Dataset(BaseModel):
     dataset_id: str = Field(..., description="Dataset ID")
     project: str = Field(..., description="Project ID")
     location: str = Field(default="US", description="Dataset location")
-    description: Optional[str] = Field(default=None, description="Dataset description")
-    friendly_name: Optional[str] = Field(default=None, description="Dataset friendly name")
-    labels: Optional[dict[str, str]] = Field(default=None, description="Dataset labels")
-    access_entries: Optional[list[DatasetAccess]] = Field(
+    description: str | None = Field(default=None, description="Dataset description")
+    friendly_name: str | None = Field(default=None, description="Dataset friendly name")
+    labels: dict[str, str] | None = Field(default=None, description="Dataset labels")
+    access_entries: list[DatasetAccess] | None = Field(
         default=None, description="Access control entries"
     )
-    default_table_expiration_ms: Optional[int] = Field(
+    default_table_expiration_ms: int | None = Field(
         default=None, description="Default table expiration in milliseconds"
     )
-    created: Optional[datetime] = Field(default=None, description="Creation timestamp")
-    modified: Optional[datetime] = Field(default=None, description="Last modified timestamp")
+    created: datetime | None = Field(default=None, description="Creation timestamp")
+    modified: datetime | None = Field(
+        default=None, description="Last modified timestamp"
+    )
 
 
 class FieldMode(str, Enum):
@@ -83,9 +87,11 @@ class SchemaField(BaseModel):
 
     name: str = Field(..., description="Field name")
     field_type: str = Field(..., description="Field type (e.g., 'STRING', 'INTEGER')")
-    mode: str = Field(default="NULLABLE", description="Field mode (NULLABLE, REQUIRED, REPEATED)")
-    description: Optional[str] = Field(default=None, description="Field description")
-    fields: Optional[list["SchemaField"]] = Field(
+    mode: str = Field(
+        default="NULLABLE", description="Field mode (NULLABLE, REQUIRED, REPEATED)"
+    )
+    description: str | None = Field(default=None, description="Field description")
+    fields: list["SchemaField"] | None = Field(
         default=None, description="Nested fields (for RECORD/STRUCT types)"
     )
 
@@ -115,10 +121,10 @@ class TimePartitioning(BaseModel):
     type_: TimePartitioningType = Field(
         ..., description="Partitioning type", alias="type"
     )
-    field: Optional[str] = Field(
+    field: str | None = Field(
         default=None, description="Field to partition by (optional for _PARTITIONTIME)"
     )
-    expiration_ms: Optional[int] = Field(
+    expiration_ms: int | None = Field(
         default=None, description="Partition expiration in milliseconds"
     )
     require_partition_filter: bool = Field(
@@ -140,22 +146,26 @@ class Table(BaseModel):
     table_id: str = Field(..., description="Table ID")
     dataset_id: str = Field(..., description="Dataset ID")
     project: str = Field(..., description="Project ID")
-    description: Optional[str] = Field(default=None, description="Table description")
-    friendly_name: Optional[str] = Field(default=None, description="Table friendly name")
-    labels: Optional[dict[str, str]] = Field(default=None, description="Table labels")
-    table_schema: Optional[list[SchemaField]] = Field(default=None, description="Table schema", alias="schema")
-    num_rows: Optional[int] = Field(default=None, description="Number of rows")
-    num_bytes: Optional[int] = Field(default=None, description="Size in bytes")
-    table_type: Optional[TableType] = Field(default=None, description="Table type")
-    time_partitioning: Optional[TimePartitioning] = Field(
+    description: str | None = Field(default=None, description="Table description")
+    friendly_name: str | None = Field(default=None, description="Table friendly name")
+    labels: dict[str, str] | None = Field(default=None, description="Table labels")
+    table_schema: list[SchemaField] | None = Field(
+        default=None, description="Table schema", alias="schema"
+    )
+    num_rows: int | None = Field(default=None, description="Number of rows")
+    num_bytes: int | None = Field(default=None, description="Size in bytes")
+    table_type: TableType | None = Field(default=None, description="Table type")
+    time_partitioning: TimePartitioning | None = Field(
         default=None, description="Time partitioning configuration"
     )
-    clustering_fields: Optional[Clustering] = Field(
+    clustering_fields: Clustering | None = Field(
         default=None, description="Clustering configuration"
     )
-    created: Optional[datetime] = Field(default=None, description="Creation timestamp")
-    modified: Optional[datetime] = Field(default=None, description="Last modified timestamp")
-    expires: Optional[datetime] = Field(default=None, description="Expiration timestamp")
+    created: datetime | None = Field(default=None, description="Creation timestamp")
+    modified: datetime | None = Field(
+        default=None, description="Last modified timestamp"
+    )
+    expires: datetime | None = Field(default=None, description="Expiration timestamp")
 
 
 class JobState(str, Enum):
@@ -223,16 +233,18 @@ class Job(BaseModel):
     job_id: str = Field(..., description="Job ID")
     project: str = Field(..., description="Project ID")
     location: str = Field(default="US", description="Job location")
-    state: Optional[JobState] = Field(default=None, description="Job state")
-    job_type: Optional[JobType] = Field(default=None, description="Job type")
-    created: Optional[datetime] = Field(default=None, description="Creation timestamp")
-    started: Optional[datetime] = Field(default=None, description="Start timestamp")
-    ended: Optional[datetime] = Field(default=None, description="End timestamp")
-    error_result: Optional[dict[str, Any]] = Field(default=None, description="Error details if failed")
-    total_bytes_processed: Optional[int] = Field(
+    state: JobState | None = Field(default=None, description="Job state")
+    job_type: JobType | None = Field(default=None, description="Job type")
+    created: datetime | None = Field(default=None, description="Creation timestamp")
+    started: datetime | None = Field(default=None, description="Start timestamp")
+    ended: datetime | None = Field(default=None, description="End timestamp")
+    error_result: dict[str, Any] | None = Field(
+        default=None, description="Error details if failed"
+    )
+    total_bytes_processed: int | None = Field(
         default=None, description="Total bytes processed"
     )
-    total_bytes_billed: Optional[int] = Field(
+    total_bytes_billed: int | None = Field(
         default=None, description="Total bytes billed"
     )
 
@@ -250,15 +262,17 @@ class QueryResult(BaseModel):
 
     total_rows: int = Field(..., description="Total number of rows")
     rows: list[QueryRow] = Field(default_factory=list, description="Query result rows")
-    result_schema: list[SchemaField] = Field(..., description="Result schema", alias="schema")
-    job_id: Optional[str] = Field(default=None, description="Job ID for the query")
-    total_bytes_processed: Optional[int] = Field(
+    result_schema: list[SchemaField] = Field(
+        ..., description="Result schema", alias="schema"
+    )
+    job_id: str | None = Field(default=None, description="Job ID for the query")
+    total_bytes_processed: int | None = Field(
         default=None, description="Total bytes processed"
     )
-    total_bytes_billed: Optional[int] = Field(
+    total_bytes_billed: int | None = Field(
         default=None, description="Total bytes billed"
     )
-    cache_hit: Optional[bool] = Field(
+    cache_hit: bool | None = Field(
         default=None, description="Whether the result was served from cache"
     )
 
@@ -269,7 +283,7 @@ class DatasetListResponse(BaseModel):
     datasets: list[Dataset] = Field(
         default_factory=list, description="List of datasets"
     )
-    next_page_token: Optional[str] = Field(
+    next_page_token: str | None = Field(
         default=None, description="Token for fetching the next page"
     )
 
@@ -277,10 +291,8 @@ class DatasetListResponse(BaseModel):
 class TableListResponse(BaseModel):
     """Response model for listing tables."""
 
-    tables: list[Table] = Field(
-        default_factory=list, description="List of tables"
-    )
-    next_page_token: Optional[str] = Field(
+    tables: list[Table] = Field(default_factory=list, description="List of tables")
+    next_page_token: str | None = Field(
         default=None, description="Token for fetching the next page"
     )
 
@@ -288,10 +300,8 @@ class TableListResponse(BaseModel):
 class JobListResponse(BaseModel):
     """Response model for listing jobs."""
 
-    jobs: list[Job] = Field(
-        default_factory=list, description="List of jobs"
-    )
-    next_page_token: Optional[str] = Field(
+    jobs: list[Job] = Field(default_factory=list, description="List of jobs")
+    next_page_token: str | None = Field(
         default=None, description="Token for fetching the next page"
     )
 
@@ -310,24 +320,26 @@ class LoadJobConfig(BaseModel):
     create_disposition: CreateDisposition = Field(
         default=CreateDisposition.CREATE_IF_NEEDED, description="Create disposition"
     )
-    load_schema: Optional[list[SchemaField]] = Field(
-        default=None, description="Table schema (required if table doesn't exist)", alias="schema"
+    load_schema: list[SchemaField] | None = Field(
+        default=None,
+        description="Table schema (required if table doesn't exist)",
+        alias="schema",
     )
-    skip_leading_rows: Optional[int] = Field(
+    skip_leading_rows: int | None = Field(
         default=None, description="Number of rows to skip (CSV only)"
     )
-    field_delimiter: Optional[str] = Field(
+    field_delimiter: str | None = Field(
         default=None, description="Field delimiter (CSV only)"
     )
-    allow_jagged_rows: Optional[bool] = Field(
+    allow_jagged_rows: bool | None = Field(
         default=None, description="Allow missing trailing columns (CSV only)"
     )
-    allow_quoted_newlines: Optional[bool] = Field(
+    allow_quoted_newlines: bool | None = Field(
         default=None, description="Allow quoted newlines (CSV only)"
     )
-    autodetect: Optional[bool] = Field(
+    autodetect: bool | None = Field(
         default=None, description="Automatically detect schema and options"
     )
-    max_bad_records: Optional[int] = Field(
+    max_bad_records: int | None = Field(
         default=None, description="Maximum number of bad records to ignore"
     )

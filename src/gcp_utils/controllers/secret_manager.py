@@ -5,13 +5,13 @@ This module provides a high-level interface for Google Cloud Secret Manager
 operations including secret creation, access, and version management.
 """
 
-from typing import Any, Optional
+from typing import Any
 
-from google.cloud import secretmanager_v1
 from google.auth.credentials import Credentials
+from google.cloud import secretmanager_v1
 
 from ..config import GCPSettings, get_settings
-from ..exceptions import SecretManagerError, ResourceNotFoundError, ValidationError
+from ..exceptions import ResourceNotFoundError, SecretManagerError, ValidationError
 from ..models.secret_manager import SecretInfo, SecretVersionInfo
 
 
@@ -34,8 +34,8 @@ class SecretManagerController:
 
     def __init__(
         self,
-        settings: Optional[GCPSettings] = None,
-        credentials: Optional[Credentials] = None,
+        settings: GCPSettings | None = None,
+        credentials: Credentials | None = None,
     ) -> None:
         """
         Initialize the Secret Manager controller.
@@ -62,9 +62,9 @@ class SecretManagerController:
     def create_secret(
         self,
         secret_id: str,
-        labels: Optional[dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
         replication_policy: str = "automatic",
-        locations: Optional[list[str]] = None,
+        locations: list[str] | None = None,
     ) -> SecretInfo:
         """
         Create a new secret (without version/value).
@@ -450,7 +450,7 @@ class SecretManagerController:
         self,
         secret_id: str,
         payload: str | bytes,
-        labels: Optional[dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
     ) -> SecretVersionInfo:
         """
         Convenience method to create a secret and add its first version.

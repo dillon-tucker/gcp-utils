@@ -1,7 +1,7 @@
 """Data models for Cloud Storage operations."""
 
 from datetime import datetime, timedelta
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_serializer
 
@@ -34,13 +34,15 @@ class BlobMetadata(BaseModel):
     name: str = Field(..., description="Blob name/path")
     bucket: str = Field(..., description="Bucket name")
     size: int = Field(..., description="Size in bytes")
-    content_type: Optional[str] = Field(None, description="Content type")
-    md5_hash: Optional[str] = Field(None, description="MD5 hash")
-    created: Optional[datetime] = Field(None, description="Creation timestamp")
-    updated: Optional[datetime] = Field(None, description="Last update timestamp")
-    generation: Optional[int] = Field(None, description="Object generation number")
-    metageneration: Optional[int] = Field(None, description="Metadata generation number")
-    public_url: Optional[str] = Field(None, description="Public URL if publicly accessible")
+    content_type: str | None = Field(None, description="Content type")
+    md5_hash: str | None = Field(None, description="MD5 hash")
+    created: datetime | None = Field(None, description="Creation timestamp")
+    updated: datetime | None = Field(None, description="Last update timestamp")
+    generation: int | None = Field(None, description="Object generation number")
+    metageneration: int | None = Field(None, description="Metadata generation number")
+    public_url: str | None = Field(
+        None, description="Public URL if publicly accessible"
+    )
     metadata: dict[str, str] = Field(
         default_factory=dict, description="Custom metadata key-value pairs"
     )
@@ -51,7 +53,7 @@ class BlobMetadata(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("created", "updated")
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
         return dt.isoformat() if dt else None
 
     # Convenience methods that delegate to the GCS object
@@ -119,7 +121,7 @@ class BlobMetadata(BaseModel):
         """
         if not self._gcs_object:
             raise ValueError("No GCS object bound to this metadata")
-        return self._gcs_object.download_as_bytes()  # type: ignore[no-any-return]
+        return self._gcs_object.download_as_bytes()
 
     def download_as_text(self, encoding: str = "utf-8") -> str:
         """
@@ -136,7 +138,7 @@ class BlobMetadata(BaseModel):
         """
         if not self._gcs_object:
             raise ValueError("No GCS object bound to this metadata")
-        return self._gcs_object.download_as_text(encoding=encoding)  # type: ignore[no-any-return]
+        return self._gcs_object.download_as_text(encoding=encoding)
 
     def download_to_filename(self, filename: str) -> None:
         """
@@ -152,7 +154,9 @@ class BlobMetadata(BaseModel):
             raise ValueError("No GCS object bound to this metadata")
         self._gcs_object.download_to_filename(filename)
 
-    def upload_from_filename(self, filename: str, content_type: Optional[str] = None) -> None:
+    def upload_from_filename(
+        self, filename: str, content_type: str | None = None
+    ) -> None:
         """
         Upload content from a local file.
 
@@ -171,9 +175,7 @@ class BlobMetadata(BaseModel):
         self.reload()  # Update metadata after upload
 
     def upload_from_string(
-        self,
-        data: str | bytes,
-        content_type: Optional[str] = None
+        self, data: str | bytes, content_type: str | None = None
     ) -> None:
         """
         Upload content from a string or bytes.
@@ -212,7 +214,7 @@ class BlobMetadata(BaseModel):
         """
         if not self._gcs_object:
             raise ValueError("No GCS object bound to this metadata")
-        return self._gcs_object.generate_signed_url(  # type: ignore[no-any-return]
+        return self._gcs_object.generate_signed_url(
             version="v4",
             expiration=expiration,
             method=method,
@@ -259,9 +261,13 @@ class BucketInfo(BaseModel):
 
     name: str = Field(..., description="Bucket name")
     location: str = Field(..., description="Bucket location")
-    storage_class: str = Field(..., description="Storage class (STANDARD, NEARLINE, etc.)")
-    created: Optional[datetime] = Field(None, description="Creation timestamp")
-    versioning_enabled: bool = Field(default=False, description="Whether versioning is enabled")
+    storage_class: str = Field(
+        ..., description="Storage class (STANDARD, NEARLINE, etc.)"
+    )
+    created: datetime | None = Field(None, description="Creation timestamp")
+    versioning_enabled: bool = Field(
+        default=False, description="Whether versioning is enabled"
+    )
     labels: dict[str, str] = Field(default_factory=dict, description="Bucket labels")
 
     # The actual GCS Bucket object (private attribute, not serialized)
@@ -270,7 +276,7 @@ class BucketInfo(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("created")
-    def serialize_dt(self, dt: Optional[datetime], _info: Any) -> Optional[str]:
+    def serialize_dt(self, dt: datetime | None, _info: Any) -> str | None:
         return dt.isoformat() if dt else None
 
     # Convenience methods that delegate to the GCS object
@@ -355,9 +361,9 @@ class BucketInfo(BaseModel):
 
     def list_blobs(
         self,
-        prefix: Optional[str] = None,
-        delimiter: Optional[str] = None,
-        max_results: Optional[int] = None,
+        prefix: str | None = None,
+        delimiter: str | None = None,
+        max_results: int | None = None,
     ) -> list["Blob"]:
         """
         List blobs in the bucket.
@@ -376,11 +382,13 @@ class BucketInfo(BaseModel):
         if not self._gcs_object:
             raise ValueError("No GCS object bound to this bucket info")
 
-        return list(self._gcs_object.list_blobs(
-            prefix=prefix,
-            delimiter=delimiter,
-            max_results=max_results,
-        ))
+        return list(
+            self._gcs_object.list_blobs(
+                prefix=prefix,
+                delimiter=delimiter,
+                max_results=max_results,
+            )
+        )
 
     def get_blob(self, blob_name: str) -> Optional["Blob"]:
         """
@@ -438,9 +446,9 @@ class UploadResult(BaseModel):
     blob_name: str = Field(..., description="Name of the uploaded blob")
     bucket: str = Field(..., description="Bucket name")
     size: int = Field(..., description="Size in bytes")
-    public_url: Optional[str] = Field(None, description="Public URL if available")
-    md5_hash: Optional[str] = Field(None, description="MD5 hash of uploaded content")
-    generation: Optional[int] = Field(None, description="Object generation number")
+    public_url: str | None = Field(None, description="Public URL if available")
+    md5_hash: str | None = Field(None, description="MD5 hash of uploaded content")
+    generation: int | None = Field(None, description="Object generation number")
 
     # The actual GCS Blob object (private attribute, not serialized)
     _gcs_object: Optional["Blob"] = PrivateAttr(default=None)
@@ -481,7 +489,7 @@ class UploadResult(BaseModel):
         """
         if not self._gcs_object:
             raise ValueError("No GCS object bound to this upload result")
-        return self._gcs_object.generate_signed_url(  # type: ignore[no-any-return]
+        return self._gcs_object.generate_signed_url(
             version="v4",
             expiration=expiration,
             method=method,
