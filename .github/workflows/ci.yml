@@ -38,7 +38,7 @@ jobs:
 
     - name: Create test .env file
       run: |
-        echo "GCP_PROJECT_ID=test-project" > .env
+        echo "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" > .env
         echo "GCP_LOCATION=us-central1" >> .env
         
         # Write credentials JSON to a file (no extra newline) and make it private
