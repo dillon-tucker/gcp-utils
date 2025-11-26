@@ -6,7 +6,7 @@ creating log-based metrics, and managing log sinks for export.
 """
 
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Optional
 
 from google.auth.credentials import Credentials
 from google.cloud import logging as cloud_logging
