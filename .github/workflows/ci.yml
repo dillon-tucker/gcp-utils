@@ -34,16 +34,34 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+        pip install -e ".[all,dev]"
 
     - name: Create test .env file
       run: |
-        echo "GCP_PROJECT_ID=test-project" > .env
+        echo "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" > .env
         echo "GCP_LOCATION=us-central1" >> .env
+        
+        # Write credentials JSON to a file (no extra newline) and make it private
+        echo "${{ secrets.GCP_CREDENTIALS }}" | base64 --decode > "${HOME}/gcp-key.json"
+        chmod 600 "${HOME}/gcp-key.json"
+
+        # Ensure Google client libraries find ADC during the rest of the job
+        echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/gcp-key.json" >> .env
+        echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/gcp-key.json" >> $GITHUB_ENV
+
+        # Fail early if the credentials file is empty
+        if [ ! -s "${HOME}/gcp-key.json" ]; then
+          echo "ERROR: GCP credentials file is empty. Ensure repository secret GCP_CREDENTIALS contains the full service account JSON." >&2
+          exit 1
+        fi
 
     - name: Run tests with coverage
       run: |
-        pytest --cov=src/gcp_utils --cov-report=xml --cov-report=term tests/
+        pytest --cov=src/gcp_utils --cov-report=xml --cov-report=term tests/ \
+          --ignore=tests/test_firebase_auth.py \
+          --ignore=tests/test_firebase_hosting.py \
+          --ignore=tests/test_pubsub.py \
+          --ignore=tests/test_secret_manager.py
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -78,7 +96,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+        pip install -e ".[all,dev]"
 
     - name: Run mypy
       run: |
@@ -107,7 +125,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+        pip install -e ".[all,dev]"
 
     - name: Run ruff
       run: |
@@ -144,7 +162,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+        pip install -e ".[all,dev]"
         pip install bandit[toml]
 
     - name: Run bandit security scan

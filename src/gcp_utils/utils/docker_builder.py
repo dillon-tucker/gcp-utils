@@ -5,12 +5,12 @@ This module provides utilities for building Docker images and pushing them
 to Google Artifact Registry for use with Cloud Run and other services.
 """
 
-from typing import Optional, Any
-from pathlib import Path
-import subprocess
 import json
+import subprocess
+from pathlib import Path
+from typing import Any
 
-from ..exceptions import ValidationError, ArtifactRegistryError
+from ..exceptions import ArtifactRegistryError, ValidationError
 
 
 class DockerBuilder:
@@ -70,9 +70,9 @@ class DockerBuilder:
         dockerfile_path: str,
         context_path: str,
         image_url: str,
-        build_args: Optional[dict[str, str]] = None,
+        build_args: dict[str, str] | None = None,
         no_cache: bool = False,
-        platform: Optional[str] = None,
+        platform: str | None = None,
     ) -> dict[str, Any]:
         """
         Build a Docker image.
@@ -120,8 +120,10 @@ class DockerBuilder:
             cmd = [
                 "docker",
                 "build",
-                "-f", str(dockerfile),
-                "-t", image_url,
+                "-f",
+                str(dockerfile),
+                "-t",
+                image_url,
             ]
 
             # Add build args
@@ -245,9 +247,9 @@ class DockerBuilder:
         dockerfile_path: str,
         context_path: str,
         image_url: str,
-        build_args: Optional[dict[str, str]] = None,
+        build_args: dict[str, str] | None = None,
         no_cache: bool = False,
-        platform: Optional[str] = None,
+        platform: str | None = None,
     ) -> dict[str, Any]:
         """
         Build and push a Docker image in one step.
@@ -336,7 +338,11 @@ class DockerBuilder:
                 raise
             raise ArtifactRegistryError(
                 f"Docker tag failed: {str(e)}",
-                details={"source": source_image, "target": target_image, "error": str(e)},
+                details={
+                    "source": source_image,
+                    "target": target_image,
+                    "error": str(e),
+                },
             ) from e
 
     def get_image_info(self, image_url: str) -> dict[str, Any]:
