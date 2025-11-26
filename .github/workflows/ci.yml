@@ -42,7 +42,7 @@ jobs:
         echo "GCP_LOCATION=us-central1" >> .env
         
         # Write credentials JSON to a file (no extra newline) and make it private
-        printf '%s' "${{ secrets.GCP_CREDENTIALS }}" > "${HOME}/gcp-key.json"
+        echo "${{ secrets.GCP_CREDENTIALS }}" | base64 --decode > "${HOME}/gcp-key.json"
         chmod 600 "${HOME}/gcp-key.json"
 
         # Ensure Google client libraries find ADC during the rest of the job
