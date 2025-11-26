@@ -1055,6 +1055,154 @@ except IAMError as e:
 4. **Audit**: Regularly audit service accounts and their keys using `list_service_accounts()` and `get_service_account_info()`
 5. **Cleanup**: Delete unused service accounts and keys
 
+## Cloud Logging Controller - Best Practices
+
+The Cloud Logging controller follows Google's recommended patterns for Python logging integration.
+
+### Python Logging Integration (Recommended Pattern)
+
+Google recommends using `setup_logging()` to integrate Cloud Logging with Python's standard logging module. This allows you to use standard Python logging while automatically sending logs to Google Cloud.
+
+```python
+from gcp_utils.controllers import CloudLoggingController
+import logging
+
+# Initialize controller
+logging_ctrl = CloudLoggingController()
+
+# Setup integration with Python logging (recommended)
+logging_ctrl.setup_logging()
+
+# Now use standard Python logging
+logging.info("Application started")
+logging.error("An error occurred")
+
+# Structured logging with JSON fields
+logging.info("User action", extra={"json_fields": {"user_id": "123", "action": "login"}})
+```
+
+### Direct Log Writing
+
+For cases where you need more control or don't want to use Python's logging module:
+
+```python
+from gcp_utils.controllers import CloudLoggingController
+from gcp_utils.models.cloud_logging import LogSeverity
+
+logging_ctrl = CloudLoggingController()
+
+# Write structured logs directly
+logging_ctrl.write_log(
+    log_name="my-app-log",
+    message={"event": "user_action", "user_id": "123"},
+    severity=LogSeverity.INFO,
+    labels={"environment": "production"}
+)
+```
+
+### Key Features
+
+- **Python logging integration**: Use `setup_logging()` for seamless integration with standard library
+- **Structured logging**: Support for JSON payloads using `extra={"json_fields": {...}}`
+- **Log querying**: Query logs with filters
+- **Log-based metrics**: Create metrics from log patterns
+- **Log sinks**: Export logs to BigQuery, Cloud Storage, or Pub/Sub
+
+## Latest Library Versions & Standards (2025)
+
+This section tracks the latest Google Cloud library versions and best practices as of January 2025.
+
+### Current Library Versions
+
+| Service | Library | Minimum Version | Latest Available | Notes |
+|---------|---------|----------------|------------------|-------|
+| Storage | `google-cloud-storage` | 3.5.0 | 3.x | Stable, integrated resumable-media |
+| Firestore | `google-cloud-firestore` | 2.21.0 | 2.21.0 | AsyncClient available |
+| BigQuery | `google-cloud-bigquery` | 3.38.0 | 3.38.0 | Requires Python >=3.9, OpenTelemetry support |
+| Artifact Registry | `google-cloud-artifact-registry` | 1.16.0 | 1.16.1 | AsyncClient available |
+| Cloud Run | `google-cloud-run` | 0.12.0 | 0.12.0 | **Uses v2 API** (run_v2) |
+| Cloud Tasks | `google-cloud-tasks` | 2.20.0 | 2.20.0 | AsyncClient available |
+| Cloud Functions | `google-cloud-functions` | 1.21.0 | 1.21.0 | **Uses v2 API** (functions_v2) |
+| Cloud Scheduler | `google-cloud-scheduler` | 2.16.0 | 2.16.0 | Stable |
+| Cloud Build | `google-cloud-build` | 3.31.0 | 3.31.3 | Stable |
+| Workflows | `google-cloud-workflows` | 1.18.0 | 1.18.1 | Stable |
+| Pub/Sub | `google-cloud-pubsub` | 2.33.0 | 2.33.0 | Future-based async |
+| Secret Manager | `google-cloud-secret-manager` | 2.25.0 | 2.25.0 | Stable |
+| IAM | `google-cloud-iam` | 2.19.0 | 2.19.1+ | Stable |
+| Logging | `google-cloud-logging` | 3.12.0 | 3.12.1 | **setup_logging() recommended** |
+| Firebase Admin | `firebase-admin` | **7.1.0** | **7.1.0** | **Python 3.10+ recommended** |
+
+### API Version Best Practices
+
+#### Cloud Run - Always Use v2 API
+```python
+from google.cloud import run_v2  # ✓ Correct - v2 API
+
+# Don't use v1 for new code
+client = run_v2.ServicesClient()
+```
+
+#### Cloud Functions - Use v2 API (Gen2)
+```python
+from google.cloud import functions_v2  # ✓ Correct - Gen2/v2 API
+
+# Gen2 functions are now called "Cloud Run functions"
+client = functions_v2.FunctionServiceClient()
+```
+
+#### Cloud Logging - Use setup_logging()
+```python
+# ✓ Recommended pattern
+logging_ctrl.setup_logging()
+import logging
+logging.info("Message")
+
+# ✗ Less recommended - more verbose
+logging_ctrl.write_log("log-name", "Message")
+```
+
+#### Firebase Admin - Version 7.x Changes
+- Python 3.9 support is **deprecated**
+- Python 3.10+ strongly recommended
+- New: `link_domain` in ActionCodeSettings (replaces `dynamic_link_domain`)
+- Improved emulator support via `FIREBASE_AUTH_EMULATOR_HOST`
+
+### Async Client Support
+
+The following services now provide async clients:
+
+```python
+# Firestore
+from google.cloud.firestore_v1 import AsyncClient
+async_client = AsyncClient()
+
+# Cloud Tasks
+from google.cloud.tasks_v2 import CloudTasksAsyncClient
+async_client = CloudTasksAsyncClient()
+
+# Artifact Registry
+from google.cloud.artifactregistry_v1 import ArtifactRegistryAsyncClient
+async_client = ArtifactRegistryAsyncClient()
+```
+
+**Note**: Our controllers currently use synchronous clients. Async support can be added in future versions if needed.
+
+### OpenTelemetry Support
+
+Several libraries now support OpenTelemetry for distributed tracing:
+
+- **BigQuery**: Set `ENABLE_OTEL_TRACES` environment variable
+- **Cloud Storage**: Set `ENABLE_GCS_PYTHON_CLIENT_OTEL_TRACES` environment variable
+
+### Migration Notes
+
+If upgrading from older versions:
+
+1. **Firebase Admin 6.x → 7.x**: Check Python version (3.10+ recommended)
+2. **Cloud Run**: Ensure using `run_v2` API (already implemented)
+3. **Cloud Functions**: Ensure using `functions_v2` API (already implemented)
+4. **Cloud Logging**: Consider migrating to `setup_logging()` pattern
+
 ## Environment Configuration
 
 Required environment variable:

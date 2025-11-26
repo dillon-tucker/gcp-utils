@@ -66,22 +66,22 @@ storage = [
     "aiofiles>=24.1.0",
 ]
 firestore = [
-    "google-cloud-firestore>=2.18.0",
+    "google-cloud-firestore>=2.21.0",
 ]
 bigquery = [
-    "google-cloud-bigquery>=3.27.0",
+    "google-cloud-bigquery>=3.38.0",
 ]
 artifact-registry = [
-    "google-cloud-artifact-registry>=1.17.0",
+    "google-cloud-artifact-registry>=1.16.0",
 ]
 cloud-run = [
-    "google-cloud-run>=0.11.0",
+    "google-cloud-run>=0.12.0",
 ]
 cloud-tasks = [
-    "google-cloud-tasks>=2.17.0",
+    "google-cloud-tasks>=2.20.0",
 ]
 cloud-functions = [
-    "google-cloud-functions>=1.20.0",
+    "google-cloud-functions>=1.21.0",
 ]
 cloud-scheduler = [
     "google-cloud-scheduler>=2.16.0",
@@ -90,51 +90,51 @@ cloud-build = [
     "google-cloud-build>=3.31.0",
 ]
 workflows = [
-    "google-cloud-workflows>=1.15.0",
+    "google-cloud-workflows>=1.18.0",
 ]
 pubsub = [
-    "google-cloud-pubsub>=2.23.1",
+    "google-cloud-pubsub>=2.33.0",
 ]
 secret-manager = [
-    "google-cloud-secret-manager>=2.21.1",
+    "google-cloud-secret-manager>=2.25.0",
 ]
 iam = [
-    "google-cloud-iam>=2.15.0",
+    "google-cloud-iam>=2.19.0",
 ]
 logging = [
-    "google-cloud-logging>=3.11.3",
+    "google-cloud-logging>=3.12.0",
 ]
 firebase = [
-    "firebase-admin>=6.6.0",
+    "firebase-admin>=7.1.0",
     "httpx>=0.27.2",
 ]
 
 # Common combinations
 firebase-auth = [
-    "firebase-admin>=6.6.0",
+    "firebase-admin>=7.1.0",
 ]
 firebase-hosting = [
-    "firebase-admin>=6.6.0",
+    "firebase-admin>=7.1.0",
     "httpx>=0.27.2",
 ]
 
 # Install all GCP services
 all = [
     "google-cloud-storage>=3.5.0",
-    "google-cloud-firestore>=2.18.0",
-    "google-cloud-bigquery>=3.27.0",
-    "google-cloud-artifact-registry>=1.17.0",
-    "google-cloud-run>=0.11.0",
-    "google-cloud-tasks>=2.17.0",
-    "google-cloud-functions>=1.20.0",
+    "google-cloud-firestore>=2.21.0",
+    "google-cloud-bigquery>=3.38.0",
+    "google-cloud-artifact-registry>=1.16.0",
+    "google-cloud-run>=0.12.0",
+    "google-cloud-tasks>=2.20.0",
+    "google-cloud-functions>=1.21.0",
     "google-cloud-scheduler>=2.16.0",
     "google-cloud-build>=3.31.0",
-    "google-cloud-workflows>=1.15.0",
-    "google-cloud-pubsub>=2.23.1",
-    "google-cloud-secret-manager>=2.21.1",
-    "google-cloud-iam>=2.15.0",
-    "google-cloud-logging>=3.11.3",
-    "firebase-admin>=6.6.0",
+    "google-cloud-workflows>=1.18.0",
+    "google-cloud-pubsub>=2.33.0",
+    "google-cloud-secret-manager>=2.25.0",
+    "google-cloud-iam>=2.19.0",
+    "google-cloud-logging>=3.12.0",
+    "firebase-admin>=7.1.0",
     "httpx>=0.27.2",
     "aiofiles>=24.1.0",
 ]
