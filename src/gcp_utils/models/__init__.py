@@ -42,7 +42,17 @@ from .cloud_logging import (
     LogSink,
     SourceLocation,
 )
-from .cloud_run import CloudRunService, ServiceRevision, TrafficTarget
+from .cloud_run import (
+    CloudRunJob,
+    CloudRunService,
+    ExecutionEnvironment,
+    ExecutionStatus,
+    JobExecution,
+    LaunchStage,
+    ServiceRevision,
+    TaskAttemptResult,
+    TrafficTarget,
+)
 from .cloud_scheduler import (
     HttpMethod,
     HttpTarget,
@@ -101,6 +111,12 @@ __all__ = [
     "CloudRunService",
     "ServiceRevision",
     "TrafficTarget",
+    "CloudRunJob",
+    "JobExecution",
+    "ExecutionEnvironment",
+    "ExecutionStatus",
+    "LaunchStage",
+    "TaskAttemptResult",
     # Workflows models
     "WorkflowExecution",
     "WorkflowInfo",

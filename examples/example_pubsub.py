@@ -11,9 +11,8 @@ This example demonstrates:
 """
 
 import sys
-from pathlib import Path
 import time
-import json
+from pathlib import Path
 
 # Add src to path for running without installation
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -100,7 +99,9 @@ def main() -> None:
     print("\n6. Listing subscriptions for topic...")
     try:
         subscriptions = pubsub.list_subscriptions(topic_name=topic_name)
-        print(f"[OK] Found {len(subscriptions)} subscription(s) for topic '{topic_name}':")
+        print(
+            f"[OK] Found {len(subscriptions)} subscription(s) for topic '{topic_name}':"
+        )
         for sub in subscriptions:
             print(f"  - {sub.name}")
     except Exception as e:
@@ -181,7 +182,7 @@ def main() -> None:
             print(f"    Message ID: {msg['message_id']}")
             print(f"    Publish time: {msg['publish_time']}")
             print(f"    Data: {msg['data']}")
-            if msg.get('attributes'):
+            if msg.get("attributes"):
                 print(f"    Attributes: {msg['attributes']}")
             ack_ids.append(msg["ack_id"])
 
@@ -241,7 +242,8 @@ def main() -> None:
     print("\n" + "=" * 80)
     print("Common Use Cases:")
     print("=" * 80)
-    print("""
+    print(
+        """
 1. Event-Driven Architecture:
    - User actions trigger events (signup, purchase, etc.)
    - Multiple services subscribe to process events
@@ -271,7 +273,8 @@ def main() -> None:
    - Configure dead letter topics for failed messages
    - Retry policies for transient failures
    - Monitor and alert on message delivery issues
-""")
+"""
+    )
 
     print("=" * 80)
     print("Example completed!")

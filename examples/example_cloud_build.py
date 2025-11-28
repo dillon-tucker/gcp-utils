@@ -298,7 +298,7 @@ def example_run_trigger_manually() -> None:
             branch_name="main",
         )
 
-        print(f"✓ Trigger executed")
+        print("✓ Trigger executed")
         print(f"  Build ID: {response.build_id}")
         print(f"  Check status: gcloud builds describe {response.build_id}")
 
@@ -394,7 +394,11 @@ def example_complete_ci_cd_workflow() -> None:
             # Push to Artifact Registry
             {
                 "name": "gcr.io/cloud-builders/docker",
-                "args": ["push", "--all-tags", "us-central1-docker.pkg.dev/$PROJECT_ID/my-app/api"],
+                "args": [
+                    "push",
+                    "--all-tags",
+                    "us-central1-docker.pkg.dev/$PROJECT_ID/my-app/api",
+                ],
             },
             # Deploy to Cloud Run
             {
@@ -434,11 +438,11 @@ def example_complete_ci_cd_workflow() -> None:
         )
 
         print(f"✓ CI/CD pipeline trigger created: {trigger.name}")
-        print(f"  On every push to main:")
-        print(f"    1. Run tests")
-        print(f"    2. Build Docker image")
-        print(f"    3. Push to Artifact Registry")
-        print(f"    4. Deploy to Cloud Run")
+        print("  On every push to main:")
+        print("    1. Run tests")
+        print("    2. Build Docker image")
+        print("    3. Push to Artifact Registry")
+        print("    4. Deploy to Cloud Run")
 
     except Exception as e:
         print(f"✗ Error creating CI/CD trigger: {e}")

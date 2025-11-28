@@ -10,9 +10,9 @@ from datetime import timedelta
 from gcp_utils.config import GCPSettings
 from gcp_utils.controllers import (
     CloudStorageController,
-    FirestoreController,
-    FirebaseAuthController,
     CloudTasksController,
+    FirebaseAuthController,
+    FirestoreController,
     PubSubController,
     SecretManagerController,
 )
@@ -61,7 +61,7 @@ def main():
 
         # Set custom claims
         auth.set_custom_user_claims(user_uid, {"role": "admin", "tier": "premium"})
-        print(f"   Set custom claims for user")
+        print("   Set custom claims for user")
     except Exception as e:
         print(f"   Note: {e}")
         user_uid = None

@@ -10,8 +10,8 @@ This example demonstrates:
 """
 
 import sys
-from pathlib import Path
 from datetime import datetime, timedelta
+from pathlib import Path
 
 # Add src to path for running without installation
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -39,11 +39,15 @@ def main() -> None:
             max_concurrent_dispatches=5,
         )
         print(f"[OK] Created queue: {queue['name']}")
-        print(f"  Max dispatches/sec: {queue.get('rateLimits', {}).get('maxDispatchesPerSecond', 'N/A')}")
-        print(f"  Max concurrent: {queue.get('rateLimits', {}).get('maxConcurrentDispatches', 'N/A')}")
+        print(
+            f"  Max dispatches/sec: {queue.get('rateLimits', {}).get('maxDispatchesPerSecond', 'N/A')}"
+        )
+        print(
+            f"  Max concurrent: {queue.get('rateLimits', {}).get('maxConcurrentDispatches', 'N/A')}"
+        )
     except Exception as e:
         print(f"[FAIL] Failed to create queue: {e}")
-        print(f"  Queue might already exist - continuing...")
+        print("  Queue might already exist - continuing...")
 
     # 2. Get queue details
     print("\n2. Getting queue details...")
@@ -60,7 +64,9 @@ def main() -> None:
         queues = tasks.list_queues()
         print(f"[OK] Found {len(queues)} queue(s):")
         for queue in queues:
-            print(f"  - {queue['name'].split('/')[-1]} (State: {queue.get('state', 'UNKNOWN')})")
+            print(
+                f"  - {queue['name'].split('/')[-1]} (State: {queue.get('state', 'UNKNOWN')})"
+            )
     except Exception as e:
         print(f"[FAIL] Failed to list queues: {e}")
 
@@ -101,7 +107,7 @@ def main() -> None:
         )
         print(f"[OK] Created scheduled task: {task.name.split('/')[-1]}")
         print(f"  Scheduled for: {task.schedule_time}")
-        print(f"  Delay: 60 seconds")
+        print("  Delay: 60 seconds")
         scheduled_task_name = task.name.split("/")[-1]
     except Exception as e:
         print(f"[FAIL] Failed to create scheduled task: {e}")
@@ -136,7 +142,9 @@ def main() -> None:
         print(f"[OK] Found {len(task_list)} task(s) in queue:")
         for task in task_list[:5]:  # Show first 5
             task_id = task.name.split("/")[-1]
-            print(f"  - {task_id[:20]}... ({task.http_request.http_method} {task.http_request.url})")
+            print(
+                f"  - {task_id[:20]}... ({task.http_request.http_method} {task.http_request.url})"
+            )
         if len(task_list) > 5:
             print(f"  ... and {len(task_list) - 5} more")
     except Exception as e:
@@ -208,7 +216,8 @@ def main() -> None:
     print("\n" + "=" * 80)
     print("Common Use Cases:")
     print("=" * 80)
-    print("""
+    print(
+        """
 1. Email Processing Queue:
    - Send welcome emails after user signup
    - Process newsletter subscriptions
@@ -233,7 +242,8 @@ def main() -> None:
    - Cloud Tasks automatically retries failed tasks
    - Configure retry parameters per queue
    - Dead letter queues for permanently failed tasks
-""")
+"""
+    )
 
     print("=" * 80)
     print("Example completed!")

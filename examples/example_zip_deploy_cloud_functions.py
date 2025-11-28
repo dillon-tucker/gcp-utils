@@ -20,9 +20,9 @@ from pathlib import Path
 # Add src to path for running without installation
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from gcp_utils.config import get_settings
 from gcp_utils.controllers import CloudFunctionsController, CloudStorageController
 from gcp_utils.utils import ZipUtility, zip_and_upload
-from gcp_utils.config import get_settings
 
 
 def create_sample_function_code(function_dir: Path) -> None:
@@ -166,11 +166,13 @@ def main() -> None:
             print(f"  ZIP size: {size:,} bytes ({size / 1024:.2f} KB)")
 
             # Verify excluded files are not in ZIP
-            excluded_found = [f for f in contents if ".env" in f or "test_" in f or ".pyc" in f]
+            excluded_found = [
+                f for f in contents if ".env" in f or "test_" in f or ".pyc" in f
+            ]
             if excluded_found:
                 print(f"  [WARNING] Found excluded files in ZIP: {excluded_found}")
             else:
-                print(f"  [OK] Excluded files are not in ZIP")
+                print("  [OK] Excluded files are not in ZIP")
 
         except Exception as e:
             print(f"[ERROR] Failed to create ZIP: {e}")
@@ -194,7 +196,7 @@ def main() -> None:
                     "created_by": "gcp-utils-example",
                 },
             )
-            print(f"[OK] Uploaded ZIP to Cloud Storage")
+            print("[OK] Uploaded ZIP to Cloud Storage")
             print(f"  Bucket: {upload_result.bucket}")
             print(f"  Blob: {upload_result.blob_name}")
             print(f"  Size: {upload_result.size:,} bytes")
@@ -220,7 +222,7 @@ def main() -> None:
                 destination_blob_name=destination_blob_v2,
                 exclude_patterns=["*.pyc", "__pycache__", ".env", "test_*.py"],
             )
-            print(f"[OK] Zipped and uploaded in one step")
+            print("[OK] Zipped and uploaded in one step")
             print(f"  GCS URL: gs://{upload_result.bucket}/{upload_result.blob_name}")
             print(f"  Size: {upload_result.size:,} bytes")
 
@@ -259,9 +261,9 @@ def main() -> None:
             }
 
             print(f"Deploying function '{function_id}'...")
-            print(f"  Runtime: Python 3.12")
-            print(f"  Entry point: hello_world")
-            print(f"  Memory: 256M")
+            print("  Runtime: Python 3.12")
+            print("  Entry point: hello_world")
+            print("  Memory: 256M")
             print(f"  Source: gs://{bucket_name}/{destination_blob}")
 
             function = functions.create_function(
@@ -273,17 +275,17 @@ def main() -> None:
                 wait_for_completion=True,
             )
 
-            print(f"[OK] Function deployed successfully!")
+            print("[OK] Function deployed successfully!")
             print(f"  Name: {function.name}")
             print(f"  State: {function.state}")
             print(f"  URL: {function.url}")
 
         except Exception as e:
             if "already exists" in str(e).lower():
-                print(f"[INFO] Function already exists, getting details...")
+                print("[INFO] Function already exists, getting details...")
                 try:
                     function = functions.get_function(function_id, location)
-                    print(f"[OK] Function details retrieved")
+                    print("[OK] Function details retrieved")
                     print(f"  Name: {function.name}")
                     print(f"  State: {function.state}")
                     print(f"  URL: {function.url}")
@@ -315,11 +317,14 @@ def main() -> None:
     print("=" * 80)
 
     print("\nTo clean up resources:")
-    print(f"  1. Delete function: functions.delete_function('{function_id}', '{location}')")
+    print(
+        f"  1. Delete function: functions.delete_function('{function_id}', '{location}')"
+    )
     print(f"  2. Delete bucket: storage.delete_bucket('{bucket_name}', force=True)")
 
     print("\nOr run this code:")
-    print("""
+    print(
+        f"""
 try:
     functions.delete_function('{function_id}', '{location}')
     print('[OK] Deleted function')
@@ -331,14 +336,16 @@ try:
     print('[OK] Deleted bucket')
 except Exception as e:
     print(f'[ERROR] Failed to delete bucket: {{e}}')
-""".format(function_id=function_id, location=location, bucket_name=bucket_name))
+"""
+    )
 
     # Summary
     print("\n" + "=" * 80)
     print("Summary: Complete Deployment Workflow")
     print("=" * 80)
 
-    print("""
+    print(
+        """
 This example demonstrated the complete Cloud Functions deployment workflow:
 
 1. ✓ Created sample function source code
@@ -451,7 +458,8 @@ Next Steps:
 - Integrate into your CI/CD pipeline
 - Add versioning and rollback support
 - Monitor function performance in Cloud Console
-""")
+"""
+    )
 
     print("=" * 80)
     print("Example completed!")

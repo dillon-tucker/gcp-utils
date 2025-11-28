@@ -127,7 +127,7 @@ def main() -> None:
     try:
         url = cloud_run.get_service_url(service_name)
         print(f"[OK] Service URL: {url}")
-        print(f"  You can access the service at this URL")
+        print("  You can access the service at this URL")
     except Exception as e:
         print(f"[FAIL] Failed to get service URL: {e}")
 
@@ -138,7 +138,7 @@ def main() -> None:
             service_name=service_name,
             method="GET",
         )
-        print(f"[OK] Service invoked successfully")
+        print("[OK] Service invoked successfully")
         print(f"  Status code: {response.get('status_code', 'N/A')}")
         print(f"  Response preview: {str(response.get('body', ''))[:100]}...")
     except Exception as e:
@@ -173,8 +173,8 @@ def main() -> None:
                     TrafficTarget(revision_name=new_revision, percent=20),
                 ],
             )
-            print(f"[OK] Updated traffic split")
-            print(f"  Traffic distribution:")
+            print("[OK] Updated traffic split")
+            print("  Traffic distribution:")
             for target in service.traffic_targets:
                 print(f"    - {target.revision_name}: {target.percent}%")
         else:
@@ -216,7 +216,7 @@ def main() -> None:
                 "action": "test",
             },
         )
-        print(f"[OK] POST request successful")
+        print("[OK] POST request successful")
         print(f"  Status code: {response.get('status_code', 'N/A')}")
     except Exception as e:
         print(f"[FAIL] Failed to invoke service with POST: {e}")
@@ -234,7 +234,8 @@ def main() -> None:
     print("\n" + "=" * 80)
     print("Common Use Cases & Deployment Patterns:")
     print("=" * 80)
-    print("""
+    print(
+        """
 1. Web Applications:
    - Deploy containerized web apps
    - Automatic HTTPS
@@ -307,7 +308,8 @@ def main() -> None:
    - Set up alerts for errors and latency
    - Use Cloud Trace for distributed tracing
    - Monitor revision performance
-""")
+"""
+    )
 
     print("=" * 80)
     print("Example completed!")

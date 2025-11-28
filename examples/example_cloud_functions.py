@@ -119,7 +119,7 @@ def example_create_event_driven_function() -> None:
         )
 
         print(f"✓ Event-driven function created: {function.name}")
-        print(f"  Triggers on: Storage object finalized in my-data-bucket")
+        print("  Triggers on: Storage object finalized in my-data-bucket")
 
     except Exception as e:
         print(f"✗ Error creating function: {e}")
@@ -136,7 +136,7 @@ def example_upload_source_code() -> None:
     try:
         upload_info = functions.generate_upload_url(location="us-central1")
 
-        print(f"✓ Upload URL generated")
+        print("✓ Upload URL generated")
         print(f"  URL: {upload_info.upload_url[:50]}...")
         print(f"  Bucket: {upload_info.storage_source['bucket']}")
         print(f"  Object: {upload_info.storage_source['object']}")
@@ -152,7 +152,7 @@ def example_upload_source_code() -> None:
             "entry_point": "main",
             "source": {"storage_source": upload_info.storage_source},
         }
-        print(f"\n  Use this in BuildConfig:")
+        print("\n  Use this in BuildConfig:")
         print(f"  {build_config}")
 
     except Exception as e:
@@ -241,7 +241,7 @@ def example_get_function_url() -> None:
         url = functions.get_function_url("hello-http", location="us-central1")
 
         print(f"✓ Function URL: {url}")
-        print(f"\n  You can now call this function:")
+        print("\n  You can now call this function:")
         print(f"  curl {url}")
 
     except Exception as e:

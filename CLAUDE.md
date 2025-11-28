@@ -129,16 +129,46 @@ For new GCP services, add them to the appropriate optional dependency group in `
 # Type checking (strict mode) - REQUIRED before commits
 ../.venv/bin/mypy src/
 
-# Linting (fast linter)
-../.venv/bin/ruff check src/
+# Linting (fast linter with auto-fix)
+../.venv/bin/ruff check src/ tests/ examples/ --fix
 
-# Code formatting
-../.venv/bin/black src/
-../.venv/bin/isort src/
+# Code formatting (auto-format)
+../.venv/bin/black src/ tests/ examples/
 
-# Run all checks
+# Import sorting (auto-sort)
+../.venv/bin/isort src/ tests/ examples/
+
+# Run all checks (for CI/verification)
 ../.venv/bin/mypy src/ && ../.venv/bin/ruff check src/ && ../.venv/bin/black --check src/ && ../.venv/bin/isort --check src/
 ```
+
+**CRITICAL - Before Committing:**
+
+ALWAYS run these quality checks before committing code:
+
+```bash
+# 1. Format code
+../.venv/bin/black src/ tests/ examples/
+../.venv/bin/isort src/ tests/ examples/
+
+# 2. Fix linting issues
+../.venv/bin/ruff check src/ tests/ examples/ --fix --unsafe-fixes
+
+# 3. Type check
+../.venv/bin/mypy src/
+
+# 4. Run tests
+../.venv/bin/pytest tests/
+
+# OR run all in one command:
+../.venv/bin/black src/ tests/ examples/ && \
+  ../.venv/bin/isort src/ tests/ examples/ && \
+  ../.venv/bin/ruff check src/ tests/ examples/ --fix --unsafe-fixes && \
+  ../.venv/bin/mypy src/ && \
+  ../.venv/bin/pytest tests/
+```
+
+If any of these checks fail, fix the issues before committing.
 
 ### Testing
 
@@ -192,15 +222,20 @@ The test suite includes comprehensive coverage for all controllers:
    - Custom domains
    - Version and release workflows
    - File upload and deployment
-7. **test_cloud_run.py** - Cloud Run controller (15 tests)
-8. **test_cloud_tasks.py** - Cloud Tasks controller (7 tests)
-9. **test_workflows.py** - Workflows controller (6 tests)
-10. **test_pubsub.py** - Pub/Sub controller (7 tests)
-11. **test_secret_manager.py** - Secret Manager controller (3 tests)
-12. **test_iam.py** - IAM controller (6 tests)
-13. **test_artifact_registry.py** - Artifact Registry controller (6 tests)
+7. **test_cloud_run.py** - Cloud Run Services controller (15 tests)
+8. **test_cloud_run_jobs.py** - Cloud Run Jobs controller (23 tests) ✨ NEW
+   - Job lifecycle (create, get, list, update, delete)
+   - Execution management (run, get, list, cancel)
+   - Status tracking and monitoring
+   - Resource path construction
+9. **test_cloud_tasks.py** - Cloud Tasks controller (7 tests)
+10. **test_workflows.py** - Workflows controller (6 tests)
+11. **test_pubsub.py** - Pub/Sub controller (7 tests)
+12. **test_secret_manager.py** - Secret Manager controller (3 tests)
+13. **test_iam.py** - IAM controller (6 tests)
+14. **test_artifact_registry.py** - Artifact Registry controller (6 tests)
 
-**Total: 110+ test cases across all controllers**
+**Total: 133+ test cases across all controllers**
 
 ### Running Examples
 
@@ -1107,6 +1142,259 @@ logging_ctrl.write_log(
 - **Log querying**: Query logs with filters
 - **Log-based metrics**: Create metrics from log patterns
 - **Log sinks**: Export logs to BigQuery, Cloud Storage, or Pub/Sub
+
+## Cloud Run Jobs - Batch Processing & Scheduled Tasks
+
+The Cloud Run controller supports both **Services** (always-on HTTP containers) and **Jobs** (batch/scheduled tasks). Cloud Run Jobs are ideal for workloads that run to completion rather than serving requests.
+
+### Services vs Jobs
+
+| Aspect | Services | Jobs |
+|--------|----------|------|
+| **Purpose** | Long-running HTTP services | Batch/scheduled workloads |
+| **Invocation** | Always available via URL | Triggered on-demand or by schedule |
+| **Response** | HTTP response expected | No client connection needed |
+| **Scaling** | Scales with request volume | Scales with execution count |
+| **Client** | `run_v2.ServicesClient` | `run_v2.services.jobs.JobsClient` |
+| **Billing** | Per request/instance time | Per task execution time |
+| **Idle Cost** | Scales to zero but may keep warm instances | No cost when not running |
+
+### Controller Implementation
+
+The CloudRunController handles both services and jobs through separate clients:
+
+```python
+from gcp_utils.controllers import CloudRunController
+from gcp_utils.models.cloud_run import ExecutionEnvironment, ExecutionStatus
+
+# Initialize controller (handles both services and jobs)
+run_ctrl = CloudRunController()
+
+# Service operations
+service = run_ctrl.create_service("my-api", "gcr.io/project/api:latest")
+
+# Job operations
+job = run_ctrl.create_job("batch-processor", "gcr.io/project/batch:latest")
+```
+
+### Job Lifecycle
+
+**1. Create Job Definition:**
+```python
+job = run_ctrl.create_job(
+    job_name="data-processor",
+    image="gcr.io/my-project/processor:latest",
+    task_count=10,  # Number of tasks per execution
+    parallelism=3,  # Run 3 tasks concurrently
+    max_retries=2,  # Retry failed tasks
+    timeout=600,  # 10 minute timeout per task
+    cpu="1000m",
+    memory="512Mi",
+    env_vars={"BATCH_SIZE": "100"},
+    execution_environment=ExecutionEnvironment.EXECUTION_ENVIRONMENT_GEN2,
+)
+```
+
+**2. Run Execution:**
+```python
+execution = run_ctrl.run_job("data-processor")
+print(f"Execution ID: {execution.execution_id}")
+print(f"Status: {execution.status}")
+```
+
+**3. Monitor Progress:**
+```python
+import time
+
+while execution.status == ExecutionStatus.RUNNING:
+    time.sleep(5)
+    execution = run_ctrl.get_execution("data-processor", execution.execution_id)
+    print(f"Progress: {execution.succeeded_count}/{execution.task_count} tasks")
+```
+
+**4. Manage Executions:**
+```python
+# List all executions
+executions = run_ctrl.list_executions("data-processor")
+
+# Cancel running execution
+cancelled = run_ctrl.cancel_execution("data-processor", "execution-abc123")
+
+# Get execution details
+details = run_ctrl.get_execution("data-processor", "execution-abc123")
+```
+
+### Job Models
+
+**CloudRunJob** - Job definition and configuration:
+- `name`, `region`, `image` - Basic identification
+- `task_count`, `parallelism` - Execution configuration
+- `max_retries`, `timeout` - Failure handling
+- `cpu`, `memory` - Resource allocation
+- `env_vars`, `service_account` - Runtime configuration
+- `execution_environment` - GEN1 or GEN2
+- `_job_object` - Native Job object binding
+
+**JobExecution** - Execution instance and status:
+- `execution_id`, `job_name` - Identification
+- `status` - PENDING, RUNNING, SUCCEEDED, FAILED, CANCELLED
+- `task_count`, `succeeded_count`, `failed_count` - Task tracking
+- `created`, `started`, `completed` - Timing
+- `duration_seconds` - Total execution time
+- `_execution_object` - Native Execution object binding
+
+**ExecutionStatus** - Status enum:
+- `PENDING` - Waiting to start
+- `RUNNING` - Currently executing
+- `SUCCEEDED` - All tasks completed successfully
+- `FAILED` - One or more tasks failed
+- `CANCELLED` - Execution was cancelled
+
+### Key Patterns
+
+**1. Parallel Processing:**
+```python
+# Process 100 items with 10 concurrent workers
+job = run_ctrl.create_job(
+    job_name="parallel-processor",
+    image="gcr.io/project/worker:latest",
+    task_count=100,  # 100 total tasks
+    parallelism=10,  # 10 running at once
+)
+
+# Each task gets CLOUD_RUN_TASK_INDEX (0-99)
+# Use this to partition work across tasks
+```
+
+**2. Idempotent Tasks:**
+```python
+# Design tasks to be safely retried
+job = run_ctrl.create_job(
+    job_name="idempotent-job",
+    image="gcr.io/project/processor:latest",
+    max_retries=3,  # Retry failed tasks
+    env_vars={
+        "USE_CHECKPOINTING": "true",  # Save progress
+        "DEDUPE_ENABLED": "true",  # Handle duplicates
+    },
+)
+```
+
+**3. Resource Optimization:**
+```python
+# Right-size resources for cost efficiency
+job = run_ctrl.create_job(
+    job_name="optimized-job",
+    image="gcr.io/project/batch:latest",
+    cpu="500m",  # Half CPU for lightweight tasks
+    memory="256Mi",  # Minimal memory
+    timeout=300,  # 5 minute timeout
+)
+```
+
+**4. Monitoring and Alerting:**
+```python
+# Check execution results
+execution = run_ctrl.get_execution("my-job", "execution-id")
+
+if execution.status == ExecutionStatus.FAILED:
+    print(f"Failed tasks: {execution.failed_count}")
+    print(f"Error: {execution.error_message}")
+    # Send alert, trigger retry, etc.
+```
+
+### Common Use Cases
+
+**Batch Processing:**
+- ETL pipelines
+- Data transformations
+- Report generation
+- Image/video processing
+
+**Scheduled Tasks:**
+- Nightly backups
+- Weekly analytics
+- Monthly billing
+- Database maintenance
+
+**Parallel Workloads:**
+- Bulk API calls
+- Distributed testing
+- File conversions
+- ML batch inference
+
+### Best Practices
+
+**1. Task Partitioning:**
+- Use `CLOUD_RUN_TASK_INDEX` environment variable (0 to task_count-1)
+- Partition data evenly across tasks
+- Handle partial failures gracefully
+
+**2. Timeouts:**
+- Set realistic timeouts based on task complexity
+- Default: 600s (10 minutes)
+- Maximum: 3600s (1 hour)
+- Add buffer for retries and startup time
+
+**3. Parallelism:**
+- Balance throughput vs. cost
+- Consider downstream service capacity
+- Monitor quota limits
+- Start conservative, scale up based on metrics
+
+**4. Error Handling:**
+- Design for retry safety (idempotency)
+- Use structured logging for debugging
+- Set up alerting for failed executions
+- Implement circuit breakers for external dependencies
+
+**5. Cost Optimization:**
+- Use GEN2 execution environment (default)
+- Right-size CPU and memory
+- Jobs only bill for execution time
+- No charges when idle
+
+**6. Integration with Cloud Scheduler:**
+```bash
+# Create scheduled job execution via Cloud Scheduler HTTP target
+# Target: https://run.googleapis.com/v2/projects/PROJECT/locations/REGION/jobs/JOB_NAME:run
+# Method: POST
+# Auth: Service account with Cloud Run Invoker role
+```
+
+### Testing
+
+Tests for Cloud Run Jobs follow the same patterns as service tests:
+
+```python
+def test_create_job_success(cloud_run_controller):
+    """Test creating a job successfully."""
+    mock_operation = MagicMock()
+    mock_job = create_mock_job()
+    mock_operation.result.return_value = mock_job
+    cloud_run_controller.jobs_client.create_job.return_value = mock_operation
+
+    job = cloud_run_controller.create_job(
+        job_name="test-job",
+        image="gcr.io/test/image:latest",
+        task_count=10,
+    )
+
+    assert job.name == "test-job"
+    assert job.task_count == 10
+```
+
+See `tests/test_cloud_run_jobs.py` for comprehensive job testing examples.
+
+### Example
+
+See `examples/example_cloud_run_jobs.py` for a complete demonstration including:
+- Creating jobs with different configurations
+- Running and monitoring executions
+- Parallel task processing
+- Updating job configuration
+- Cancelling executions
+- Best practices and common patterns
 
 ## Latest Library Versions & Standards (2025)
 

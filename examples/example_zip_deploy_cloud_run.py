@@ -24,14 +24,14 @@ from pathlib import Path
 # Add src to path for running without installation
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from gcp_utils.config import get_settings
 from gcp_utils.controllers import (
+    ArtifactRegistryController,
     CloudBuildController,
     CloudRunController,
     CloudStorageController,
-    ArtifactRegistryController,
 )
 from gcp_utils.utils import ZipUtility
-from gcp_utils.config import get_settings
 
 
 def create_sample_app(app_dir: Path) -> None:
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # Create Dockerfile
     dockerfile = app_dir / "Dockerfile"
     dockerfile.write_text(
-        '''# Use official Python runtime
+        """# Use official Python runtime
 FROM python:3.12-slim
 
 # Set working directory
@@ -107,13 +107,13 @@ EXPOSE 8080
 
 # Run with gunicorn for production
 CMD exec gunicorn --bind :$PORT --workers 2 --threads 4 --timeout 0 main:app
-'''
+"""
     )
 
     # Create .dockerignore (should be included in ZIP)
     dockerignore = app_dir / ".dockerignore"
     dockerignore.write_text(
-        '''# Ignore these files when building Docker image
+        """# Ignore these files when building Docker image
 __pycache__
 *.pyc
 .env
@@ -124,7 +124,7 @@ venv
 *.log
 .DS_Store
 README.md
-'''
+"""
     )
 
     # Create .env (should be excluded from ZIP)
@@ -241,10 +241,12 @@ def main() -> None:
                 },
             )
 
-            print(f"[OK] Uploaded source ZIP")
+            print("[OK] Uploaded source ZIP")
             print(f"  Bucket: {upload_result.bucket}")
             print(f"  Blob: {upload_result.blob_name}")
-            print(f"  Size: {upload_result.size:,} bytes ({upload_result.size / 1024:.2f} KB)")
+            print(
+                f"  Size: {upload_result.size:,} bytes ({upload_result.size / 1024:.2f} KB)"
+            )
             print(f"  GCS URL: gs://{upload_result.bucket}/{upload_result.blob_name}")
 
         except Exception as e:
@@ -283,7 +285,15 @@ def main() -> None:
                 },
                 {
                     "name": "gcr.io/cloud-builders/docker",
-                    "args": ["run", "--rm", "-v", "/workspace:/workspace", "busybox", "unzip", "source.zip"],
+                    "args": [
+                        "run",
+                        "--rm",
+                        "-v",
+                        "/workspace:/workspace",
+                        "busybox",
+                        "unzip",
+                        "source.zip",
+                    ],
                 },
                 {
                     "name": "gcr.io/cloud-builders/docker",
@@ -317,7 +327,7 @@ def main() -> None:
                 wait_for_completion=True,
             )
 
-            print(f"[OK] Build completed successfully!")
+            print("[OK] Build completed successfully!")
             print(f"  Build ID: {build.id}")
             print(f"  Status: {build.status}")
             if build.log_url:
@@ -339,8 +349,8 @@ def main() -> None:
             print(f"Deploying service '{service_name}'...")
             print(f"  Image: {image_url}")
             print(f"  Region: {location}")
-            print(f"  CPU: 1 vCPU")
-            print(f"  Memory: 512 MB")
+            print("  CPU: 1 vCPU")
+            print("  Memory: 512 MB")
 
             service = cloud_run.create_service(
                 service_name=service_name,
@@ -361,7 +371,7 @@ def main() -> None:
                 },
             )
 
-            print(f"[OK] Service deployed successfully!")
+            print("[OK] Service deployed successfully!")
             print(f"  Name: {service.name}")
             print(f"  URL: {service.url}")
             print(f"  Region: {service.region}")
@@ -369,10 +379,10 @@ def main() -> None:
 
         except Exception as e:
             if "already exists" in str(e).lower():
-                print(f"[INFO] Service already exists, getting details...")
+                print("[INFO] Service already exists, getting details...")
                 try:
                     service = cloud_run.get_service(service_name)
-                    print(f"[OK] Service details:")
+                    print("[OK] Service details:")
                     print(f"  Name: {service.name}")
                     print(f"  URL: {service.url}")
                     print(f"  Region: {service.region}")
@@ -405,7 +415,7 @@ def main() -> None:
                     path="/",
                     method="GET",
                 )
-                print(f"[OK] Service responded!")
+                print("[OK] Service responded!")
                 print(f"  Status: {response['status_code']}")
                 if response.get("json"):
                     print(f"  Response: {response['json']}")
@@ -423,13 +433,14 @@ def main() -> None:
     print("=" * 80)
 
     print("\nTo clean up all resources:")
-    print(f"  1. Delete Cloud Run service")
-    print(f"  2. Delete Docker image from Artifact Registry")
-    print(f"  3. Delete source ZIP from Cloud Storage")
-    print(f"  4. Delete bucket (optional)")
+    print("  1. Delete Cloud Run service")
+    print("  2. Delete Docker image from Artifact Registry")
+    print("  3. Delete source ZIP from Cloud Storage")
+    print("  4. Delete bucket (optional)")
 
     print("\nRun this code:")
-    print("""
+    print(
+        f"""
 # Delete Cloud Run service
 try:
     cloud_run.delete_service('{service_name}')
@@ -447,18 +458,16 @@ except Exception as e:
 # Note: Image in Artifact Registry can be deleted manually or left for reuse
 print('\\nArtifact Registry image: {image_url}')
 print('Delete manually if needed via gcloud or Console')
-""".format(
-        service_name=service_name,
-        bucket_name=bucket_name,
-        image_url=image_url,
-    ))
+"""
+    )
 
     # Summary
     print("\n" + "=" * 80)
     print("Summary: Complete Cloud Run Deployment Workflow")
     print("=" * 80)
 
-    print("""
+    print(
+        """
 This example demonstrated a complete Cloud Run deployment from source code:
 
 1. ✓ Created sample Flask application with Dockerfile
@@ -625,7 +634,8 @@ Next Steps:
 - Create staging and production environments
 - Implement blue-green or canary deployments
 - Add automated testing in Cloud Build
-""")
+"""
+    )
 
     print("=" * 80)
     print("Example completed!")

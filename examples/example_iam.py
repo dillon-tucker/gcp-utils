@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from gcp_utils.controllers import IAMController
-from gcp_utils.models.iam import IAMBinding, ServiceAccountKeyAlgorithm
+from gcp_utils.models.iam import ServiceAccountKeyAlgorithm
 
 
 def main() -> None:
@@ -141,7 +141,7 @@ def main() -> None:
     try:
         resource = f"projects/{iam.settings.project_id}/serviceAccounts/{service_account_email}"
         policy = iam.get_iam_policy(resource)
-        print(f"[OK] Retrieved IAM policy for service account")
+        print("[OK] Retrieved IAM policy for service account")
         print(f"  Policy version: {policy.version}")
         print(f"  Number of bindings: {len(policy.bindings)}")
 
@@ -160,7 +160,8 @@ def main() -> None:
     # 9. Add IAM policy binding (example - not executed by default)
     print("\n9. Example: Adding IAM policy binding (commented out)")
     print("  To grant someone permission to use this service account, uncomment:")
-    print(f"""
+    print(
+        f"""
     # Get current policy for the service account
     resource = f"projects/{{iam.settings.project_id}}/serviceAccounts/{service_account_email}"
     policy = iam.get_iam_policy(resource)
@@ -175,7 +176,8 @@ def main() -> None:
     # Set updated policy
     updated_policy = iam.set_iam_policy(resource, policy)
     print(f"[OK] Updated IAM policy")
-    """)
+    """
+    )
 
     # Cleanup
     print("\n" + "=" * 80)
@@ -194,10 +196,12 @@ def main() -> None:
     # 11. Delete service account
     print("\n11. Deleting service account...")
     print("  [WARN] To delete the service account, uncomment the following:")
-    print(f"""
+    print(
+        f"""
     # iam.delete_service_account("{service_account_email}")
     # print(f"[OK] Deleted service account: {service_account_email}")
-    """)
+    """
+    )
     print(
         "  Note: Service account left intact for demonstration. Delete manually if needed."
     )

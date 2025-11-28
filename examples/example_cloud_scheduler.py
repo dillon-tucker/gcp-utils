@@ -101,7 +101,7 @@ def example_advanced_http_job_with_auth() -> None:
         )
 
         print(f"✓ Authenticated job created: {job.name}")
-        print(f"  Will use OAuth token from service account")
+        print("  Will use OAuth token from service account")
 
     except Exception as e:
         print(f"✗ Error creating job: {e}")
@@ -166,7 +166,7 @@ def example_run_job_manually() -> None:
 
         print(f"✓ Job triggered: {response.name}")
         print(f"  Attempt time: {response.attempt_time}")
-        print(f"\n  Check job logs to see execution results")
+        print("\n  Check job logs to see execution results")
 
     except Exception as e:
         print(f"✗ Error running job: {e}")

@@ -223,14 +223,16 @@ def main():
     print("\n" + "=" * 60)
     print("Complete deployment with file upload...")
     print("=" * 60)
-    print("""
+    print(
+        """
     This example demonstrates the complete deployment workflow including
     file uploads. First, let's create some sample HTML files to deploy.
-    """)
+    """
+    )
 
     # Create sample files for deployment
-    import tempfile
     import os
+    import tempfile
 
     try:
         # Create temporary directory with sample website
@@ -354,7 +356,8 @@ document.addEventListener('DOMContentLoaded', function() {
     print("\n" + "=" * 60)
     print("Manual deployment workflow (alternative approach)...")
     print("=" * 60)
-    print("""
+    print(
+        """
     If you prefer more control, you can do each step manually:
 
     # Step 1: Create version
@@ -373,7 +376,8 @@ document.addEventListener('DOMContentLoaded', function() {
         version_name=version['name'],
         message='Production v1.0.0'
     )
-    """)
+    """
+    )
 
     print("\n" + "=" * 60)
     print("Example completed!")

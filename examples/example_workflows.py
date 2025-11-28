@@ -11,9 +11,8 @@ This example demonstrates:
 """
 
 import sys
-from pathlib import Path
 import time
-import json
+from pathlib import Path
 
 # Add src to path for running without installation
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -170,16 +169,14 @@ def main() -> None:
     print("\n7. Executing parameterized workflow with arguments...")
     try:
         execution = workflows.execute_workflow(
-            workflow_name=param_workflow_name,
-            argument={"name": "GCP Utils"}
+            workflow_name=param_workflow_name, argument={"name": "GCP Utils"}
         )
         print(f"[OK] Started parameterized execution: {execution.name.split('/')[-1]}")
         print(f"  State: {execution.state}")
         print(f"  Argument: {execution.argument}")
-        param_execution_id = execution.name.split("/")[-1]
+        execution.name.split("/")[-1]
     except Exception as e:
         print(f"[FAIL] Failed to execute parameterized workflow: {e}")
-        param_execution_id = None
 
     # 8. Wait for execution to complete and get result
     print("\n8. Waiting for execution to complete...")
@@ -213,7 +210,9 @@ def main() -> None:
     print("\n9. Listing executions...")
     try:
         executions = workflows.list_executions(workflow_name, page_size=10)
-        print(f"[OK] Found {len(executions)} execution(s) for workflow '{workflow_name}':")
+        print(
+            f"[OK] Found {len(executions)} execution(s) for workflow '{workflow_name}':"
+        )
         for exec in executions[:3]:  # Show first 3
             exec_id = exec.name.split("/")[-1]
             print(f"  - {exec_id[:20]}... State: {exec.state}")
@@ -253,7 +252,7 @@ def main() -> None:
         # Cancel it
         print("  Canceling execution...")
         result = workflows.cancel_execution(long_workflow_name, long_execution_id)
-        print(f"[OK] Cancelled execution")
+        print("[OK] Cancelled execution")
         print(f"  Final state: {result.state}")
     except Exception as e:
         print(f"[FAIL] Failed cancellation demo: {e}")
@@ -287,7 +286,12 @@ def main() -> None:
 
     # 12. Cleanup - Delete workflows
     print("\n12. Cleaning up workflows...")
-    for wf_name in [workflow_name, param_workflow_name, complex_workflow_name, long_workflow_name]:
+    for wf_name in [
+        workflow_name,
+        param_workflow_name,
+        complex_workflow_name,
+        long_workflow_name,
+    ]:
         try:
             workflows.delete_workflow(wf_name)
             print(f"[OK] Deleted workflow: {wf_name}")
@@ -298,7 +302,8 @@ def main() -> None:
     print("\n" + "=" * 80)
     print("Common Workflow Patterns:")
     print("=" * 80)
-    print("""
+    print(
+        """
 1. API Integration Pattern:
    - Call external APIs
    - Transform data
@@ -366,7 +371,8 @@ Example Workflow Definition (YAML):
 
 - returnResult:
     return: ${instanceList}
-""")
+"""
+    )
 
     print("=" * 80)
     print("Example completed!")
