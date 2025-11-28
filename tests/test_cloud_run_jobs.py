@@ -14,6 +14,7 @@ from gcp_utils.models.cloud_run import ExecutionStatus
 
 
 def create_mock_job(
+    settings,
     name="test-job",
     image="gcr.io/test/batch-job:latest",
     task_count=1,
@@ -21,7 +22,7 @@ def create_mock_job(
 ):
     """Helper function to create a properly configured mock job."""
     mock_job = MagicMock()
-    mock_job.name = f"projects/test-project/locations/us-central1/jobs/{name}"
+    mock_job.name = f"projects/{settings.project_id}/locations/{settings.cloud_run_region}/jobs/{name}"
 
     # Template configuration
     mock_job.template.task_count = task_count
@@ -51,6 +52,7 @@ def create_mock_job(
 
 
 def create_mock_execution(
+    settings,
     name="test-execution-abc123",
     job_name="test-job",
     task_count=5,
@@ -59,9 +61,7 @@ def create_mock_execution(
 ):
     """Helper function to create a properly configured mock execution."""
     mock_execution = MagicMock()
-    mock_execution.name = (
-        f"projects/test-project/locations/us-central1/jobs/{job_name}/executions/{name}"
-    )
+    mock_execution.name = f"projects/{settings.project_id}/locations/{settings.cloud_run_region}/jobs/{job_name}/executions/{name}"
 
     # Task counts
     mock_execution.task_count = task_count
@@ -121,10 +121,10 @@ def test_create_job_validation_error(cloud_run_controller):
     assert "Container image cannot be empty" in str(exc_info.value)
 
 
-def test_create_job_success(cloud_run_controller):
+def test_create_job_success(cloud_run_controller, settings):
     """Test creating a job successfully."""
     mock_operation = MagicMock()
-    mock_job = create_mock_job()
+    mock_job = create_mock_job(settings)
     mock_operation.result.return_value = mock_job
     cloud_run_controller.jobs_client.create_job.return_value = mock_operation
 
@@ -150,9 +150,9 @@ def test_create_job_success(cloud_run_controller):
         cloud_run_controller.jobs_client.create_job.assert_called_once()
 
 
-def test_get_job_success(cloud_run_controller):
+def test_get_job_success(cloud_run_controller, settings):
     """Test getting a job successfully."""
-    mock_job = create_mock_job()
+    mock_job = create_mock_job(settings)
     cloud_run_controller.jobs_client.get_job.return_value = mock_job
 
     job = cloud_run_controller.get_job("test-job")
@@ -172,9 +172,9 @@ def test_get_job_not_found(cloud_run_controller):
     assert "Job 'non-existent-job' not found" in str(exc_info.value)
 
 
-def test_list_jobs(cloud_run_controller):
+def test_list_jobs(cloud_run_controller, settings):
     """Test listing jobs."""
-    mock_job = create_mock_job()
+    mock_job = create_mock_job(settings)
     cloud_run_controller.jobs_client.list_jobs.return_value = [mock_job]
 
     jobs = cloud_run_controller.list_jobs()
@@ -193,14 +193,14 @@ def test_list_jobs_empty(cloud_run_controller):
     assert len(jobs) == 0
 
 
-def test_update_job_success(cloud_run_controller):
+def test_update_job_success(cloud_run_controller, settings):
     """Test updating a job successfully."""
-    mock_job = create_mock_job(image="gcr.io/test/old-image:latest")
+    mock_job = create_mock_job(settings, image="gcr.io/test/old-image:latest")
     cloud_run_controller.jobs_client.get_job.return_value = mock_job
 
     mock_operation = MagicMock()
     mock_updated_job = create_mock_job(
-        image="gcr.io/test/new-image:latest", parallelism=5
+        settings, image="gcr.io/test/new-image:latest", parallelism=5
     )
     mock_operation.result.return_value = mock_updated_job
     cloud_run_controller.jobs_client.update_job.return_value = mock_operation
@@ -252,10 +252,10 @@ def test_delete_job_failure(cloud_run_controller):
     assert "Failed to delete job 'test-job'" in str(exc_info.value)
 
 
-def test_run_job_success(cloud_run_controller):
+def test_run_job_success(cloud_run_controller, settings):
     """Test running a job successfully."""
     mock_operation = MagicMock()
-    mock_execution = create_mock_execution()
+    mock_execution = create_mock_execution(settings)
     mock_operation.result.return_value = mock_execution
     cloud_run_controller.jobs_client.run_job.return_value = mock_operation
 
@@ -278,9 +278,9 @@ def test_run_job_not_found(cloud_run_controller):
     assert "Job 'non-existent-job' not found" in str(exc_info.value)
 
 
-def test_get_execution_success(cloud_run_controller):
+def test_get_execution_success(cloud_run_controller, settings):
     """Test getting an execution successfully."""
-    mock_execution = create_mock_execution()
+    mock_execution = create_mock_execution(settings)
     cloud_run_controller.jobs_client.get_execution.return_value = mock_execution
 
     execution = cloud_run_controller.get_execution("test-job", "test-execution-abc123")
@@ -292,12 +292,12 @@ def test_get_execution_success(cloud_run_controller):
     assert execution.failed_count == 0
 
 
-def test_get_execution_with_full_path(cloud_run_controller):
+def test_get_execution_with_full_path(cloud_run_controller, settings):
     """Test getting an execution with full resource path."""
-    mock_execution = create_mock_execution()
+    mock_execution = create_mock_execution(settings)
     cloud_run_controller.jobs_client.get_execution.return_value = mock_execution
 
-    full_path = "projects/test-project/locations/us-central1/jobs/test-job/executions/test-execution-abc123"
+    full_path = f"projects/{settings.project_id}/locations/{settings.cloud_run_region}/jobs/test-job/executions/test-execution-abc123"
     execution = cloud_run_controller.get_execution("test-job", full_path)
 
     assert execution.execution_id == "test-execution-abc123"
@@ -314,11 +314,13 @@ def test_get_execution_not_found(cloud_run_controller):
     assert "Execution 'non-existent-execution' not found" in str(exc_info.value)
 
 
-def test_list_executions(cloud_run_controller):
+def test_list_executions(cloud_run_controller, settings):
     """Test listing executions for a job."""
-    mock_execution1 = create_mock_execution(name="execution-1", succeeded_count=5)
+    mock_execution1 = create_mock_execution(
+        settings, name="execution-1", succeeded_count=5
+    )
     mock_execution2 = create_mock_execution(
-        name="execution-2", succeeded_count=3, failed_count=2
+        settings, name="execution-2", succeeded_count=3, failed_count=2
     )
     cloud_run_controller.jobs_client.list_executions.return_value = [
         mock_execution1,
@@ -343,10 +345,10 @@ def test_list_executions_empty(cloud_run_controller):
     assert len(executions) == 0
 
 
-def test_cancel_execution_success(cloud_run_controller):
+def test_cancel_execution_success(cloud_run_controller, settings):
     """Test cancelling an execution successfully."""
     mock_operation = MagicMock()
-    mock_execution = create_mock_execution()
+    mock_execution = create_mock_execution(settings)
     mock_execution.cancelled_count = 5
     mock_operation.result.return_value = mock_execution
     cloud_run_controller.jobs_client.cancel_execution.return_value = mock_operation
@@ -373,35 +375,37 @@ def test_cancel_execution_not_found(cloud_run_controller):
     assert "Execution 'non-existent-execution' not found" in str(exc_info.value)
 
 
-def test_execution_status_determination():
+def test_execution_status_determination(settings):
     """Test execution status is correctly determined from task counts."""
     # Test SUCCEEDED status
     exec_succeeded = create_mock_execution(
-        task_count=5, succeeded_count=5, failed_count=0
+        settings, task_count=5, succeeded_count=5, failed_count=0
     )
     assert exec_succeeded.succeeded_count == exec_succeeded.task_count
 
     # Test FAILED status
-    exec_failed = create_mock_execution(task_count=5, succeeded_count=3, failed_count=2)
+    exec_failed = create_mock_execution(
+        settings, task_count=5, succeeded_count=3, failed_count=2
+    )
     assert exec_failed.failed_count > 0
 
     # Test RUNNING status
     exec_running = create_mock_execution(
-        task_count=5, succeeded_count=2, failed_count=0
+        settings, task_count=5, succeeded_count=2, failed_count=0
     )
     exec_running.running_count = 3
     assert exec_running.running_count > 0
 
 
-def test_job_path_construction(cloud_run_controller):
+def test_job_path_construction(cloud_run_controller, settings):
     """Test job resource path construction."""
     path = cloud_run_controller._get_job_path("my-job")
-    expected = "projects/test-project/locations/us-central1/jobs/my-job"
+    expected = f"projects/{settings.project_id}/locations/{settings.cloud_run_region}/jobs/my-job"
     assert path == expected
 
 
-def test_execution_path_construction(cloud_run_controller):
+def test_execution_path_construction(cloud_run_controller, settings):
     """Test execution resource path construction."""
     path = cloud_run_controller._get_execution_path("my-job", "execution-123")
-    expected = "projects/test-project/locations/us-central1/jobs/my-job/executions/execution-123"
+    expected = f"projects/{settings.project_id}/locations/{settings.cloud_run_region}/jobs/my-job/executions/execution-123"
     assert path == expected
