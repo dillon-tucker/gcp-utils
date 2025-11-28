@@ -32,7 +32,7 @@ from gcp_utils.models.cloud_run import ExecutionEnvironment, ExecutionStatus
 
 # For this example, we'll use a simple batch processing job container
 # In production, replace with your own container image
-EXAMPLE_IMAGE = "gcr.io/cloudrun/hello"  # Simple example image
+EXAMPLE_IMAGE = "hello-world"  # Simple example image
 
 
 def main():
@@ -55,7 +55,7 @@ def main():
 
     try:
         job = run_ctrl.create_job(
-            job_name="example-batch-processor",
+            job_name="hello-world",
             image=EXAMPLE_IMAGE,
             task_count=1,  # Number of tasks per execution
             parallelism=1,  # Run tasks sequentially
@@ -73,7 +73,7 @@ def main():
             },
         )
 
-        print(f"✓ Created job: {job.name}")
+        print(f"[OK] Created job: {job.name}")
         print(f"  - Image: {job.image}")
         print(f"  - Tasks: {job.task_count}")
         print(f"  - Parallelism: {job.parallelism}")
@@ -83,9 +83,9 @@ def main():
         print()
 
     except Exception as e:
-        print(f"✗ Failed to create job: {e}")
+        print(f"[ERROR] Failed to create job: {e}")
         print("  (Job may already exist - continuing with existing job)")
-        job = run_ctrl.get_job("example-batch-processor")
+        job = run_ctrl.get_job("hello-world")
         print()
 
     # =========================================================================
@@ -94,7 +94,7 @@ def main():
     print("2. Retrieving job details...")
     print("-" * 80)
 
-    job_details = run_ctrl.get_job("example-batch-processor")
+    job_details = run_ctrl.get_job("hello-world")
     print(f"Job: {job_details.name}")
     print(f"  - Region: {job_details.region}")
     print(f"  - Created: {job_details.created}")
@@ -109,8 +109,8 @@ def main():
     print("-" * 80)
 
     try:
-        execution = run_ctrl.run_job("example-batch-processor")
-        print(f"✓ Started execution: {execution.execution_id}")
+        execution = run_ctrl.run_job("hello-world")
+        print(f"[OK] Started execution: {execution.execution_id}")
         print(f"  - Status: {execution.status.value}")
         print(f"  - Tasks: {execution.task_count}")
         print(f"  - Parallelism: {execution.parallelism}")
@@ -129,7 +129,7 @@ def main():
         while time.time() - start_time < max_wait_time:
             # Get updated execution status
             execution = run_ctrl.get_execution(
-                "example-batch-processor", execution.execution_id
+                "hello-world", execution.execution_id
             )
 
             # Display progress
@@ -148,7 +148,7 @@ def main():
                 ExecutionStatus.CANCELLED,
             ]:
                 print()
-                print(f"✓ Execution completed with status: {execution.status.value}")
+                print(f"[OK] Execution completed with status: {execution.status.value}")
                 if execution.duration_seconds:
                     print(f"  Duration: {execution.duration_seconds} seconds")
                 if execution.error_message:
@@ -164,7 +164,7 @@ def main():
         print()
 
     except Exception as e:
-        print(f"✗ Failed to run job: {e}")
+        print(f"[ERROR] Failed to run job: {e}")
         print()
 
     # =========================================================================
@@ -190,7 +190,7 @@ def main():
             execution_environment=ExecutionEnvironment.EXECUTION_ENVIRONMENT_GEN2,
         )
 
-        print(f"✓ Created parallel job: {parallel_job.name}")
+        print(f"[OK] Created parallel job: {parallel_job.name}")
         print(f"  - Tasks: {parallel_job.task_count} tasks")
         print(f"  - Parallelism: {parallel_job.parallelism} concurrent tasks")
         print(
@@ -210,7 +210,7 @@ def main():
 
     try:
         updated_job = run_ctrl.update_job(
-            "example-batch-processor",
+            "hello-world",
             parallelism=2,  # Increase parallelism
             env_vars={
                 "ENVIRONMENT": "example",
@@ -219,13 +219,13 @@ def main():
             },
         )
 
-        print(f"✓ Updated job: {updated_job.name}")
+        print(f"[OK] Updated job: {updated_job.name}")
         print(f"  - New parallelism: {updated_job.parallelism}")
         print(f"  - Environment variables: {len(updated_job.env_vars)}")
         print()
 
     except Exception as e:
-        print(f"✗ Failed to update job: {e}")
+        print(f"[ERROR] Failed to update job: {e}")
         print()
 
     # =========================================================================
@@ -235,7 +235,7 @@ def main():
     print("-" * 80)
 
     try:
-        executions = run_ctrl.list_executions("example-batch-processor")
+        executions = run_ctrl.list_executions("hello-world")
         print(f"Found {len(executions)} execution(s):")
         print()
 
@@ -251,7 +251,7 @@ def main():
             print()
 
     except Exception as e:
-        print(f"✗ Failed to list executions: {e}")
+        print(f"[ERROR] Failed to list executions: {e}")
         print()
 
     # =========================================================================
@@ -275,7 +275,7 @@ def main():
             print()
 
     except Exception as e:
-        print(f"✗ Failed to list jobs: {e}")
+        print(f"[ERROR] Failed to list jobs: {e}")
         print()
 
     # =========================================================================
@@ -286,14 +286,14 @@ def main():
 
     try:
         # Get the latest execution
-        executions = run_ctrl.list_executions("example-batch-processor")
+        executions = run_ctrl.list_executions("hello-world")
         if executions:
             latest = executions[0]
             if latest.status == ExecutionStatus.RUNNING:
                 cancelled = run_ctrl.cancel_execution(
-                    "example-batch-processor", latest.execution_id
+                    "hello-world", latest.execution_id
                 )
-                print(f"✓ Cancelled execution: {cancelled.execution_id}")
+                print(f"[OK] Cancelled execution: {cancelled.execution_id}")
                 print(f"  Status: {cancelled.status.value}")
                 print()
             else:
@@ -316,14 +316,14 @@ def main():
     cleanup = input("Delete example jobs? (y/N): ").lower().strip()
     if cleanup == "y":
         try:
-            run_ctrl.delete_job("example-batch-processor")
-            print("✓ Deleted: example-batch-processor")
+            run_ctrl.delete_job("hello-world")
+            print("[OK] Deleted: hello-world")
         except Exception as e:
             print(f"Note: {e}")
 
         try:
             run_ctrl.delete_job("example-parallel-processor")
-            print("✓ Deleted: example-parallel-processor")
+            print("[OK] Deleted: example-parallel-processor")
         except Exception as e:
             print(f"Note: {e}")
 
@@ -378,22 +378,22 @@ def main():
     print("Common Use Cases")
     print("=" * 80)
     print()
-    print("✓ Data Processing")
+    print("[OK] Data Processing")
     print("  - ETL pipelines")
     print("  - Report generation")
     print("  - Image/video processing")
     print()
-    print("✓ Batch Operations")
+    print("[OK] Batch Operations")
     print("  - Database migrations")
     print("  - Bulk email sending")
     print("  - File format conversions")
     print()
-    print("✓ Scheduled Tasks")
+    print("[OK] Scheduled Tasks")
     print("  - Nightly data backups")
     print("  - Weekly analytics")
     print("  - Monthly billing runs")
     print()
-    print("✓ Machine Learning")
+    print("[OK] Machine Learning")
     print("  - Batch inference")
     print("  - Model training")
     print("  - Feature engineering")

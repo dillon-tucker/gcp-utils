@@ -1126,9 +1126,17 @@ class CloudRunController:
         # Extract timeout
         timeout = None
         if hasattr(job.template.template, "timeout"):
-            timeout_str = job.template.template.timeout
-            if timeout_str:
-                timeout = int(timeout_str.rstrip("s"))
+            timeout_value = job.template.template.timeout
+            if timeout_value:
+                # Handle both string format ("300s") and timedelta object
+                if isinstance(timeout_value, str):
+                    timeout = int(timeout_value.rstrip("s"))
+                elif hasattr(timeout_value, "total_seconds"):
+                    # datetime.timedelta object
+                    timeout = int(timeout_value.total_seconds())
+                else:
+                    # Fallback: try to convert to int
+                    timeout = int(timeout_value)
 
         # Extract resources
         cpu = None
